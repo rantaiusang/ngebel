@@ -137,7 +137,7 @@
             hideError(); 
 
             try {
-                console.log("=== MEMULAI PENDAFTARAN ===");
+                console.log("Memulai Pendaftaran...");
                 
                 // 1. Daftar di Auth
                 const { data, error } = await supabase.auth.signUp({
@@ -152,7 +152,6 @@
                 if (error) throw error;
 
                 // 2. Simpan ke Tabel ngebelusers
-                // Cek keamanan: Pastikan data.user ada
                 if (data.user) {
                     const { error: insertError } = await supabase
                         .from('ngebelusers')
@@ -172,14 +171,13 @@
                     }
                 }
 
-                console.log("SUKSES! Redirecting...");
+                console.log("Sukses! Redirect...");
                 window.location.href = 'check-email.html';
 
             } catch (err) {
                 console.error("ERROR:", err);
                 showError("Terjadi Kesalahan: " + err.message);
             } finally {
-                // Memastikan loading berhenti baik sukses maupun gagal
                 setLoading('signup-btn', false);
             }
         }
