@@ -85,7 +85,6 @@
     </a>
 
     <div class="auth-card">
-        <!-- PERBAIKAN: font-size: 3. menjadi 3rem -->
         <div style="font-size: 3rem; margin-bottom: 10px;">📝</div>
         <h2>Buat Akun Baru</h2>
         <p>Lengkapi data diri Anda untuk bergabung.</p>
@@ -129,14 +128,9 @@
         async function handleSignup(e) {
             e.preventDefault();
             
-            // Ambil nilai dari input
             const name = document.getElementById('signup-name').value;
             const email = document.getElementById('signup-email').value;
-            
-            // PERBAIKAN: ID 'phone' diubah menjadi 'signup-phone' sesuai HTML
             const phone = document.getElementById('signup-phone').value;
-            
-            // PERBAIKAN: Menghapus spasi sebelum .value
             const password = document.getElementById('signup-password').value;
 
             setLoading('signup-btn', true);
@@ -145,54 +139,47 @@
             try {
                 console.log("=== MEMULAI PENDAFTARAN ===");
                 
-                // 1. Langkah Satu: Buat Akun & Simpan Metadata
+                // 1. Daftar di Auth
                 const { data, error } = await supabase.auth.signUp({
                     email: email,
                     password: password,
                     options: {
-                        emailRedirectTo: window.location.origin, // Redirect kembali ke web setelah verifikasi
-                        data: {
-                            full_name: name,
-                            phone: phone
-                        }
+                        emailRedirectTo: window.location.origin,
+                        data: { full_name: name, phone: phone }
                     }
                 });
 
-                if (error) {
-                    console.error("   ❌ Gagal:", error);
-                    throw new Error("Gagal: " + error.message);
+                if (error) throw error;
+
+                // 2. Simpan ke Tabel ngebelusers
+                // Cek keamanan: Pastikan data.user ada
+                if (data.user) {
+                    const { error: insertError } = await supabase
+                        .from('ngebelusers')
+                        .insert([
+                            { 
+                                id: data.user.id, 
+                                full_name: name, 
+                                email: email, 
+                                phone: phone, 
+                                role: 'user' 
+                            }
+                        ]);
+
+                    if (insertError) {
+                        console.error("Gagal Insert:", insertError);
+                        throw new Error("Gagal menyimpan profil: " + insertError.message);
+                    }
                 }
 
-                // 2. Simpan Data Tambahan ke Tabel Kustom 'ngebelusers'
-                const { error: insertError } = await supabase
-                    .from('ngebelusers')
-                    .insert([
-                        { 
-                            id: data.user.id, 
-                            full_name: name, 
-                            email: email, 
-                            phone: phone, 
-                            role: 'user' 
-                        }
-                    ]);
-
-                if (insertError) {
-                    console.error("   ❌ Gagal Insert Kustom:", insertError);
-                    throw new Error("Gagal menyimpan profil. (Pastikan RLS Policy sudah aktif). Detail: " + insertError.message);
-                }
-
-                console.log("   ✅ Pendaftaran Sukses!");
-                console.log("   ✅ Data Tersimpan!");
-                console.log("   ✅ Mengarahkan ke check-email.html...");
-
-                // 3. Redirect Modern
+                console.log("SUKSES! Redirecting...");
                 window.location.href = 'check-email.html';
 
             } catch (err) {
-                console.error("=== ERROR ===");
-                console.error(err);
+                console.error("ERROR:", err);
                 showError("Terjadi Kesalahan: " + err.message);
             } finally {
+                // Memastikan loading berhenti baik sukses maupun gagal
                 setLoading('signup-btn', false);
             }
         }
