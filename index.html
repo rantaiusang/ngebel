@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#0f766e">
     <meta name="description" content="Platform Digital Wisata Telaga Ngebel, Ponorogo">
 
-    <!-- Supabase Client -->
+    <!-- SUPABASE CLIENT (PENTING) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <!-- Fonts -->
@@ -68,11 +68,11 @@
         @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
         /* --- 3. COMPONENTS --- */
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 2; }
 
-        /* Cards */
         .card {
             background: var(--white);
             border: 1px solid rgba(0,0,0,0.05);
@@ -91,7 +91,6 @@
             display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 16px;
         }
 
-        /* Buttons */
         .btn {
             display: inline-flex; align-items: center; justify-content: center;
             padding: 16px 32px; font-weight: 700; border-radius: 50px;
@@ -111,7 +110,7 @@
             height: 70px; display: flex; align-items: center; justify-content: space-between;
             padding: 0 24px;
         }
-        .brand { display: flex; align-items: center; gap: 10px; font-family: 'Outfit'; font-weight: 800; font-size: 1.3rem; color: var(--primary); }
+        .brand { display: flex; align-items: center; gap: 10px; font-family: 'Outfit'; font-weight: 800; font-size: 1.3rem; color: var(--primary); cursor: pointer; }
         
         .user-pill {
             display: flex; align-items: center; gap: 10px; background: white; padding: 6px 12px;
@@ -123,7 +122,7 @@
         /* --- 5. BOTTOM NAVIGATION --- */
         .bottom-nav {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            width: 92%; max-width: 500px; height: auto; min-height: var(--nav-height);
+            width: 92%; max-width: 450px; height: auto; min-height: var(--nav-height);
             background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(20px);
             border-radius: 40px;
@@ -136,17 +135,17 @@
         .nav-item {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             color: #94a3b8; font-size: 0.7rem; font-weight: 600;
-            padding: 6px 4px; border-radius: 20px; transition: all 0.3s;
-            min-width: 55px; position: relative; cursor: pointer;
+            padding: 8px; border-radius: 20px; transition: all 0.3s;
+            min-width: 60px; position: relative; cursor: pointer;
+            flex: 1 1 auto;
         }
-        .nav-item svg { width: 22px; height: 22px; stroke-width: 2; stroke: currentColor; fill: none; margin-bottom: 3px; transition: all 0.3s; }
+        .nav-item svg { width: 22px; height: 22px; stroke-width: 2; stroke: currentColor; fill: none; margin-bottom: 4px; transition: all 0.3s; }
         
         .nav-item.active { color: var(--primary); transform: translateY(-5px); }
         .nav-item.active svg { transform: scale(1.1); stroke-width: 2.5; filter: drop-shadow(0 4px 6px rgba(15, 118, 110, 0.2)); }
         
-        /* Indikator Kunci untuk Member Only */
         .lock-badge {
-            position: absolute; top: 4px; right: 8px; font-size: 0.6rem; color: var(--accent);
+            position: absolute; top: 6px; right: 8px; font-size: 0.6rem; color: var(--accent);
             background: #fffbeb; padding: 2px; border-radius: 50%; border: 1px solid var(--accent);
         }
 
@@ -156,9 +155,9 @@
                 top: 0; bottom: 0; left: 0; transform: none; width: 280px; height: 100vh;
                 flex-direction: column; justify-content: flex-start; gap: 5px; padding-top: 100px;
                 border-radius: 0; box-shadow: 10px 0 30px rgba(0,0,0,0.05); border-right: 1px solid #eee;
-                align-items: flex-start;
+                align-items: stretch;
             }
-            .nav-item { width: 90%; flex-direction: row; height: 50px; padding: 0 20px; justify-content: flex-start; gap: 15px; font-size: 1rem; min-width: auto; }
+            .nav-item { width: 100%; flex-direction: row; height: 50px; padding: 0 20px; justify-content: flex-start; gap: 15px; font-size: 1rem; flex: none; }
             .nav-item svg { margin-bottom: 0; }
             .lock-badge { right: 20px; }
         }
@@ -167,7 +166,6 @@
         .page-section { display: none; padding-top: 100px; animation: fadeInUp 0.6s ease-out; }
         .page-section.active { display: block; }
 
-        /* Hero */
         .hero {
             position: relative; height: 75vh; min-height: 500px; border-radius: 32px;
             overflow: hidden; display: flex; align-items: flex-end; color: white;
@@ -182,34 +180,26 @@
         .hero-overlay { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0.1) 100%); z-index: 1; }
         .hero-content { position: relative; z-index: 2; padding: 40px; width: 100%; max-width: 600px; }
 
-        /* Grids */
         .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
 
-        /* --- 7. MODAL / POPUP PREVIEW --- */
+        /* --- 7. MODAL & TOAST --- */
         .modal-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
             z-index: 2000; display: flex; align-items: center; justify-content: center;
             opacity: 0; pointer-events: none; transition: all 0.3s;
         }
         .modal-overlay.open { opacity: 1; pointer-events: auto; }
-        
         .modal-card {
             background: white; width: 90%; max-width: 400px; padding: 30px;
             border-radius: 24px; text-align: center; transform: translateY(20px); transition: all 0.3s;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
         .modal-overlay.open .modal-card { transform: translateY(0); }
-        
         .modal-icon { font-size: 3rem; margin-bottom: 15px; display: inline-block; animation: float 3s infinite; }
         .modal-title { font-size: 1.5rem; color: var(--primary); margin-bottom: 10px; font-family: 'Outfit'; font-weight: 700; }
         .modal-text { color: var(--text-muted); margin-bottom: 25px; font-size: 0.95rem; }
 
-        /* Toast Notification */
-        .toast-container {
-            position: fixed; top: 90px; right: 20px; z-index: 3000;
-            display: flex; flex-direction: column; gap: 10px;
-        }
+        .toast-container { position: fixed; top: 90px; right: 20px; z-index: 3000; display: flex; flex-direction: column; gap: 10px; }
         .toast {
             background: white; padding: 15px 25px; border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-left: 4px solid var(--primary);
@@ -218,10 +208,8 @@
         }
         .toast.show { transform: translateX(0); }
 
-        /* Preloader */
         #preloader { position: fixed; inset: 0; background: var(--primary); z-index: 9999; display: flex; justify-content: center; align-items: center; transition: opacity 0.5s; }
         .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 1s linear infinite; }
-
     </style>
 </head>
 <body>
@@ -233,16 +221,16 @@
     <header>
         <div class="brand" onclick="window.location.reload()">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.74 5.88-5.74 5.88-5.74-5.88L12 2.69M12 22a9.97 9.97 0 0 1-7.07-2.93l-1.41 1.41A11.97 11.97 0 0 0 12 24a11.97 11.97 0 0 0 8.49-3.52l-1.41-1.41A9.97 9.97 0 0 1 12 22z"/></svg>
-            Ngebel Platform
+            Ngebel
         </div>
         
-        <!-- User State (Tampil saat Login) -->
+        <!-- User State -->
         <div id="header-user" style="display:none;" class="user-pill">
             <img src="https://picsum.photos/seed/warga/100/100" class="user-avatar" alt="User">
-            <div id="header-username" style="font-size: 0.9rem; font-weight: 700; color: var(--primary);">User</div>
+            <div id="header-username" style="font-size: 0.9rem; font-weight: 700; color: var(--primary);">Warga Ngebel</div>
         </div>
 
-        <!-- Guest State (Tampil saat Belum Login) -->
+        <!-- Guest State -->
         <div id="header-guest" class="btn btn-primary" style="padding: 8px 20px; font-size: 0.9rem;" onclick="openLoginModal()">
             Masuk / Daftar
         </div>
@@ -261,7 +249,7 @@
                     <p style="color: rgba(255,255,255,0.9); margin-bottom: 30px;">
                         Platform terintegrasi untuk memajukan pariwisata, pertanian, dan UMKM di Telaga Ngebel. Bergabunglah bersama kami.
                     </p>
-                    <button class="btn btn-primary" onclick="window.location.href='#explore'">
+                    <button class="btn btn-primary" onclick="window.location.href='explore.html'">
                         Jelajahi Potensi
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                     </button>
@@ -288,101 +276,11 @@
             </div>
         </section>
 
-        <!-- SECTION: EXPLORE (Publik) -->
-        <section id="explore" class="page-section">
-            <h2>Jelajahi Ngebel</h2>
-            <p>Temukan destinasi wisata menarik di sekitar Telaga Ngebel.</p>
-            <div class="grid-3">
-                <div class="card"><h3>Kawah Wurung</h3><p>Keajaiban alam berbentuk kawah purba.</p></div>
-                <div class="card"><h3>Telaga Ngebel</h3><p>Danau buatan terbesar di Indonesia Timur.</p></div>
-                <div class="card"><h3>Air Terjun</h3><p>Kesejukan alam yang menenangkan jiwa.</p></div>
-            </div>
-        </section>
-
-        <!-- SECTION: MAP (Publik) -->
-        <section id="map" class="page-section">
-            <h2>Peta Wisata</h2>
-            <div class="card" style="height: 400px; display: flex; align-items: center; justify-content: center; background: #e2e8f0;">
-                <p>📍 (Peta Google Maps akan dimuat di sini)</p>
-            </div>
-        </section>
-
-        <!-- SECTION: COMMUNITY (Publik) -->
-        <section id="community" class="page-section">
-            <h2>Komunitas Warga</h2>
-            <p>Bergabung dengan forum diskusi warga Ngebel.</p>
-            <div class="grid-2">
-                <div class="card"><h3>Event Desa</h3><p>Agenda kegiatan yang akan datang.</p></div>
-                <div class="card"><h3>Forum Diskusi</h3><p>Ruang berbagi ide dan aspirasi.</p></div>
-            </div>
-        </section>
-
-        <!-- SECTION: AGRICULTURE (Member Only) -->
-        <section id="agriculture" class="page-section">
-            <h2>Agrikultur</h2>
-            <div class="grid-2">
-                <div class="card"><h3>Harga Komoditas</h3><p>Data harga terbaru Cabai, Bawang, dan Padi.</p></div>
-                <div class="card"><h3>Hasil Panen</h3><p>Statistik produksi pertanian bulan ini.</p></div>
-            </div>
-        </section>
-
-        <!-- SECTION: ANALYTICS (Member Only) -->
-        <section id="analytics" class="page-section">
-            <h2>Analitik Data</h2>
-            <div class="card">
-                <h3>Statistik Pengunjung</h3>
-                <p>Grafik perkembangan wisatawan Ngebel tahun ini.</p>
-            </div>
-        </section>
-        
-        <!-- SECTION: DISTRIBUTION (Member Only) -->
-        <section id="distribution" class="page-section">
-            <h2>Distribusi Logistik</h2>
-            <div class="card">
-                <h3>Pengiriman Produk</h3>
-                <p>Monitoring jalur distribusi hasil bumi dan UMKM.</p>
-            </div>
-        </section>
-
-        <!-- SECTION: ECOSYSTEM (Member Only) -->
-        <section id="ecosystem" class="page-section">
-            <h2>Ekosistem Digital</h2>
-            <div class="card">
-                <h3>Konektivitas Data</h3>
-                <p>Integrasi antara wisata, pertanian, dan ekonomi kreatif.</p>
-            </div>
-        </section>
-
-        <!-- SECTION: MONITORING (Member Only) -->
-        <section id="monitoring" class="page-section">
-            <h2>Monitoring Realtime</h2>
-            <div class="grid-2">
-                <div class="card"><h3>CCTV Area</h3><p>Pantau keamanan wilayah 24 jam.</p></div>
-                <div class="card"><h3>Sensor Cuaca</h3><p>Data curah hujan dan suhu lingkungan.</p></div>
-            </div>
-        </section>
-
-        <!-- SECTION: PRICE (Member Only) -->
-        <section id="price" class="page-section">
-            <h2>Pasar Harga</h2>
-            <div class="card">
-                <h3>Papan Harga Pangan</h3>
-                <p>Update harga harian dari pasar induk.</p>
-            </div>
-        </section>
-
-        <!-- SECTION: PLATFORM (Member Only) -->
-        <section id="platform" class="page-section">
-            <h2>Platform Integrasi</h2>
-            <div class="card">
-                <h3>Sistem Terpadu</h3>
-                <p>Dashboard manajemen seluruh sektor Ngebel.</p>
-            </div>
-        </section>
-
         <!-- SECTION: DASHBOARD (Member Only) -->
         <section id="dashboard" class="page-section">
             <h2>Dashboard Warga</h2>
+            <p>Selamat datang di pusat kendali aktivitas ekonomi Anda.</p>
+            
             <div class="grid-3" style="margin-top: 30px;">
                 <div class="card">
                     <h3 style="color:var(--primary); font-size: 2rem;">Rp 4.5jt</h3>
@@ -409,16 +307,16 @@
     <!-- TOAST CONTAINER -->
     <div class="toast-container" id="toast-container"></div>
 
-    <!-- MODAL PREVIEW (UNTUK MENARIK USER LOGIN) -->
+    <!-- MODAL PREVIEW -->
     <div class="modal-overlay" id="preview-modal">
         <div class="modal-card">
             <div class="modal-icon">🔒</div>
             <h3 class="modal-title">Fitur Eksklusif Member</h3>
             <p class="modal-text">
-                Akses ke <b id="modal-feature-name">Fitur</b> hanya tersedia untuk Warga & Mitra Ngebel yang terdaftar.
+                Akses ke <b id="modal-feature-name">Fitur</b> hanya tersedia untuk Warga & Mitra Ngebel yang terdaftar. Dapatkan manfaat ekonomi langsung!
             </p>
             <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="goToLogin()">
-                Masuk / Daftar Sekarang
+                Daftar Sekarang (Gratis)
             </button>
             <button class="btn btn-outline" style="width: 100%; border:none; color: #94a3b8;" onclick="closeModal()">
                 Nanti Saja
@@ -428,56 +326,44 @@
 
     <script>
         // --- KONFIGURASI SUPABASE ---
+        // Ganti URL dan Key dengan milik Anda
         const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
         
-        // Gunakan window.supabase agar tidak bentrok
-        if (!window.supabase) {
-            window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        }
-        const supabaseClient = window.supabase;
+        // Inisialisasi Supabase Client
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // --- KONFIGURASI MENU ---
-        
-        // 1. MENU TAMU (Belum Login) - LAMA + BARU (Terkunci)
-        const guestMenu = [
+        const publicMenu = [
             { id: 'home', icon: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>', label: 'Home' },
-            { id: 'explore', icon: '<circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>', label: 'Explore' },
-            { id: 'map', icon: '<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line>', label: 'Peta' },
-            { id: 'community', icon: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>', label: 'Komunitas' },
-            { id: 'market', icon: '<circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>', label: 'Market', isLocked: true },
-            { id: 'agriculture', icon: '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path>', label: 'Agrikultur', isLocked: true },
-            { id: 'analytics', icon: '<line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line>', label: 'Analitik', isLocked: true },
-            { id: 'distribution', icon: '<rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle>', label: 'Distribusi', isLocked: true },
-            { id: 'ecosystem', icon: '<circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path><path d="M12 8v8"></path>', label: 'Ekosistem', isLocked: true },
-            { id: 'monitoring', icon: '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>', label: 'Monitoring', isLocked: true },
-            { id: 'price', icon: '<line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>', label: 'Harga', isLocked: true },
+            { id: 'explore', icon: '<circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>', label: 'Explore', link: 'explore.html' },
+            { id: 'map', icon: '<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line>', label: 'Peta', link: 'map.html' },
+            { id: 'community', icon: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>', label: 'Komunitas', link: 'community.html' },
+            { id: 'market', icon: '<circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>', label: 'Market', isLocked: true, link: 'katalog.html' },
+            { id: 'dashboard', icon: '<rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>', label: 'Dashboard', isLocked: true }
         ];
 
-        // 2. MENU MEMBER (Sudah Login) - LAMA + BARU (Terbuka)
-        const memberMenu = [
-            { id: 'home', icon: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>', label: 'Home' },
-            { id: 'explore', icon: '<circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>', label: 'Explore' },
-            { id: 'map', icon: '<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line>', label: 'Peta' },
-            { id: 'community', icon: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>', label: 'Komunitas' },
-            { id: 'market', icon: '<circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>', label: 'Market' },
+        const systemMenu = [
             { id: 'dashboard', icon: '<rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>', label: 'Dashboard' },
-            { id: 'agriculture', icon: '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path>', label: 'Agrikultur' },
-            { id: 'analytics', icon: '<line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line>', label: 'Analitik' },
-            { id: 'distribution', icon: '<rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle>', label: 'Distribusi' },
-            { id: 'ecosystem', icon: '<circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path><path d="M12 8v8"></path>', label: 'Ekosistem' },
-            { id: 'monitoring', icon: '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>', label: 'Monitoring' },
-            { id: 'price', icon: '<line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>', label: 'Harga' },
-            { id: 'platform', icon: '<polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline>', label: 'Platform' },
+            { id: 'analytics', icon: '<line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line>', label: 'Analitik', link: 'analytics.html' },
+            { id: 'agriculture', icon: '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path>', label: 'Agrikultur', link: 'agriculture.html' },
+            { id: 'distribution', icon: '<rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle>', label: 'Distribusi', link: 'distribution.html' },
+            { id: 'ecosystem', icon: '<circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path><path d="M12 8v8"></path>', label: 'Ekosistem', link: 'ecosystem.html' },
+            { id: 'monitoring', icon: '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>', label: 'Monitoring', link: 'monitoring.html' },
+            { id: 'price', icon: '<line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>', label: 'Harga', link: 'price.html' },
+            { id: 'platform', icon: '<polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline>', label: 'Platform', link: 'platform.html' },
+            { id: 'settings', icon: '<circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>', label: 'Akun' },
             { id: 'logout', icon: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line>', label: 'Keluar' }
         ];
 
         // --- STATE MANAGEMENT ---
-        let userSession = null;
+        let isLoggedIn = false;
+        let userProfile = null; // Menyimpan data user dari tabel ngebelusers
 
         // --- INIT & CHECK SESSION ---
         window.addEventListener('load', async () => {
-            await checkSupabaseSession();
+            await checkSupabaseSession(); // Cek session asli dari Supabase
             renderNav();
             
             // Hapus Preloader
@@ -490,40 +376,42 @@
             }, 800);
         });
 
+        // FUNGSI UTAMA: DETEKSI LOGIN & DATABASE
         async function checkSupabaseSession() {
             try {
-                // 1. Cek Sesi Auth Supabase
-                const { data: { session } } = await supabaseClient.auth.getSession();
+                // 1. Cek apakah ada session auth di browser
+                const { data: { session }, error } = await supabaseClient.auth.getSession();
 
                 if (session) {
-                    // 2. Jika ada sesi, cek data di tabel ngebelusers
-                    const { data: profile, error } = await supabaseClient
+                    // 2. Jika ada session auth, cek apakah user ada di tabel 'ngebelusers'
+                    const { data: profile, error: profileError } = await supabaseClient
                         .from('ngebelusers')
-                        .select('full_name, role')
-                        .eq('id', session.user.id)
+                        .select('*')
+                        .eq('id', session.user.id) // Samakan ID Auth dengan ID di tabel kustom
                         .single();
 
                     if (profile) {
-                        // USER TERDETEKSI & VALID
-                        userSession = session.user;
-                        updateHeader(true, profile.full_name);
-                        navTo('dashboard'); // Langsung ke dashboard jika login
-                        return;
+                        // USER TERDETEKSI & TERDAFTAR
+                        isLoggedIn = true;
+                        userProfile = profile;
+                        updateHeader(true, profile.full_name || 'Warga');
+                        navTo('dashboard'); // Redirect otomatis ke dashboard
                     } else {
-                        // Ada sesi Auth tapi data di ngebelusers tidak ada (Error Sync)
-                        console.log("Session auth ada tapi profil user hilang.");
-                        await supabaseClient.auth.signOut();
+                        // SESSION ADA TAPI DATA DI TABEL 'ngebelusers' TIDAK ADA
+                        console.log("Auth valid tapi data profil tidak ditemukan.");
+                        isLoggedIn = false;
+                        updateHeader(false);
+                        navTo('home');
                     }
+                } else {
+                    // TIDAK ADA SESSION
+                    isLoggedIn = false;
+                    updateHeader(false);
+                    navTo('home');
                 }
-
-                // Jika sampai sini berarti TIDAK LOGIN
-                userSession = null;
-                updateHeader(false);
-                navTo('home');
-
             } catch (err) {
-                console.error("Error session check:", err);
-                userSession = null;
+                console.error("Error checking session:", err);
+                isLoggedIn = false;
                 updateHeader(false);
                 navTo('home');
             }
@@ -532,7 +420,7 @@
         function updateHeader(isLoggedIn, name = '') {
             if (isLoggedIn) {
                 document.getElementById('header-user').style.display = 'flex';
-                document.getElementById('header-username').innerText = name || 'Warga';
+                document.getElementById('header-username').innerText = name;
                 document.getElementById('header-guest').style.display = 'none';
             } else {
                 document.getElementById('header-user').style.display = 'none';
@@ -544,53 +432,47 @@
         function renderNav() {
             const navContainer = document.getElementById('main-nav');
             navContainer.innerHTML = '';
-            
-            // Pilih menu berdasarkan status login
-            const menuToRender = userSession ? memberMenu : guestMenu;
+            const menuToRender = isLoggedIn ? systemMenu : publicMenu;
 
             menuToRender.forEach((item) => {
-                const div = document.createElement('div');
-                div.className = 'nav-item';
-                
-                // Cek apakah ada lencana gunci
+                const a = document.createElement('div');
+                a.className = 'nav-item';
                 let lockHtml = item.isLocked ? '<div class="lock-badge"><i class="fas fa-lock" style="font-size:0.5rem;"></i></div>' : '';
 
-                div.innerHTML = `
+                a.innerHTML = `
                     ${lockHtml}
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">${item.icon}</svg>
                     <span>${item.label}</span>
                 `;
 
-                // Event Handler
-                div.onclick = () => handleNavClick(item);
-                navContainer.appendChild(div);
+                a.onclick = () => handleNavClick(item);
+                navContainer.appendChild(a);
             });
         }
 
         function handleNavClick(item) {
-            // Jika user belum login dan menu dikunci
-            if (!userSession && item.isLocked) {
-                openPreviewModal(item.label);
+            if (!isLoggedIn && item.isLocked) {
+                openPreviewModal(item.label, item.link);
                 return;
             }
 
-            // Khusus tombol logout
+            if (item.link) {
+                window.location.href = item.link;
+                return;
+            }
+            
             if (item.id === 'logout') {
                 performLogout();
                 return;
             }
 
-            // Navigasi tab internal
             if (document.getElementById(item.id)) {
                 navTo(item.id);
             }
         }
 
         function navTo(pageId) {
-            // Sembunyikan semua section
             document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
-            
-            // Tampilkan target
             const target = document.getElementById(pageId);
             if(target) {
                 target.classList.add('active');
@@ -601,14 +483,17 @@
         // --- MODAL & LOGIN LOGIC ---
         const modal = document.getElementById('preview-modal');
         const modalFeatureName = document.getElementById('modal-feature-name');
+        let tempLink = '';
 
-        function openPreviewModal(featureName) {
+        function openPreviewModal(featureName, link) {
             modalFeatureName.textContent = featureName;
+            tempLink = link;
             modal.classList.add('open');
         }
 
         function openLoginModal() {
-            modalFeatureName.textContent = "Platform Ngebel";
+            modalFeatureName.textContent = "Akun Anggota";
+            tempLink = 'login.html';
             modal.classList.add('open');
         }
 
@@ -620,13 +505,21 @@
             closeModal();
             showToast("Mengalihkan ke halaman login...", "info");
             setTimeout(() => {
-                window.location.href = 'login.html';
+                window.location.href = tempLink || 'login.html';
             }, 1000);
         }
 
         async function performLogout() {
-            await supabaseClient.auth.signOut();
-            userSession = null;
+            // Logout dari Supabase
+            const { error } = await supabaseClient.auth.signOut();
+            if (error) {
+                console.error('Error logout:', error.message);
+            }
+            
+            // Reset State Lokal
+            isLoggedIn = false;
+            userProfile = null;
+            
             showToast("Anda telah keluar", "success");
             setTimeout(() => window.location.reload(), 1000);
         }
@@ -636,24 +529,17 @@
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = 'toast';
-            
-            // Icon berdasarkan tipe
             let icon = type === 'success' ? '✅' : 'ℹ️';
-            
             toast.innerHTML = `<span>${icon}</span> ${message}`;
             container.appendChild(toast);
 
-            // Animasi masuk
             setTimeout(() => toast.classList.add('show'), 10);
-
-            // Hapus setelah 3 detik
             setTimeout(() => {
                 toast.classList.remove('show');
                 setTimeout(() => toast.remove(), 400);
             }, 3000);
         }
 
-        // Menutup modal jika klik di luar
         modal.addEventListener('click', (e) => {
             if (e.target === modal) closeModal();
         });
