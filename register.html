@@ -123,7 +123,12 @@
         const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
 
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // PERLINDUNGAN: Hanya deklarasi jika belum ada di window
+        if (!window.supabase) {
+            window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        }
+        
+        const supabase = window.supabase; // Gunakan instance yang aman
 
         async function handleSignup(e) {
             e.preventDefault();
@@ -137,7 +142,7 @@
             hideError(); 
 
             try {
-                console.log("Memulai Pendaftaran...");
+                console.log("=== MEMULAI PENDAFTARAN ===");
                 
                 // 1. Daftar di Auth
                 const { data, error } = await supabase.auth.signUp({
@@ -171,7 +176,7 @@
                     }
                 }
 
-                console.log("Sukses! Redirect...");
+                console.log("SUKSES! Redirecting...");
                 window.location.href = 'check-email.html';
 
             } catch (err) {
