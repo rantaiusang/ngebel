@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cek Email | Ngebel Platform</title>
+    <meta name="theme-color" content="#0f766e">
+    
+    <style>
+        :root {
+            --primary: #0f766e; --primary-light: #14b8a6;
+            --bg-body: #f0f4f8;
+            --glass: rgba(255, 255, 255, 0.95);
+            --radius-xl: 32px; --radius-lg: 24px;
+            --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        body {
+            background: var(--bg-body); color: #1e293b;
+            display: flex; align-items: center; justify-content: center;
+            min-height: 100vh; padding: 20px;
+            position: relative;
+        }
+
+        .card {
+            background: var(--glass);
+            padding: 40px; border-radius: var(--radius-xl);
+            width: 100%; max-width: 400px;
+            box-shadow: var(--shadow-soft);
+            text-align: center;
+            backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.5);
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .icon-wrapper {
+            width: 80px; height: 80px;
+            background: rgba(15, 118, 110, 0.1);
+            color: var(--primary);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 24px auto;
+            font-size: 2.5rem;
+        }
+
+        h2 { color: var(--primary); margin-bottom: 10px; font-family: 'Outfit', sans-serif; font-size: 1.8rem; }
+        p { color: #64748b; margin-bottom: 20px; font-size: 0.95rem; line-height: 1.6; }
+
+        .email-box {
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 24px;
+            border: 1px dashed #cbd5e1;
+        }
+
+        .btn {
+            display: block; width: 100%; padding: 16px; 
+            background: var(--primary); color: white; 
+            text-decoration: none; border: none; border-radius: 12px;
+            font-weight: 700; font-size: 1rem; cursor: pointer;
+            transition: transform 0.2s; text-align: center;
+        }
+        .btn:active { transform: scale(0.97); }
+
+        .btn-secondary {
+            background: transparent; color: var(--primary);
+            margin-top: 15px; border: 2px solid var(--primary);
+        }
+        .btn-secondary:hover { background: rgba(15, 118, 110, 0.05); }
+
+        .resend-link {
+            display: inline-block; margin-top: 15px;
+            font-size: 0.9rem; color: #64748b; text-decoration: none;
+            border-bottom: 1px dashed #94a3b8;
+        }
+        .resend-link:hover { color: var(--primary); border-bottom-style: solid; }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <div class="icon-wrapper">
+            ✉️
+        </div>
+        
+        <h2>Cek Email Anda</h2>
+        <p>
+            Kami telah mengirimkan tautan konfirmasi ke alamat email Anda. Silakan buka email untuk mengaktifkan akun Ngebel Anda.
+        </p>
+
+        <div class="email-box" id="email-display">
+            user@email.com
+        </div>
+
+        <p style="font-size: 0.85rem;">
+            Jika tidak melihat email dalam 1-2 menit, cek folder <b>Spam</b> atau <b>Junk</b>.
+        </p>
+
+        <a href="login.html" class="btn">Sudah Aktivasi, Masuk</a>
+        <button class="btn btn-secondary" onclick="window.location.reload()">Kirim Ulang Email</button>
+
+        <br>
+        <a href="register.html" class="resend-link">Salah alamat email? Daftar ulang</a>
+    </div>
+
+    <script>
+        // Script sederhana untuk mengambil email dari URL jika ada (opsional)
+        // Jika user redirect dengan parameter ?email=user@email.com
+        const urlParams = new URLSearchParams(window.location.search);
+        const email = urlParams.get('email');
+
+        if (email) {
+            document.getElementById('email-display').innerText = email;
+        } else {
+            document.getElementById('email-display').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
