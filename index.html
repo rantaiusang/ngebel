@@ -7,6 +7,9 @@
     <meta name="theme-color" content="#0f766e">
     <meta name="description" content="Platform Digital Wisata Telaga Ngebel, Ponorogo">
 
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -40,14 +43,13 @@
             background-color: var(--bg-body);
             color: var(--text-main);
             line-height: 1.6;
-            padding-bottom: calc(var(--nav-height) + 40px); /* Ruang untuk navbar bawah */
+            padding-bottom: calc(var(--nav-height) + 40px);
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
         }
 
         h1, h2, h3 { font-family: 'Outfit', sans-serif; letter-spacing: -0.02em; }
         
-        /* Judul Emas Mewah */
         h1 { 
             font-size: clamp(2.5rem, 6vw, 4rem); 
             line-height: 1.1; 
@@ -66,7 +68,6 @@
         @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
         /* --- 3. COMPONENTS --- */
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 2; }
@@ -122,40 +123,42 @@
         /* --- 5. BOTTOM NAVIGATION --- */
         .bottom-nav {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            width: 92%; max-width: 450px; height: var(--nav-height);
+            width: 92%; max-width: 500px; height: auto; min-height: var(--nav-height);
             background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(20px);
             border-radius: 40px;
             display: flex; justify-content: space-around; align-items: center;
             box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-            z-index: 1000; padding: 0 10px;
+            z-index: 1000; padding: 10px;
             border: 1px solid rgba(255,255,255,0.6);
+            flex-wrap: wrap;
         }
         .nav-item {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             color: #94a3b8; font-size: 0.7rem; font-weight: 600;
-            padding: 10px; border-radius: 20px; transition: all 0.3s;
-            width: 16%; position: relative; cursor: pointer;
+            padding: 6px 4px; border-radius: 20px; transition: all 0.3s;
+            min-width: 55px; position: relative; cursor: pointer;
         }
-        .nav-item svg { width: 24px; height: 24px; stroke-width: 2; stroke: currentColor; fill: none; margin-bottom: 4px; transition: all 0.3s; }
+        .nav-item svg { width: 22px; height: 22px; stroke-width: 2; stroke: currentColor; fill: none; margin-bottom: 3px; transition: all 0.3s; }
         
         .nav-item.active { color: var(--primary); transform: translateY(-5px); }
         .nav-item.active svg { transform: scale(1.1); stroke-width: 2.5; filter: drop-shadow(0 4px 6px rgba(15, 118, 110, 0.2)); }
         
         /* Indikator Kunci untuk Member Only */
         .lock-badge {
-            position: absolute; top: 6px; right: 8px; font-size: 0.6rem; color: var(--accent);
+            position: absolute; top: 4px; right: 8px; font-size: 0.6rem; color: var(--accent);
             background: #fffbeb; padding: 2px; border-radius: 50%; border: 1px solid var(--accent);
         }
 
         @media (min-width: 768px) {
-            body { padding-bottom: 0; padding-left: 260px; }
+            body { padding-bottom: 0; padding-left: 280px; }
             .bottom-nav {
-                top: 0; bottom: 0; left: 0; transform: none; width: 260px; height: 100vh;
-                flex-direction: column; justify-content: flex-start; gap: 10px; padding-top: 100px;
+                top: 0; bottom: 0; left: 0; transform: none; width: 280px; height: 100vh;
+                flex-direction: column; justify-content: flex-start; gap: 5px; padding-top: 100px;
                 border-radius: 0; box-shadow: 10px 0 30px rgba(0,0,0,0.05); border-right: 1px solid #eee;
+                align-items: flex-start;
             }
-            .nav-item { width: 90%; flex-direction: row; height: 50px; padding: 0 20px; justify-content: flex-start; gap: 15px; font-size: 1rem; }
+            .nav-item { width: 90%; flex-direction: row; height: 50px; padding: 0 20px; justify-content: flex-start; gap: 15px; font-size: 1rem; min-width: auto; }
             .nav-item svg { margin-bottom: 0; }
             .lock-badge { right: 20px; }
         }
@@ -181,8 +184,9 @@
 
         /* Grids */
         .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
 
-        /* --- 7. NEW: MODAL / POPUP PREVIEW --- */
+        /* --- 7. MODAL / POPUP PREVIEW --- */
         .modal-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
             z-index: 2000; display: flex; align-items: center; justify-content: center;
@@ -229,13 +233,13 @@
     <header>
         <div class="brand" onclick="window.location.reload()">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.74 5.88-5.74 5.88-5.74-5.88L12 2.69M12 22a9.97 9.97 0 0 1-7.07-2.93l-1.41 1.41A11.97 11.97 0 0 0 12 24a11.97 11.97 0 0 0 8.49-3.52l-1.41-1.41A9.97 9.97 0 0 1 12 22z"/></svg>
-            Ngebel
+            Ngebel Platform
         </div>
         
         <!-- User State (Tampil saat Login) -->
         <div id="header-user" style="display:none;" class="user-pill">
             <img src="https://picsum.photos/seed/warga/100/100" class="user-avatar" alt="User">
-            <div style="font-size: 0.9rem; font-weight: 700; color: var(--primary);">Warga Ngebel</div>
+            <div id="header-username" style="font-size: 0.9rem; font-weight: 700; color: var(--primary);">User</div>
         </div>
 
         <!-- Guest State (Tampil saat Belum Login) -->
@@ -257,7 +261,7 @@
                     <p style="color: rgba(255,255,255,0.9); margin-bottom: 30px;">
                         Platform terintegrasi untuk memajukan pariwisata, pertanian, dan UMKM di Telaga Ngebel. Bergabunglah bersama kami.
                     </p>
-                    <button class="btn btn-primary" onclick="window.location.href='explore.html'">
+                    <button class="btn btn-primary" onclick="window.location.href='#explore'">
                         Jelajahi Potensi
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                     </button>
@@ -284,11 +288,101 @@
             </div>
         </section>
 
+        <!-- SECTION: EXPLORE (Publik) -->
+        <section id="explore" class="page-section">
+            <h2>Jelajahi Ngebel</h2>
+            <p>Temukan destinasi wisata menarik di sekitar Telaga Ngebel.</p>
+            <div class="grid-3">
+                <div class="card"><h3>Kawah Wurung</h3><p>Keajaiban alam berbentuk kawah purba.</p></div>
+                <div class="card"><h3>Telaga Ngebel</h3><p>Danau buatan terbesar di Indonesia Timur.</p></div>
+                <div class="card"><h3>Air Terjun</h3><p>Kesejukan alam yang menenangkan jiwa.</p></div>
+            </div>
+        </section>
+
+        <!-- SECTION: MAP (Publik) -->
+        <section id="map" class="page-section">
+            <h2>Peta Wisata</h2>
+            <div class="card" style="height: 400px; display: flex; align-items: center; justify-content: center; background: #e2e8f0;">
+                <p>📍 (Peta Google Maps akan dimuat di sini)</p>
+            </div>
+        </section>
+
+        <!-- SECTION: COMMUNITY (Publik) -->
+        <section id="community" class="page-section">
+            <h2>Komunitas Warga</h2>
+            <p>Bergabung dengan forum diskusi warga Ngebel.</p>
+            <div class="grid-2">
+                <div class="card"><h3>Event Desa</h3><p>Agenda kegiatan yang akan datang.</p></div>
+                <div class="card"><h3>Forum Diskusi</h3><p>Ruang berbagi ide dan aspirasi.</p></div>
+            </div>
+        </section>
+
+        <!-- SECTION: AGRICULTURE (Member Only) -->
+        <section id="agriculture" class="page-section">
+            <h2>Agrikultur</h2>
+            <div class="grid-2">
+                <div class="card"><h3>Harga Komoditas</h3><p>Data harga terbaru Cabai, Bawang, dan Padi.</p></div>
+                <div class="card"><h3>Hasil Panen</h3><p>Statistik produksi pertanian bulan ini.</p></div>
+            </div>
+        </section>
+
+        <!-- SECTION: ANALYTICS (Member Only) -->
+        <section id="analytics" class="page-section">
+            <h2>Analitik Data</h2>
+            <div class="card">
+                <h3>Statistik Pengunjung</h3>
+                <p>Grafik perkembangan wisatawan Ngebel tahun ini.</p>
+            </div>
+        </section>
+        
+        <!-- SECTION: DISTRIBUTION (Member Only) -->
+        <section id="distribution" class="page-section">
+            <h2>Distribusi Logistik</h2>
+            <div class="card">
+                <h3>Pengiriman Produk</h3>
+                <p>Monitoring jalur distribusi hasil bumi dan UMKM.</p>
+            </div>
+        </section>
+
+        <!-- SECTION: ECOSYSTEM (Member Only) -->
+        <section id="ecosystem" class="page-section">
+            <h2>Ekosistem Digital</h2>
+            <div class="card">
+                <h3>Konektivitas Data</h3>
+                <p>Integrasi antara wisata, pertanian, dan ekonomi kreatif.</p>
+            </div>
+        </section>
+
+        <!-- SECTION: MONITORING (Member Only) -->
+        <section id="monitoring" class="page-section">
+            <h2>Monitoring Realtime</h2>
+            <div class="grid-2">
+                <div class="card"><h3>CCTV Area</h3><p>Pantau keamanan wilayah 24 jam.</p></div>
+                <div class="card"><h3>Sensor Cuaca</h3><p>Data curah hujan dan suhu lingkungan.</p></div>
+            </div>
+        </section>
+
+        <!-- SECTION: PRICE (Member Only) -->
+        <section id="price" class="page-section">
+            <h2>Pasar Harga</h2>
+            <div class="card">
+                <h3>Papan Harga Pangan</h3>
+                <p>Update harga harian dari pasar induk.</p>
+            </div>
+        </section>
+
+        <!-- SECTION: PLATFORM (Member Only) -->
+        <section id="platform" class="page-section">
+            <h2>Platform Integrasi</h2>
+            <div class="card">
+                <h3>Sistem Terpadu</h3>
+                <p>Dashboard manajemen seluruh sektor Ngebel.</p>
+            </div>
+        </section>
+
         <!-- SECTION: DASHBOARD (Member Only) -->
         <section id="dashboard" class="page-section">
             <h2>Dashboard Warga</h2>
-            <p>Selamat datang di pusat kendali aktivitas ekonomi Anda.</p>
-            
             <div class="grid-3" style="margin-top: 30px;">
                 <div class="card">
                     <h3 style="color:var(--primary); font-size: 2rem;">Rp 4.5jt</h3>
@@ -321,10 +415,10 @@
             <div class="modal-icon">🔒</div>
             <h3 class="modal-title">Fitur Eksklusif Member</h3>
             <p class="modal-text">
-                Akses ke <b id="modal-feature-name">Fitur</b> hanya tersedia untuk Warga & Mitra Ngebel yang terdaftar. Dapatkan manfaat ekonomi langsung!
+                Akses ke <b id="modal-feature-name">Fitur</b> hanya tersedia untuk Warga & Mitra Ngebel yang terdaftar.
             </p>
             <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="goToLogin()">
-                Daftar Sekarang (Gratis)
+                Masuk / Daftar Sekarang
             </button>
             <button class="btn btn-outline" style="width: 100%; border:none; color: #94a3b8;" onclick="closeModal()">
                 Nanti Saja
@@ -333,50 +427,116 @@
     </div>
 
     <script>
+        // --- KONFIGURASI SUPABASE ---
+        const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
+        
+        // Gunakan window.supabase agar tidak bentrok
+        if (!window.supabase) {
+            window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        }
+        const supabaseClient = window.supabase;
+
         // --- KONFIGURASI MENU ---
-        // isLocked: true = Menu ini memunculkan modal preview jika belum login
-        const publicMenu = [
+        
+        // 1. MENU TAMU (Belum Login) - LAMA + BARU (Terkunci)
+        const guestMenu = [
             { id: 'home', icon: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>', label: 'Home' },
-            { id: 'explore', icon: '<circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>', label: 'Explore', link: 'explore.html' },
-            { id: 'map', icon: '<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line>', label: 'Peta', link: 'map.html' },
-            { id: 'community', icon: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>', label: 'Komunitas', link: 'community.html' },
-            // Menu yang dikunci (Daya Tarik Login)
-            { id: 'market', icon: '<circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>', label: 'Market', isLocked: true, link: 'katalog.html' },
-            { id: 'dashboard', icon: '<rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>', label: 'Dashboard', isLocked: true }
+            { id: 'explore', icon: '<circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>', label: 'Explore' },
+            { id: 'map', icon: '<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line>', label: 'Peta' },
+            { id: 'community', icon: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>', label: 'Komunitas' },
+            { id: 'market', icon: '<circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>', label: 'Market', isLocked: true },
+            { id: 'agriculture', icon: '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path>', label: 'Agrikultur', isLocked: true },
+            { id: 'analytics', icon: '<line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line>', label: 'Analitik', isLocked: true },
+            { id: 'distribution', icon: '<rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle>', label: 'Distribusi', isLocked: true },
+            { id: 'ecosystem', icon: '<circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path><path d="M12 8v8"></path>', label: 'Ekosistem', isLocked: true },
+            { id: 'monitoring', icon: '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>', label: 'Monitoring', isLocked: true },
+            { id: 'price', icon: '<line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>', label: 'Harga', isLocked: true },
         ];
 
-        const systemMenu = [
+        // 2. MENU MEMBER (Sudah Login) - LAMA + BARU (Terbuka)
+        const memberMenu = [
+            { id: 'home', icon: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>', label: 'Home' },
+            { id: 'explore', icon: '<circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>', label: 'Explore' },
+            { id: 'map', icon: '<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line>', label: 'Peta' },
+            { id: 'community', icon: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>', label: 'Komunitas' },
+            { id: 'market', icon: '<circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>', label: 'Market' },
             { id: 'dashboard', icon: '<rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>', label: 'Dashboard' },
-            { id: 'analytics', icon: '<line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line>', label: 'Analitik', link: 'analytics.html' },
-            { id: 'monitoring', icon: '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>', label: 'Monitoring', link: 'monitoring.html' },
-            { id: 'settings', icon: '<circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>', label: 'Akun' },
+            { id: 'agriculture', icon: '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path>', label: 'Agrikultur' },
+            { id: 'analytics', icon: '<line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line>', label: 'Analitik' },
+            { id: 'distribution', icon: '<rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle>', label: 'Distribusi' },
+            { id: 'ecosystem', icon: '<circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path><path d="M12 8v8"></path>', label: 'Ekosistem' },
+            { id: 'monitoring', icon: '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>', label: 'Monitoring' },
+            { id: 'price', icon: '<line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>', label: 'Harga' },
+            { id: 'platform', icon: '<polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline>', label: 'Platform' },
             { id: 'logout', icon: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line>', label: 'Keluar' }
         ];
 
         // --- STATE MANAGEMENT ---
-        let isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
+        let userSession = null;
 
-        // --- INIT ---
-        window.addEventListener('load', () => {
+        // --- INIT & CHECK SESSION ---
+        window.addEventListener('load', async () => {
+            await checkSupabaseSession();
             renderNav();
-            checkSession();
             
             // Hapus Preloader
             setTimeout(() => {
-                document.getElementById('preloader').style.opacity = '0';
-                setTimeout(() => document.getElementById('preloader').remove(), 500);
+                const preloader = document.getElementById('preloader');
+                if(preloader) {
+                    preloader.style.opacity = '0';
+                    setTimeout(() => preloader.remove(), 500);
+                }
             }, 800);
         });
 
-        function checkSession() {
+        async function checkSupabaseSession() {
+            try {
+                // 1. Cek Sesi Auth Supabase
+                const { data: { session } } = await supabaseClient.auth.getSession();
+
+                if (session) {
+                    // 2. Jika ada sesi, cek data di tabel ngebelusers
+                    const { data: profile, error } = await supabaseClient
+                        .from('ngebelusers')
+                        .select('full_name, role')
+                        .eq('id', session.user.id)
+                        .single();
+
+                    if (profile) {
+                        // USER TERDETEKSI & VALID
+                        userSession = session.user;
+                        updateHeader(true, profile.full_name);
+                        navTo('dashboard'); // Langsung ke dashboard jika login
+                        return;
+                    } else {
+                        // Ada sesi Auth tapi data di ngebelusers tidak ada (Error Sync)
+                        console.log("Session auth ada tapi profil user hilang.");
+                        await supabaseClient.auth.signOut();
+                    }
+                }
+
+                // Jika sampai sini berarti TIDAK LOGIN
+                userSession = null;
+                updateHeader(false);
+                navTo('home');
+
+            } catch (err) {
+                console.error("Error session check:", err);
+                userSession = null;
+                updateHeader(false);
+                navTo('home');
+            }
+        }
+
+        function updateHeader(isLoggedIn, name = '') {
             if (isLoggedIn) {
                 document.getElementById('header-user').style.display = 'flex';
+                document.getElementById('header-username').innerText = name || 'Warga';
                 document.getElementById('header-guest').style.display = 'none';
-                navTo('dashboard');
             } else {
                 document.getElementById('header-user').style.display = 'none';
                 document.getElementById('header-guest').style.display = 'block';
-                navTo('home');
             }
         }
 
@@ -384,40 +544,36 @@
         function renderNav() {
             const navContainer = document.getElementById('main-nav');
             navContainer.innerHTML = '';
-            const menuToRender = isLoggedIn ? systemMenu : publicMenu;
+            
+            // Pilih menu berdasarkan status login
+            const menuToRender = userSession ? memberMenu : guestMenu;
 
             menuToRender.forEach((item) => {
-                const a = document.createElement('div');
-                a.className = 'nav-item';
+                const div = document.createElement('div');
+                div.className = 'nav-item';
                 
                 // Cek apakah ada lencana gunci
                 let lockHtml = item.isLocked ? '<div class="lock-badge"><i class="fas fa-lock" style="font-size:0.5rem;"></i></div>' : '';
 
-                a.innerHTML = `
+                div.innerHTML = `
                     ${lockHtml}
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">${item.icon}</svg>
                     <span>${item.label}</span>
                 `;
 
                 // Event Handler
-                a.onclick = () => handleNavClick(item);
-                navContainer.appendChild(a);
+                div.onclick = () => handleNavClick(item);
+                navContainer.appendChild(div);
             });
         }
 
         function handleNavClick(item) {
             // Jika user belum login dan menu dikunci
-            if (!isLoggedIn && item.isLocked) {
-                openPreviewModal(item.label, item.link);
+            if (!userSession && item.isLocked) {
+                openPreviewModal(item.label);
                 return;
             }
 
-            // Jika ada link eksternal (untuk menu publik)
-            if (item.link && !item.isLocked) {
-                window.location.href = item.link;
-                return;
-            }
-            
             // Khusus tombol logout
             if (item.id === 'logout') {
                 performLogout();
@@ -440,26 +596,19 @@
                 target.classList.add('active');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
-
-            // Update Active State di Nav
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            // Logika sederhana untuk highlight nav (sesuai urutan klik bisa dikembangkan)
         }
 
         // --- MODAL & LOGIN LOGIC ---
         const modal = document.getElementById('preview-modal');
         const modalFeatureName = document.getElementById('modal-feature-name');
-        let tempLink = '';
 
-        function openPreviewModal(featureName, link) {
+        function openPreviewModal(featureName) {
             modalFeatureName.textContent = featureName;
-            tempLink = link;
             modal.classList.add('open');
         }
 
         function openLoginModal() {
-            modalFeatureName.textContent = "Akun Anggota";
-            tempLink = 'login.html';
+            modalFeatureName.textContent = "Platform Ngebel";
             modal.classList.add('open');
         }
 
@@ -471,13 +620,13 @@
             closeModal();
             showToast("Mengalihkan ke halaman login...", "info");
             setTimeout(() => {
-                window.location.href = tempLink || 'login.html';
+                window.location.href = 'login.html';
             }, 1000);
         }
 
-        function performLogout() {
-            isLoggedIn = false;
-            sessionStorage.removeItem('isLoggedIn');
+        async function performLogout() {
+            await supabaseClient.auth.signOut();
+            userSession = null;
             showToast("Anda telah keluar", "success");
             setTimeout(() => window.location.reload(), 1000);
         }
