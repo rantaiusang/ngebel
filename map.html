@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Peta Ngebel | Smart Map</title>
+    <meta name="theme-color" content="#0f766e">
+
+    <style>
+        :root {
+            --primary: #0f766e; --primary-light: #14b8a6; --accent: #f59e0b;
+            --bg-body: #f0f4f8; --glass: rgba(255, 255, 255, 0.9);
+            --radius-xl: 32px; --radius-lg: 24px; --radius-md: 16px;
+            --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.08);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-body);
+            color: #1e293b;
+            line-height: 1.6;
+            height: 100vh;
+            display: flex; flex-direction: column;
+            overflow: hidden; /* Mencegah scroll ganda karena peta fullscreen */
+        }
+        h2, h3 { font-family: 'Outfit', sans-serif; letter-spacing: -0.02em; }
+        p { color: #64748b; margin-bottom: 1rem; font-size: 1.05rem; }
+
+        /* Header Overlay */
+        header {
+            position: absolute; top: 0; left: 0; right: 0; z-index: 100;
+            background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%);
+            padding: 20px 24px;
+            pointer-events: none; /* Agar klik tembus ke peta */
+        }
+        .back-btn {
+            pointer-events: auto;
+            display: inline-flex; align-items: center; gap: 8px;
+            color: white; background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px); padding: 10px 20px;
+            border-radius: 50px; text-decoration: none; font-weight: 600;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: background 0.3s;
+        }
+        .back-btn:hover { background: rgba(0,0,0,0.7); }
+
+        /* Map Container (Full Screen) */
+        #map-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            filter: grayscale(0%); /* Bisa diubah jadi 20% untuk style */
+            transition: filter 0.5s;
+        }
+
+        /* Floating Bottom Controls */
+        .map-controls {
+            position: absolute; bottom: 30px; left: 24px; right: 24px;
+            background: var(--glass); backdrop-filter: blur(20px);
+            padding: 20px; border-radius: var(--radius-xl);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            z-index: 100; border: 1px solid rgba(255,255,255,0.4);
+        }
+
+        .location-info { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+        .loc-title h3 { margin: 0; font-size: 1.2rem; color: var(--text-main); }
+        .loc-subtitle { font-size: 0.85rem; color: var(--text-muted); margin: 0; }
+
+        .action-btn {
+            display: flex; align-items: center; justify-content: center;
+            gap: 10px; width: 100%; padding: 16px;
+            background: var(--primary); color: white;
+            border: none; border-radius: var(--radius-md);
+            font-weight: 600; font-size: 1rem; cursor: pointer;
+            text-decoration: none; transition: transform 0.2s;
+            box-shadow: 0 4px 15px rgba(15, 118, 110, 0.3);
+        }
+        .action-btn:active { transform: scale(0.98); }
+
+        /* Layer Buttons */
+        .layers { display: flex; gap: 10px; margin-top: 15px; }
+        .layer-btn {
+            flex: 1; padding: 10px; border: 1px solid #e2e8f0;
+            background: white; border-radius: 12px; font-size: 0.85rem;
+            color: var(--text-muted); cursor: pointer; font-weight: 600;
+            text-align: center;
+        }
+        .layer-btn.active { background: var(--primary-light); color: white; border-color: var(--primary-light); }
+
+    </style>
+</head>
+<body>
+
+    <!-- Header Overlay -->
+    <header>
+        <a href="index.html" class="back-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            Kembali
+        </a>
+    </header>
+
+    <!-- Google Maps Embed (Full Screen) -->
+    <!-- Saya menggunakan format embed agar muncul di dalam website, 
+         dengan titik koordinat Telaga Ngebel sebagai pusat -->
+    <iframe 
+        id="map-frame"
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d63233.84776171939!2d111.3682!3d-7.8556!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e79a08d58d9a7bd%3A0x4027a76e3532700!2sTelaga%20Ngebel!5e0!3m2!1sid!2sid!4v1700000000000!5m2!1sid!2sid" 
+        allowfullscreen="" 
+        loading="lazy" 
+        referrerpolicy="no-referrer-when-downgrade">
+    </iframe>
+
+    <!-- Floating Control Panel -->
+    <div class="map-controls">
+        <div class="location-info">
+            <div class="loc-title">
+                <h3>Telaga Ngebel</h3>
+                <p class="loc-subtitle">Kec. Ngebel, Kab. Ponorogo, Jawa Timur</p>
+            </div>
+            <div style="font-size: 2rem;">🌊</div>
+        </div>
+
+        <!-- Tombol Navigasi ke Aplikasi Maps Asli (Link yang Anda berikan) -->
+        <a href="https://maps.app.goo.gl/6bTGe8wsDQKA6ax79" target="_blank" class="action-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
+            Buka Google Maps
+        </a>
+
+        <!-- Smart Layers (Tampilan Visual Saja) -->
+        <div class="layers">
+            <div class="layer-btn active" onclick="toggleLayer(this)">Wisata</div>
+            <div class="layer-btn" onclick="toggleLayer(this)">Kebun Buah</div>
+            <div class="layer-btn" onclick="toggleLayer(this)">Fasilitas</div>
+        </div>
+    </div>
+
+    <script>
+        // Efek visual sederhana untuk tombol Layer
+        function toggleLayer(btn) {
+            // Hapus kelas active dari semua tombol
+            document.querySelectorAll('.layer-btn').forEach(b => b.classList.remove('active'));
+            // Tambahkan kelas active ke tombol yang diklik
+            btn.classList.add('active');
+            
+            // Efek visual: Ubah filter peta sejenak
+            const map = document.getElementById('map-frame');
+            map.style.filter = "grayscale(100%) blur(2px)";
+            setTimeout(() => {
+                map.style.filter = "grayscale(0%) blur(0px)";
+            }, 300);
+        }
+    </script>
+</body>
+</html>

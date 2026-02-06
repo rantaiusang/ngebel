@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Ngebel.com | Smart Living Tourism</title>
+    <meta name="theme-color" content="#0f766e">
+    <meta name="description" content="Platform Digital Wisata Telaga Ngebel, Ponorogo">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- 1. VARIABLES & RESET --- */
+        :root {
+            --primary: #0f766e;
+            --primary-light: #14b8a6;
+            --accent: #f59e0b;
+            --gold-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            --bg-body: #f8fafc;
+            --glass: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            
+            --radius-xl: 32px;
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.05);
+            --shadow-hover: 0 20px 50px -12px rgba(15, 118, 110, 0.3);
+            --nav-height: 80px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: calc(var(--nav-height) + 40px); /* Ruang untuk navbar bawah */
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3 { font-family: 'Outfit', sans-serif; letter-spacing: -0.02em; }
+        
+        /* Judul Emas Mewah */
+        h1 { 
+            font-size: clamp(2.5rem, 6vw, 4rem); 
+            line-height: 1.1; 
+            background: var(--gold-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+        
+        h2 { font-size: clamp(1.8rem, 4vw, 2.5rem); margin-bottom: 0.5rem; color: var(--primary); position: relative; display: inline-block; }
+        h2::after { content:''; position: absolute; bottom: -5px; left: 0; width: 40px; height: 4px; background: var(--accent); border-radius: 2px; }
+        
+        p { color: var(--text-muted); margin-bottom: 1rem; font-size: 1.05rem; }
+
+        /* --- 2. ANIMATIONS --- */
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* --- 3. COMPONENTS --- */
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 2; }
+
+        /* Cards */
+        .card {
+            background: var(--white);
+            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 24px;
+            transition: transform 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .card:hover { transform: translateY(-5px); }
+        
+        .card-icon {
+            width: 50px; height: 50px; background: #e0f2f1; color: var(--primary); border-radius: 16px;
+            display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 16px;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 16px 32px; font-weight: 700; border-radius: 50px;
+            text-decoration: none; transition: all 0.3s; cursor: pointer; border: none; font-size: 1rem; gap: 10px;
+        }
+        .btn-primary { background: var(--primary); color: white; box-shadow: 0 10px 20px rgba(15, 118, 110, 0.3); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 15px 25px rgba(15, 118, 110, 0.4); background: var(--primary-light); }
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+        .btn-outline:hover { background: var(--primary); color: white; }
+
+        /* --- 4. LAYOUT & HEADER --- */
+        header {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.5);
+            height: 70px; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 24px;
+        }
+        .brand { display: flex; align-items: center; gap: 10px; font-family: 'Outfit'; font-weight: 800; font-size: 1.3rem; color: var(--primary); }
+        
+        .user-pill {
+            display: flex; align-items: center; gap: 10px; background: white; padding: 6px 12px;
+            border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); cursor: pointer;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .user-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
+
+        /* --- 5. BOTTOM NAVIGATION --- */
+        .bottom-nav {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            width: 92%; max-width: 450px; height: var(--nav-height);
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            border-radius: 40px;
+            display: flex; justify-content: space-around; align-items: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            z-index: 1000; padding: 0 10px;
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: #94a3b8; font-size: 0.7rem; font-weight: 600;
+            padding: 10px; border-radius: 20px; transition: all 0.3s;
+            width: 16%; position: relative; cursor: pointer;
+        }
+        .nav-item svg { width: 24px; height: 24px; stroke-width: 2; stroke: currentColor; fill: none; margin-bottom: 4px; transition: all 0.3s; }
+        
+        .nav-item.active { color: var(--primary); transform: translateY(-5px); }
+        .nav-item.active svg { transform: scale(1.1); stroke-width: 2.5; filter: drop-shadow(0 4px 6px rgba(15, 118, 110, 0.2)); }
+        
+        /* Indikator Kunci untuk Member Only */
+        .lock-badge {
+            position: absolute; top: 6px; right: 8px; font-size: 0.6rem; color: var(--accent);
+            background: #fffbeb; padding: 2px; border-radius: 50%; border: 1px solid var(--accent);
+        }
+
+        @media (min-width: 768px) {
+            body { padding-bottom: 0; padding-left: 260px; }
+            .bottom-nav {
+                top: 0; bottom: 0; left: 0; transform: none; width: 260px; height: 100vh;
+                flex-direction: column; justify-content: flex-start; gap: 10px; padding-top: 100px;
+                border-radius: 0; box-shadow: 10px 0 30px rgba(0,0,0,0.05); border-right: 1px solid #eee;
+            }
+            .nav-item { width: 90%; flex-direction: row; height: 50px; padding: 0 20px; justify-content: flex-start; gap: 15px; font-size: 1rem; }
+            .nav-item svg { margin-bottom: 0; }
+            .lock-badge { right: 20px; }
+        }
+
+        /* --- 6. SECTIONS & CONTENT --- */
+        .page-section { display: none; padding-top: 100px; animation: fadeInUp 0.6s ease-out; }
+        .page-section.active { display: block; }
+
+        /* Hero */
+        .hero {
+            position: relative; height: 75vh; min-height: 500px; border-radius: 32px;
+            overflow: hidden; display: flex; align-items: flex-end; color: white;
+            margin-bottom: 40px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        .hero-bg {
+            position: absolute; inset: 0; 
+            background: url('https://dikapquhusbwjccbqcsb.supabase.co/storage/v1/object/public/images/Telaga-Ngebel.webp') center/cover;
+            transition: transform 10s ease;
+        }
+        .hero:hover .hero-bg { transform: scale(1.05); }
+        .hero-overlay { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0.1) 100%); z-index: 1; }
+        .hero-content { position: relative; z-index: 2; padding: 40px; width: 100%; max-width: 600px; }
+
+        /* Grids */
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+
+        /* --- 7. NEW: MODAL / POPUP PREVIEW --- */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+            z-index: 2000; display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: all 0.3s;
+        }
+        .modal-overlay.open { opacity: 1; pointer-events: auto; }
+        
+        .modal-card {
+            background: white; width: 90%; max-width: 400px; padding: 30px;
+            border-radius: 24px; text-align: center; transform: translateY(20px); transition: all 0.3s;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        .modal-overlay.open .modal-card { transform: translateY(0); }
+        
+        .modal-icon { font-size: 3rem; margin-bottom: 15px; display: inline-block; animation: float 3s infinite; }
+        .modal-title { font-size: 1.5rem; color: var(--primary); margin-bottom: 10px; font-family: 'Outfit'; font-weight: 700; }
+        .modal-text { color: var(--text-muted); margin-bottom: 25px; font-size: 0.95rem; }
+
+        /* Toast Notification */
+        .toast-container {
+            position: fixed; top: 90px; right: 20px; z-index: 3000;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .toast {
+            background: white; padding: 15px 25px; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-left: 4px solid var(--primary);
+            display: flex; align-items: center; gap: 12px; font-weight: 600;
+            transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .toast.show { transform: translateX(0); }
+
+        /* Preloader */
+        #preloader { position: fixed; inset: 0; background: var(--primary); z-index: 9999; display: flex; justify-content: center; align-items: center; transition: opacity 0.5s; }
+        .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 1s linear infinite; }
+
+    </style>
+</head>
+<body>
+
+    <!-- PRELOADER -->
+    <div id="preloader"><div class="spinner"></div></div>
+
+    <!-- HEADER -->
+    <header>
+        <div class="brand" onclick="window.location.reload()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.74 5.88-5.74 5.88-5.74-5.88L12 2.69M12 22a9.97 9.97 0 0 1-7.07-2.93l-1.41 1.41A11.97 11.97 0 0 0 12 24a11.97 11.97 0 0 0 8.49-3.52l-1.41-1.41A9.97 9.97 0 0 1 12 22z"/></svg>
+            Ngebel
+        </div>
+        
+        <!-- User State (Tampil saat Login) -->
+        <div id="header-user" style="display:none;" class="user-pill">
+            <img src="https://picsum.photos/seed/warga/100/100" class="user-avatar" alt="User">
+            <div style="font-size: 0.9rem; font-weight: 700; color: var(--primary);">Warga Ngebel</div>
+        </div>
+
+        <!-- Guest State (Tampil saat Belum Login) -->
+        <div id="header-guest" class="btn btn-primary" style="padding: 8px 20px; font-size: 0.9rem;" onclick="openLoginModal()">
+            Masuk / Daftar
+        </div>
+    </header>
+
+    <main class="container">
+        
+        <!-- SECTION: HOME -->
+        <section id="home" class="page-section active">
+            <div class="hero">
+                <div class="hero-bg"></div>
+                <div class="hero-overlay"></div>
+                <div class="hero-content">
+                    <div style="background: rgba(255,255,255,0.2); backdrop-filter:blur(5px); display:inline-block; padding: 5px 15px; border-radius: 20px; margin-bottom: 15px; font-size: 0.9rem; font-weight: 600;">✨ Ekonomi Digital Berbasis Komunitas</div>
+                    <h1>Ngebel untuk <br>Masa Depan</h1>
+                    <p style="color: rgba(255,255,255,0.9); margin-bottom: 30px;">
+                        Platform terintegrasi untuk memajukan pariwisata, pertanian, dan UMKM di Telaga Ngebel. Bergabunglah bersama kami.
+                    </p>
+                    <button class="btn btn-primary" onclick="window.location.href='explore.html'">
+                        Jelajahi Potensi
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                    </button>
+                </div>
+            </div>
+
+            <h2 style="margin-bottom: 30px;">Sektor Unggulan</h2>
+            <div class="grid-3">
+                <div class="card">
+                    <div class="card-icon">🌾</div>
+                    <h3>Agrikultur Cerdas</h3>
+                    <p>Pantau harga komoditas dan hasil panen warga secara real-time.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🛍️</div>
+                    <h3>Pasar Digital</h3>
+                    <p>Temukan produk kerajinan dan kuliner khas Ngebel langsung dari pengrajin.</p>
+                </div>
+                <div class="card">
+                    <div class="card-icon">📊</div>
+                    <h3>Data Komunitas</h3>
+                    <p>Transparansi data wisatawan dan pendapatan desa untuk kemajuan bersama.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: DASHBOARD (Member Only) -->
+        <section id="dashboard" class="page-section">
+            <h2>Dashboard Warga</h2>
+            <p>Selamat datang di pusat kendali aktivitas ekonomi Anda.</p>
+            
+            <div class="grid-3" style="margin-top: 30px;">
+                <div class="card">
+                    <h3 style="color:var(--primary); font-size: 2rem;">Rp 4.5jt</h3>
+                    <p>Pendapatan Bulan Ini</p>
+                    <span style="color: green; font-size: 0.8rem;">▲ 12% dari bulan lalu</span>
+                </div>
+                <div class="card">
+                    <h3 style="color:var(--primary); font-size: 2rem;">12</h3>
+                    <p>Pesanan Baru</p>
+                    <span style="color: var(--accent); font-size: 0.8rem;">Perlu diproses</span>
+                </div>
+                <div class="card">
+                    <h3 style="color:var(--primary); font-size: 2rem;">850</h3>
+                    <p>Profile Views</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- NAVIGATION CONTAINER -->
+    <nav class="bottom-nav" id="main-nav"></nav>
+
+    <!-- TOAST CONTAINER -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- MODAL PREVIEW (UNTUK MENARIK USER LOGIN) -->
+    <div class="modal-overlay" id="preview-modal">
+        <div class="modal-card">
+            <div class="modal-icon">🔒</div>
+            <h3 class="modal-title">Fitur Eksklusif Member</h3>
+            <p class="modal-text">
+                Akses ke <b id="modal-feature-name">Fitur</b> hanya tersedia untuk Warga & Mitra Ngebel yang terdaftar. Dapatkan manfaat ekonomi langsung!
+            </p>
+            <button class="btn btn-primary" style="width: 100%; margin-bottom: 10px;" onclick="goToLogin()">
+                Daftar Sekarang (Gratis)
+            </button>
+            <button class="btn btn-outline" style="width: 100%; border:none; color: #94a3b8;" onclick="closeModal()">
+                Nanti Saja
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- KONFIGURASI MENU ---
+        // isLocked: true = Menu ini memunculkan modal preview jika belum login
+        const publicMenu = [
+            { id: 'home', icon: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>', label: 'Home' },
+            { id: 'explore', icon: '<circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>', label: 'Explore', link: 'explore.html' },
+            { id: 'map', icon: '<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line>', label: 'Peta', link: 'map.html' },
+            { id: 'community', icon: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>', label: 'Komunitas', link: 'community.html' },
+            // Menu yang dikunci (Daya Tarik Login)
+            { id: 'market', icon: '<circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>', label: 'Market', isLocked: true, link: 'katalog.html' },
+            { id: 'dashboard', icon: '<rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>', label: 'Dashboard', isLocked: true }
+        ];
+
+        const systemMenu = [
+            { id: 'dashboard', icon: '<rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>', label: 'Dashboard' },
+            { id: 'analytics', icon: '<line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line>', label: 'Analitik', link: 'analytics.html' },
+            { id: 'monitoring', icon: '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>', label: 'Monitoring', link: 'monitoring.html' },
+            { id: 'settings', icon: '<circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>', label: 'Akun' },
+            { id: 'logout', icon: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line>', label: 'Keluar' }
+        ];
+
+        // --- STATE MANAGEMENT ---
+        let isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
+
+        // --- INIT ---
+        window.addEventListener('load', () => {
+            renderNav();
+            checkSession();
+            
+            // Hapus Preloader
+            setTimeout(() => {
+                document.getElementById('preloader').style.opacity = '0';
+                setTimeout(() => document.getElementById('preloader').remove(), 500);
+            }, 800);
+        });
+
+        function checkSession() {
+            if (isLoggedIn) {
+                document.getElementById('header-user').style.display = 'flex';
+                document.getElementById('header-guest').style.display = 'none';
+                navTo('dashboard');
+            } else {
+                document.getElementById('header-user').style.display = 'none';
+                document.getElementById('header-guest').style.display = 'block';
+                navTo('home');
+            }
+        }
+
+        // --- NAVIGATION LOGIC ---
+        function renderNav() {
+            const navContainer = document.getElementById('main-nav');
+            navContainer.innerHTML = '';
+            const menuToRender = isLoggedIn ? systemMenu : publicMenu;
+
+            menuToRender.forEach((item) => {
+                const a = document.createElement('div');
+                a.className = 'nav-item';
+                
+                // Cek apakah ada lencana gunci
+                let lockHtml = item.isLocked ? '<div class="lock-badge"><i class="fas fa-lock" style="font-size:0.5rem;"></i></div>' : '';
+
+                a.innerHTML = `
+                    ${lockHtml}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">${item.icon}</svg>
+                    <span>${item.label}</span>
+                `;
+
+                // Event Handler
+                a.onclick = () => handleNavClick(item);
+                navContainer.appendChild(a);
+            });
+        }
+
+        function handleNavClick(item) {
+            // Jika user belum login dan menu dikunci
+            if (!isLoggedIn && item.isLocked) {
+                openPreviewModal(item.label, item.link);
+                return;
+            }
+
+            // Jika ada link eksternal (untuk menu publik)
+            if (item.link && !item.isLocked) {
+                window.location.href = item.link;
+                return;
+            }
+            
+            // Khusus tombol logout
+            if (item.id === 'logout') {
+                performLogout();
+                return;
+            }
+
+            // Navigasi tab internal
+            if (document.getElementById(item.id)) {
+                navTo(item.id);
+            }
+        }
+
+        function navTo(pageId) {
+            // Sembunyikan semua section
+            document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
+            
+            // Tampilkan target
+            const target = document.getElementById(pageId);
+            if(target) {
+                target.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            // Update Active State di Nav
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            // Logika sederhana untuk highlight nav (sesuai urutan klik bisa dikembangkan)
+        }
+
+        // --- MODAL & LOGIN LOGIC ---
+        const modal = document.getElementById('preview-modal');
+        const modalFeatureName = document.getElementById('modal-feature-name');
+        let tempLink = '';
+
+        function openPreviewModal(featureName, link) {
+            modalFeatureName.textContent = featureName;
+            tempLink = link;
+            modal.classList.add('open');
+        }
+
+        function openLoginModal() {
+            modalFeatureName.textContent = "Akun Anggota";
+            tempLink = 'login.html';
+            modal.classList.add('open');
+        }
+
+        function closeModal() {
+            modal.classList.remove('open');
+        }
+
+        function goToLogin() {
+            closeModal();
+            showToast("Mengalihkan ke halaman login...", "info");
+            setTimeout(() => {
+                window.location.href = tempLink || 'login.html';
+            }, 1000);
+        }
+
+        function performLogout() {
+            isLoggedIn = false;
+            sessionStorage.removeItem('isLoggedIn');
+            showToast("Anda telah keluar", "success");
+            setTimeout(() => window.location.reload(), 1000);
+        }
+
+        // --- UTILS: TOAST ---
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            
+            // Icon berdasarkan tipe
+            let icon = type === 'success' ? '✅' : 'ℹ️';
+            
+            toast.innerHTML = `<span>${icon}</span> ${message}`;
+            container.appendChild(toast);
+
+            // Animasi masuk
+            setTimeout(() => toast.classList.add('show'), 10);
+
+            // Hapus setelah 3 detik
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
+        }
+
+        // Menutup modal jika klik di luar
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Daftar Akun | Ngebel Platform</title>
+    <meta name="theme-color" content="#0f766e">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        :root {
+            --primary: #0f766e; --primary-light: #14b8a6;
+            --bg-body: #f0f4f8;
+            --glass: rgba(255, 255, 255, 0.95);
+            --radius-xl: 32px; --radius-lg: 24px;
+            --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body {
+            background: var(--bg-body); color: #1e293b;
+            display: flex; align-items: center; justify-content: center;
+            min-height: 100vh; padding: 20px;
+            position: relative;
+        }
+        .back-btn {
+            position: absolute; top: 20px; left: 20px;
+            background: white; color: var(--primary);
+            padding: 12px; border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            text-decoration: none; display: flex; align-items: center; justify-content: center;
+            z-index: 10; transition: transform 0.2s;
+        }
+        .back-btn:active { transform: scale(0.9); }
+        
+        .auth-card {
+            background: var(--glass);
+            padding: 40px; border-radius: var(--radius-xl);
+            width: 100%; max-width: 420px;
+            box-shadow: var(--shadow-soft);
+            text-align: center;
+            backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.5);
+        }
+        h2 { color: var(--primary); margin-bottom: 5px; font-family: 'Outfit', sans-serif; font-size: 1.8rem; }
+        p { color: #64748b; margin-bottom: 25px; font-size: 0.9rem; }
+
+        .form-group { margin-bottom: 20px; text-align: left; }
+        label { display: block; font-size: 0.8rem; font-weight: 700; margin-bottom: 6px; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; }
+        input {
+            width: 100%; padding: 14px; border: 2px solid #e2e8f0;
+            border-radius: 12px; font-size: 1rem; outline: none; transition: 0.3s; background: #fff;
+        }
+        input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.1); }
+
+        .btn {
+            width: 100%; padding: 16px; background: var(--primary);
+            color: white; border: none; border-radius: 12px;
+            font-weight: 700; font-size: 1rem; cursor: pointer;
+            transition: transform 0.2s; margin-top: 10px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn:disabled { background: #cbd5e1; cursor: not-allowed; opacity: 0.7; }
+
+        .spinner {
+            display: none; width: 20px; height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%; border-top-color: white;
+            animation: spin 1s linear infinite; margin: 0 auto;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .error-msg { 
+            color: #b91c1c; 
+            font-size: 0.85rem; margin-top: 8px; 
+            background: #fef2f2; padding: 12px; border-radius: 8px; 
+            display: none; text-align: left; border: 1px solid #fecaca;
+            box-shadow: 0 4px 10px rgba(185, 28, 28, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <a href="login.html" class="back-btn">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>
+    </a>
+
+    <div class="auth-card">
+        <!-- PERBAIKAN: font-size: 3. menjadi 3rem -->
+        <div style="font-size: 3rem; margin-bottom: 10px;">📝</div>
+        <h2>Buat Akun Baru</h2>
+        <p>Lengkapi data diri Anda untuk bergabung.</p>
+        
+        <form id="signup-form" onsubmit="handleSignup(event)">
+            <div class="form-group">
+                <label>Nama Lengkap</label>
+                <input type="text" id="signup-name" placeholder="Contoh: Budi Santoso" required>
+            </div>
+            <div class="form-group">
+                <label>Alamat Email</label>
+                <input type="email" id="signup-email" placeholder="nama@email.com" required>
+            </div>
+            <div class="form-group">
+                <label>Nomor WhatsApp</label>
+                <input type="tel" id="signup-phone" placeholder="0812xxxx" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="signup-password" placeholder="Minimal 6 karakter" required minlength="6">
+            </div>
+            <div id="signup-error" class="error-msg"></div>
+            <button type="submit" class="btn" id="signup-btn">
+                <span class="btn-text">Daftar Sekarang</span>
+                <div class="spinner"></div>
+            </button>
+        </form>
+
+        <div style="margin-top: 20px; font-size: 0.9rem;">
+            Sudah punya akun? <a href="login.html" style="color: var(--primary); font-weight: 700; text-decoration: none;">Masuk disini</a>
+        </div>
+    </div>
+
+    <script>
+        // --- KONFIGURASI SUPABASE ---
+        const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
+
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        async function handleSignup(e) {
+            e.preventDefault();
+            
+            // Ambil nilai dari input
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            
+            // PERBAIKAN: ID 'phone' diubah menjadi 'signup-phone' sesuai HTML
+            const phone = document.getElementById('signup-phone').value;
+            
+            // PERBAIKAN: Menghapus spasi sebelum .value
+            const password = document.getElementById('signup-password').value;
+
+            setLoading('signup-btn', true);
+            hideError(); 
+
+            try {
+                console.log("=== MEMULAI PENDAFTARAN ===");
+                
+                // 1. Langkah Satu: Buat Akun & Simpan Metadata
+                const { data, error } = await supabase.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        emailRedirectTo: window.location.origin, // Redirect kembali ke web setelah verifikasi
+                        data: {
+                            full_name: name,
+                            phone: phone
+                        }
+                    }
+                });
+
+                if (error) {
+                    console.error("   ❌ Gagal:", error);
+                    throw new Error("Gagal: " + error.message);
+                }
+
+                // 2. Simpan Data Tambahan ke Tabel Kustom 'ngebelusers'
+                const { error: insertError } = await supabase
+                    .from('ngebelusers')
+                    .insert([
+                        { 
+                            id: data.user.id, 
+                            full_name: name, 
+                            email: email, 
+                            phone: phone, 
+                            role: 'user' 
+                        }
+                    ]);
+
+                if (insertError) {
+                    console.error("   ❌ Gagal Insert Kustom:", insertError);
+                    throw new Error("Gagal menyimpan profil. (Pastikan RLS Policy sudah aktif). Detail: " + insertError.message);
+                }
+
+                console.log("   ✅ Pendaftaran Sukses!");
+                console.log("   ✅ Data Tersimpan!");
+                console.log("   ✅ Mengarahkan ke check-email.html...");
+
+                // 3. Redirect Modern
+                window.location.href = 'check-email.html';
+
+            } catch (err) {
+                console.error("=== ERROR ===");
+                console.error(err);
+                showError("Terjadi Kesalahan: " + err.message);
+            } finally {
+                setLoading('signup-btn', false);
+            }
+        }
+
+        // --- FUNGSI UTILITAS ---
+        function setLoading(btnId, isLoading) {
+            const btn = document.getElementById(btnId);
+            const text = btn.querySelector('.btn-text');
+            const spinner = btn.querySelector('.spinner');
+            if (isLoading) {
+                if(text) text.style.display = 'none';
+                if(spinner) spinner.style.display = 'block';
+                btn.disabled = true;
+            } else {
+                if(text) text.style.display = 'block';
+                if(spinner) spinner.style.display = 'none';
+                btn.disabled = false;
+            }
+        }
+
+        function showError(msg) {
+            const el = document.getElementById('signup-error');
+            if(el) {
+                el.innerText = msg;
+                el.style.display = 'block';
+            }
+        }
+        
+        function hideError() {
+            const el = document.getElementById('signup-error');
+            if(el) el.style.display = 'none';
+        }
+    </script>
+</body>
+</html>

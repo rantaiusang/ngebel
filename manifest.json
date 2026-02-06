@@ -1,0 +1,21 @@
+{
+  "name": "Wisata Telaga Ngebel",
+  "short_name": "Ngebel App",
+  "description": "Smart Tourism Platform Telaga Ngebel Ponorogo",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#0d9488",
+  "icons": [
+    {
+      "src": "https://picsum.photos/seed/icon192/192/192", 
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://picsum.photos/seed/icon512/512/512",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

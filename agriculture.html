@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Smart Agriculture | Ngebel Tech</title>
+    <meta name="theme-color" content="#0f766e">
+    <meta name="description" content="Sistem pertanian cerdas berbasis IoT dan AI di Telaga Ngebel. Monitoring real-time dan prediksi panen.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #0f766e; --primary-dark: #0d5f58; --primary-light: #ccfbf1;
+            --accent: #f59e0b; 
+            --nature: #16a34a; --nature-dark: #15803d;
+            --danger: #ef4444;
+            --bg-body: #f8fafc; --bg-card: #ffffff;
+            --text-main: #1e293b; --text-muted: #64748b;
+            --radius-xl: 24px; --radius-lg: 20px; --radius-md: 12px;
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+            --shadow-glow: 0 0 15px rgba(22, 163, 74, 0.3);
+            --nav-height: 70px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 40px;
+        }
+
+        h1, h2, h3 { font-family: 'Outfit', sans-serif; letter-spacing: -0.02em; }
+        a { text-decoration: none; color: inherit; }
+        
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+
+        /* --- Header --- */
+        header {
+            position: sticky; top: 0; z-index: 1000;
+            background: rgba(255,255,255,0.85); backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(0,0,0,0.05); height: var(--nav-height);
+            display: flex; align-items: center;
+        }
+        .nav-content { width: 100%; display: flex; align-items: center; justify-content: space-between; }
+        
+        .brand { font-weight: 800; font-size: 1.25rem; color: var(--nature); display: flex; align-items: center; gap: 8px; }
+        .back-btn {
+            display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.9rem;
+            padding: 8px 16px; border-radius: 50px; background: #f1f5f9; color: var(--text-muted);
+            transition: all 0.2s; cursor: pointer; border: 1px solid transparent;
+        }
+        .back-btn:hover { background: var(--nature); color: white; }
+
+        /* --- Hero Tech --- */
+        .tech-hero {
+            background: linear-gradient(135deg, #064e3b, #065f46);
+            color: white; padding: 40px 20px; border-radius: 32px; margin: 20px 0 40px;
+            position: relative; overflow: hidden; box-shadow: 0 20px 40px -10px rgba(6, 78, 59, 0.4);
+        }
+        .tech-hero::before {
+            content: ''; position: absolute; top: -50px; right: -50px; width: 300px; height: 300px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(255,255,255,0.15); backdrop-filter: blur(10px);
+            padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; margin-bottom: 16px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .tech-hero h1 { font-size: clamp(2rem, 4vw, 2.8rem); margin-bottom: 12px; }
+        .tech-hero p { opacity: 0.9; max-width: 600px; font-size: 1.05rem; }
+
+        /* --- IoT Sensor Cards --- */
+        .sensor-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 40px;
+        }
+        .sensor-card {
+            background: white; padding: 24px; border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm); border: 1px solid #f1f5f9;
+            position: relative; overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+        .sensor-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); }
+        
+        .sensor-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+        .sensor-icon { 
+            width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; background: #f0fdf4; color: var(--nature);
+        }
+        .sensor-value { 
+            font-family: 'JetBrains Mono', monospace; font-size: 1.8rem; font-weight: 700; color: var(--text-main); 
+            margin-bottom: 4px; display: flex; align-items: baseline; gap: 4px;
+        }
+        .sensor-unit { font-size: 0.9rem; color: var(--text-muted); font-family: 'Plus Jakarta Sans', sans-serif; }
+        .sensor-label { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        .live-dot {
+            width: 8px; height: 8px; background: var(--danger); border-radius: 50%;
+            box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2); animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.5); } 100% { opacity: 1; transform: scale(1); } }
+
+        /* --- AI Prediction Section --- */
+        .ai-section {
+            display: grid; grid-template-columns: 1fr; gap: 24px; background: white;
+            padding: 30px; border-radius: var(--radius-xl); box-shadow: var(--shadow-sm); border: 1px solid #f1f5f9;
+            margin-bottom: 40px;
+        }
+        @media (min-width: 768px) { .ai-section { grid-template-columns: 2fr 1fr; } }
+
+        .chart-placeholder {
+            background: #f8fafc; border-radius: 16px; height: 250px;
+            display: flex; align-items: flex-end; justify-content: space-around; padding: 20px;
+            border: 1px dashed #cbd5e1; position: relative;
+        }
+        .chart-bar {
+            width: 12%; background: var(--primary); border-radius: 8px 8px 0 0;
+            transition: height 1s ease; position: relative;
+        }
+        .chart-bar:hover { background: var(--nature); }
+        .chart-bar::after {
+            content: attr(data-val); position: absolute; top: -25px; left: 50%; transform: translateX(-50%);
+            font-size: 0.75rem; font-weight: 700; color: var(--text-muted);
+        }
+        
+        .prediction-card {
+            background: linear-gradient(135deg, #1e293b, #0f172a); color: white;
+            border-radius: 16px; padding: 24px; display: flex; flex-direction: column; justify-content: center;
+        }
+        .ai-badge {
+            display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.1);
+            padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; margin-bottom: 16px;
+            color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.3);
+        }
+        .pred-stat { font-size: 2.5rem; font-weight: 800; color: #4ade80; font-family: 'JetBrains Mono', monospace; margin-bottom: 4px; }
+        .pred-desc { font-size: 0.9rem; color: #94a3b8; margin-bottom: 20px; }
+
+        /* --- Farm Map / Status --- */
+        .farm-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;
+        }
+        .farm-block {
+            background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px;
+            display: flex; gap: 15px; align-items: center; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .farm-block:hover { border-color: var(--nature); background: #f0fdf4; }
+        .block-visual {
+            width: 60px; height: 60px; border-radius: 12px; background: #e2e8f0;
+            display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+        }
+        .status-ready { background: #dcfce7; color: #166534; border-color: #86efac; }
+        .status-grow { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
+        .status-crit { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+        
+        .block-info h4 { font-size: 1.1rem; margin-bottom: 4px; }
+        .block-info p { font-size: 0.85rem; color: var(--text-muted); margin: 0; }
+        
+        /* --- Notifications --- */
+        .notif-list { list-style: none; margin-top: 10px; }
+        .notif-item {
+            display: flex; align-items: center; gap: 15px; padding: 16px;
+            background: white; border-bottom: 1px solid #f1f5f9; transition: background 0.2s;
+        }
+        .notif-item:hover { background: #f8fafc; }
+        .notif-icon {
+            width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+            font-size: 1.2rem; flex-shrink: 0;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="container nav-content">
+            <!-- Tombol Kembali -->
+            <a href="index.html" class="back-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                Kembali
+            </a>
+            
+            <div class="brand">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.74 5.88-5.74 5.88-5.74-5.88L12 2.69M12 22a9.97 9.97 0 0 1-7.07-2.93l-1.41 1.41A11.97 11.97 0 0 0 12 24a11.97 11.97 0 0 0 8.49-3.52l-1.41-1.41A9.97 9.97 0 0 1 12 22z"></path></svg>
+                <span>Ngebel<span style="color:var(--nature)">AgriTech</span></span>
+            </div>
+            
+            <div style="width: 80px; text-align: right;">
+                <div class="live-dot" style="display: inline-block;"></div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        
+        <!-- Hero Tech -->
+        <section class="tech-hero">
+            <div class="hero-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg>
+                SYSTEM ONLINE
+            </div>
+            <h1>Smart Agriculture Dashboard</h1>
+            <p>Monitoring pertanian presisi berbasis IoT. Pantau kesehatan tanaman, prediksi panen dengan AI, dan optimalkan hasil panen secara real-time.</p>
+        </section>
+
+        <!-- Realtime Sensors -->
+        <h3 style="margin-bottom: 20px; color: var(--primary-dark);">Kondisi Lingkungan Real-time</h3>
+        <div class="sensor-grid">
+            <div class="sensor-card">
+                <div class="sensor-header">
+                    <div class="sensor-icon">🌡️</div>
+                    <div class="sensor-label">Suhu Tanah</div>
+                </div>
+                <div class="sensor-value">28.5<span class="sensor-unit">°C</span></div>
+                <div style="color: var(--nature); font-size: 0.85rem; font-weight: 600; margin-top: 8px;">
+                    Optimal untuk Durian
+                </div>
+            </div>
+            
+            <div class="sensor-card">
+                <div class="sensor-header">
+                    <div class="sensor-icon">💧</div>
+                    <div class="sensor-label">Kelembapan</div>
+                </div>
+                <div class="sensor-value">72<span class="sensor-unit">%</span></div>
+                <div style="color: var(--accent); font-size: 0.85rem; font-weight: 600; margin-top: 8px;">
+                    Perlu Penyiraman
+                </div>
+            </div>
+
+            <div class="sensor-card">
+                <div class="sensor-header">
+                    <div class="sensor-icon">🧪</div>
+                    <div class="sensor-label">pH Tanah</div>
+                </div>
+                <div class="sensor-value">6.4<span class="sensor-unit">pH</span></div>
+                <div style="color: var(--nature); font-size: 0.85rem; font-weight: 600; margin-top: 8px;">
+                    Sangat Baik
+                </div>
+            </div>
+
+            <div class="sensor-card">
+                <div class="sensor-header">
+                    <div class="sensor-icon">☀️</div>
+                    <div class="sensor-label">Intensitas Cahaya</div>
+                </div>
+                <div class="sensor-value">12.5<span class="sensor-unit">klux</span></div>
+                <div style="color: var(--text-muted); font-size: 0.85rem; font-weight: 600; margin-top: 8px;">
+                    Siang Hari
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Prediction & Production -->
+        <div class="ai-section">
+            <div>
+                <h3 style="margin-bottom: 20px;">Tren Produksi & Prediksi AI</h3>
+                <div class="chart-placeholder">
+                    <!-- Simulated CSS Chart -->
+                    <div class="chart-bar" style="height: 40%;" data-val="40%"></div>
+                    <div class="chart-bar" style="height: 55%;" data-val="55%"></div>
+                    <div class="chart-bar" style="height: 70%;" data-val="70%"></div>
+                    <div class="chart-bar" style="height: 60%;" data-val="60%"></div>
+                    <div class="chart-bar" style="height: 85%; background: var(--accent);" data-val="Prediksi"></div>
+                    
+                    <div style="position: absolute; top: 20px; left: 20px; font-size: 0.8rem; font-weight: 600; color: #64748b;">Ton/Ha</div>
+                    <div style="position: absolute; bottom: 20px; left: 0; right: 0; display: flex; justify-content: space-around; font-size: 0.75rem; color: #94a3b8;">
+                        <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>Mei (AI)</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="prediction-card">
+                <div class="ai-badge">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"></path></svg>
+                    AI Prediction
+                </div>
+                <div class="pred-stat">+24%</div>
+                <div class="pred-desc">Kenaikan hasil panen diprediksi terjadi pada bulan depan berdasarkan data cuaca & nutrisi tanah.</div>
+                <button style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                    Lihat Analisis Lengkap
+                </button>
+            </div>
+        </div>
+
+        <!-- Monitoring Kebun -->
+        <h3 style="margin-bottom: 20px; color: var(--primary-dark);">Status Blok Kebun</h3>
+        <div class="farm-grid">
+            <div class="farm-block">
+                <div class="block-visual status-ready">🍈</div>
+                <div class="block-info">
+                    <h4>Blok A - Durian</h4>
+                    <p>Status: <span style="color: #166534; font-weight: 700;">Siap Panen</span></p>
+                    <p style="font-size: 0.8rem; margin-top: 4px;">Estimasi: 3 Hari lagi</p>
+                </div>
+            </div>
+            
+            <div class="farm-block">
+                <div class="block-visual status-grow">🌱</div>
+                <div class="block-info">
+                    <h4>Blok B - Alpukat</h4>
+                    <p>Status: <span style="color: #1e40af; font-weight: 700;">Vegetatif</span></p>
+                    <p style="font-size: 0.8rem; margin-top: 4px;">Fase pertumbuhan daun</p>
+                </div>
+            </div>
+            
+            <div class="farm-block">
+                <div class="block-visual status-crit">⚠️</div>
+                <div class="block-info">
+                    <h4>Blok C - Manggis</h4>
+                    <p>Status: <span style="color: #991b1b; font-weight: 700;">Kritis Air</span></p>
+                    <p style="font-size: 0.8rem; margin-top: 4px;">Sistem irigasi offline</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications -->
+        <div style="margin-top: 40px; background: white; border-radius: var(--radius-lg); padding: 24px; border: 1px solid #f1f5f9;">
+            <h3 style="margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                Notifikasi Sistem
+            </h3>
+            <ul class="notif-list">
+                <li class="notif-item">
+                    <div class="notif-icon" style="background: #fee2e2; color: #ef4444;">⚠️</div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; font-size: 0.95rem;">Peringatan Kekeringan Blok C</div>
+                        <div style="font-size: 0.8rem; color: #64748b;">Sensor kelembaban di bawah 30%. Segera aktifkan irigasi.</div>
+                    </div>
+                    <div style="font-size: 0.75rem; color: #94a3b8;">Baru saja</div>
+                </li>
+                <li class="notif-item">
+                    <div class="notif-icon" style="background: #dcfce7; color: #16a34a;">✅</div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; font-size: 0.95rem;">Jadwal Panen Durian</div>
+                        <div style="font-size: 0.8rem; color: #64748b;">AI memprediksi kualitas buah mencapai Grade A besok.</div>
+                    </div>
+                    <div style="font-size: 0.75rem; color: #94a3b8;">2 jam lalu</div>
+                </li>
+            </ul>
+        </div>
+
+    </main>
+
+    <script>
+        // Simulasi update data sensor agar terasa "Realtime"
+        setInterval(() => {
+            // Mengubah angka suhu secara acak sedikit
+            const tempEl = document.querySelector('.sensor-value');
+            if(tempEl) {
+                const currentTemp = parseFloat(tempEl.innerText);
+                const newTemp = (currentTemp + (Math.random() - 0.5)).toFixed(1);
+                tempEl.innerHTML = `${newTemp}<span class="sensor-unit">°C</span>`;
+            }
+        }, 3000);
+    </script>
+</body>
+</html>
