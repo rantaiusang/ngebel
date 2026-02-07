@@ -81,20 +81,56 @@
         </div>
         
         <h2>Selamat! Akun Aktif</h2>
-        <p>
-            Akun Anda telah berhasil dikonfirmasi dan siap digunakan. Selamat datang di ekosistem Ngebel Platform.
+        <p id="statusText">
+            Memproses konfirmasi email Anda...
         </p>
 
         <a href="login.html" class="btn">Masuk Sekarang</a>
-
         <a href="index.html" class="sub-link">Kembali ke Beranda</a>
     </div>
 
+    <!-- SUPABASE -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
     <script>
-        // Opsional: Jika halaman ini dibuka secara langsung tanpa konfirmasi email,
-        // kita bisa memeriksa sesi user.
-        // Jika user belum login, mungkin kita arahkan kembali ke login.
-        // Tapi untuk sederhananya, halaman ini bersifat statis sebagai pesan sukses.
+        const supabaseUrl = "https://PROJECT.supabase.co";   // GANTI
+        const supabaseKey = "PUBLIC_ANON_KEY";               // GANTI
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        async function prosesKonfirmasi() {
+            try {
+                const hash = window.location.hash;
+
+                if (!hash || !hash.includes("access_token")) {
+                    document.getElementById("statusText").innerText =
+                        "Halaman dibuka tanpa token konfirmasi. Jika akun sudah aktif, silakan login.";
+                    return;
+                }
+
+                const { error } = await supabaseClient.auth.exchangeCodeForSession();
+
+                if (error) {
+                    document.getElementById("statusText").innerText =
+                        "Konfirmasi gagal atau link sudah pernah digunakan.";
+                    return;
+                }
+
+                document.getElementById("statusText").innerText =
+                    "Email berhasil dikonfirmasi. Mengarahkan ke halaman login...";
+
+                setTimeout(() => {
+                    window.location.href = "login.html";
+                }, 2000);
+
+            } catch (err) {
+                document.getElementById("statusText").innerText =
+                    "Terjadi kesalahan saat memproses konfirmasi.";
+                console.error(err);
+            }
+        }
+
+        prosesKonfirmasi();
     </script>
+
 </body>
 </html>
