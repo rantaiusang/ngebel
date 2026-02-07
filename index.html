@@ -153,34 +153,51 @@
         }
         .hero-bg {
             position: absolute; inset: 0; 
-            background: url('https://dikapquhusbwjccbqcsb.supabase.co/storage/v1/object/public/images/Telaga-Ngebel.webp') center/cover;
+            background: url('https://dikapquhusbwjccbqcsb.supabase.co/storage/v1/object/public/images/Telaga-Ngebel.webp') center/ cover;
             transition: transform 10s ease;
         }
         .hero:hover .hero-bg { transform: scale(1.05); }
         .hero-overlay { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0.1) 100%); z-index: 1; }
         .hero-content { position: relative; z-index: 2; padding: 40px; width: 100%; max-width: 600px; }
 
-        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
 
         /* --- 7. PREVIEW CARDS (REALTIME PLATFORM & MONITORING) --- */
         .preview-card {
             background: white; border-radius: var(--radius-lg); overflow: hidden;
             border: 1px solid rgba(0,0,0,0.05); box-shadow: var(--shadow-soft);
             transition: transform 0.3s ease; cursor: pointer; position: relative;
+            /* Grid Logic: Platform & IoT memakan 2 kolom di desktop, 1 kolom di mobile */
         }
-        .preview-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-hover); }
+
+        /* Logic Ukuran Kartu (Berdasarkan Kartu Platform) */
+        .preview-card.wide {
+            grid-column: 1 / -1; /* Mobile: Penuh 1 kolom (kartu platform mengambil lebar) */
+        }
+        @media (min-width: 992px) {
+            .grid-3 {
+                grid-template-columns: repeat(2, 1fr); /* Desktop: 2 kolom */
+                grid-template-rows: auto auto;
+            }
+            .preview-card.wide { grid-column: span 2; /* Desktop: Platform mengambil 2 kolom */
+            .preview-card.tall { grid-column: span 1; }
+        }
 
         .preview-image {
-            height: 200px; width: 100%; object-fit: cover;
+            width: 100%;
+            height: 350px; /* Tinggi diperbesar */
+            object-fit: cover;
             position: relative;
         }
         
-        .preview-content { padding: 20px; }
+        .preview-content { padding: 24px; }
         .preview-tag {
-            display: inline-block; background: #e0f2fe; color: #0369a1; font-size: 0.7rem; 
-            font-weight: 700; padding: 4px 8px; border-radius: 6px; margin-bottom: 8px; text-transform: uppercase;
+            display: inline-block; 
+            font-weight: 700; padding: 4px 12px; border-radius: 6px; margin-bottom: 8px; text-transform: uppercase; font-size: 0.7rem;
+            letter-spacing: 0.5px;
         }
         .preview-tag.tech { background: #fee2e2; color: #ef4444; }
+        .preview-tag.eco { background: #dcfce7; color: #166534; }
         
         /* --- SPECIAL: LIVE MAP CARD STYLES --- */
         .live-status-bar {
@@ -192,11 +209,21 @@
         .blink-dot { width: 8px; height: 8px; background: #ef4444; border-radius: 50%; animation: pulse-red 1s infinite; }
         @keyframes pulse-red { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
 
-        /* Simulasi Peta Digital dengan CSS */
+        /* Overlay Peta dengan efek Shimmer */
         .live-map-overlay {
             position: absolute; inset: 0; background: rgba(15, 118, 110, 0.1); /* Overlay hijau tipis */
             z-index: 2;
         }
+        
+        /* Shimmer Effect pada Gambar */
+        .preview-image::after {
+            content: ''; position: absolute; inset: 0;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.6), transparent);
+            transform: skewX(-20deg) translateX(-150%);
+            transition: transform 0.5s;
+        }
+        .preview-card:hover .preview-image::after { transform: skewX(-20deg) translateX(150%); transition: 1s; }
+
         .scan-line {
             position: absolute; left: 0; width: 100%; height: 2px;
             background: var(--accent); box-shadow: 0 0 15px var(--accent);
@@ -206,11 +233,17 @@
         @keyframes scanMap { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
 
         .map-point {
-            position: absolute; width: 12px; height: 12px; background: var(--accent); border: 2px solid white; border-radius: 50%;
+            position: absolute; width: 16px; height: 16px; background: var(--accent); border: 2px solid white; border-radius: 50%;
             box-shadow: 0 0 15px var(--accent); z-index: 4;
+            display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold;
         }
-        .mp1 { top: 30%; left: 25%; animation: pulse-red 2s infinite; } /* Durian */
-        .mp2 { top: 60%; left: 70%; animation: pulse-red 3s infinite 0.5s; } /* Manggis */
+
+        /* Layout Konten IoT di dalam Card */
+        .iot-metric-row {
+            display: flex; justify-content: space-between; margin-top: 15px; background: #1e293b; padding: 15px; border-radius: 12px;
+        }
+        .iot-label { font-size: 0.8rem; color: #94a3b8; display: flex; align-items: center; gap: 6px; }
+        .iot-value { font-family: var(--font-mono); font-size: 1rem; color: white; font-weight: 600; }
 
         .preview-actions {
             display: flex; justify-content: space-between; align-items: center;
@@ -219,18 +252,12 @@
 
         .btn-like {
             background: white; border: 1px solid #e2e8f0; color: #94a3b8;
-            width: 36px; height: 36px; border-radius: 50%;
+            width: 40px; height: 40px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center; cursor: pointer;
             transition: all 0.3s; font-size: 1.2rem;
         }
         .btn-like:hover { color: #ef4444; border-color: #fecaca; background: #fef2f2; transform: scale(1.1); }
         .btn-like:active { animation: likeBounce 0.3s; }
-
-        .data-metric {
-            display: flex; gap: 15px; margin-top: 10px; background: #f8fafc; padding: 10px; border-radius: 12px;
-            font-family: var(--font-mono); font-size: 0.85rem; color: var(--primary); font-weight: 600;
-            align-items: center;
-        }
 
         /* --- 8. MODAL & TOAST --- */
         .modal-overlay {
@@ -246,7 +273,7 @@
         }
         .modal-overlay.open .modal-card { transform: translateY(0); }
         .modal-icon { font-size: 3rem; margin-bottom: 15px; display: inline-block; animation: float 3s infinite; }
-        .modal-title { font-size: 1.5rem; color: var(--primary); margin-bottom: 10px; font-family: 'Outfit'; font-weight: 700; }
+        .modal-title { font-size: 1.5rem; color: var(--primary); margin-bottom: 10px; font-family: 'outfit'; font-weight: 700; }
         .modal-text { color: var(--text-muted); margin-bottom: 25px; font-size: 0.95rem; }
 
         .toast-container { position: fixed; top: 90px; right: 20px; z-index: 3000; display: flex; flex-direction: column; gap: 10px; }
@@ -308,12 +335,13 @@
             <h2 style="margin-bottom: 30px;">Ekosistem Teknologi</h2>
             
             <!-- PREVIEW CONTAINER -->
+            <!-- Grid layout diperbarukan -->
             <div class="grid-3">
-
-                <!-- CARD 1: PLATFORM KECERDASAN DAERAH (NEW!) -->
-                <div class="preview-card" onclick="handlePreviewClick('Platform Kecerdasan Daerah', false)">
-                    <!-- Gambar: Representasi Dashboard Area Publik -->
-                    <img src="https://dikapquhusbwjccbqcsb.supabase.co/storage/v1/object/public/images/smart-ngebel.webp">
+                
+                <!-- CARD 1: PLATFORM KECERDASAN DAERAH (MEMBUAT LEBAR, DI DEKSTOP) -->
+                <div class="preview-card wide" onclick="handlePreviewClick('Platform Kecerdasan Daerah', false)">
+                    <!-- Gambar Representatif Dashboard Area Publik -->
+                    <img src="https://dikapquhusbwjccbqcsb.supabase.co/storage/v1/object/public/images/smart-ngebel.webp" class="preview-image">
                     
                     <div class="live-status-bar">
                         <div class="blink-dot"></div> LIVE
@@ -326,22 +354,22 @@
                             Monitor pengunjung, cuaca, dan keamanan wilayah Telaga Ngebel secara real-time untuk pengambilan keputusan data-driven.
                         </p>
                         
-                        <div class="data-metric">
-                            <span>🟢 Visitor: 1,248</span>
-                            <span>🌡️ Suhu: 28°C</span>
+                        <div class="iot-metric-row">
+                            <div class="iot-label">Visitor: <span style="font-family: var(--font-mono);">1,248</span></div>
+                            <div class="iot-label">Suhu: <span style="font-family: var(--font-mono);</span> 28°C</span>
                         </div>
 
                         <div class="preview-actions">
-                            <span style="font-size: 0.8rem; color: var(--text-muted);">12 Sensor Aktif</span>
+                            <span style="font-size: 0.8rem; color: var(--text-muted;">12 Sensor Aktif</span>
                             <button class="btn-like" onclick="event.stopPropagation(); toggleLike(this)">❤️</button>
                         </div>
                     </div>
                 </div>
 
                 <!-- CARD 2: IOT MONITORING (REALTIME FARM) -->
-                <div class="preview-card" onclick="handlePreviewClick('IoT Smart Farm', true)">
-                    <!-- Gambar: Kebun/Durian -->
-                    <img src="https://dikapquhusbwjccbqcsb.supabase.co/storage/v1/object/public/images/iot-ngebel.webp">
+                <div class="preview-card all" onclick="handlePreviewClick('IoT Smart Farm', true)">
+                    <!-- Gambar: Kebun/Durian (Gambar Diperbesar) -->
+                    <img src="https://dikapquhusbwjccbqcsb.supabase.co/storage/v1/object/public/images/iot-ngebel.webp" class="preview-image">
                     
                     <div class="live-status-bar" style="background: var(--accent); color: white;">
                         <div class="blink-dot" style="background: white;"></div> LIVE
@@ -355,17 +383,22 @@
                         </p>
                         
                         <!-- Overlay Map Simulasi (Scanning Effect) -->
-                        <div style="position: relative; margin-top: 15px; background: #1e293b; height: 100px; border-radius: 8px; overflow: hidden;">
+                        <div style="position: relative; margin-top: 15px; background: #1e293b; height: 250px; border-radius: 12px; overflow: hidden;">
                             <!-- Background Peta Abstrak -->
                             <div style="width: 100%; height: 100%; opacity: 0.2; background: radial-gradient(circle, #334155 1px, transparent 70%);"></div>
                             
                             <!-- Elemen Animasi -->
                             <div class="scan-line"></div>
-                            <div class="map-point mp1" title="Sensor Blok A"></div>
-                            <div class="map-point mp2" title="Sensor Blok B"></div>
                             
-                            <div style="position: absolute; bottom: 10px; right: 10px; font-size: 0.7rem; color: rgba(255,255,255,0.8); font-family: var(--font-mono);">
-                                Moist: 68% | Temp: 29°C
+                            <!-- Titik Koordinat Peta -->
+                            <div class="map-point mp1" style="top: 40%; left: 30%;">A</div>
+                            <div class="map-point mp2" style="top: 70%; right: 25%;">B</div>
+                            
+                            <!-- Data Bawah Peta -->
+                            <div style="position: absolute; bottom: 15px; width: calc(100% - 30px); left: 15px; right: 15px; text-align: center;">
+                                <div style="font-family: var(--font-mono); font-size: 0.75rem; color: rgba(255,255,255,0.8); background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 4px;">
+                                    Moist: 68% | Temp: 29°C
+                                </div>
                             </div>
                         </div>
 
@@ -378,9 +411,10 @@
 
                 <!-- CARD 3: UMKM MARKETPLACE -->
                 <div class="preview-card" onclick="handlePreviewClick('Marketplace UMKM', false)">
-                    <img src="https://dikapquhusbwjccbqcsb.supabase.co/storage/v1/object/public/images/marketplace-ngebel.webp">
+                    <!-- Gambar Marketplace (Ukuran Tinggi) -->
+                    <img src="https://dikapquhusbwjccbqcsb.supabase.co/storage/v1/object/public/images/market-ngebel.webp" class="preview-image">
                     <div class="preview-content">
-                        <span class="preview-tag">E-Commerce</span>
+                        <span class="preview-tag eco">E-Commerce</span>
                         <h3>Marketplace UMKM</h3>
                         <p style="font-size: 0.9rem; margin-bottom: 0;">
                             Pasar digital produk lokal. Transparansi harga stok langsung dari petani ke pembeli.
@@ -432,7 +466,7 @@
         const publicMenu = [
             { id: 'home', icon: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>', label: 'Home' },
             { id: 'explore', icon: '<circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>', label: 'Explore', link: 'explore.html' },
-            { id: 'map', icon: '<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line>', label: 'Peta', link: 'map.html' },
+            { id: 'map', icon: '<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></line>', label: 'Peta', link: 'map.html' },
             { id: 'community', icon: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>', label: 'Komunitas', link: 'community.html' },
             { id: 'market', icon: '<circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>', label: 'Market', link: 'katalog.html' }
         ];
@@ -467,7 +501,7 @@
 
         function handleNavClick(item) {
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            event.currentTarget.classList.add('active');
+            if (event.currentTarget) event.currentTarget.classList.add('active');
             if (item.link) window.location.href = item.link;
         }
 
@@ -480,7 +514,7 @@
             const icon = document.getElementById('modal-icon-display');
 
             title.innerText = featureName;
-            icon.innerText = isRestricted ? '🔒' : '👁️';
+            icon.innerText = isRestricted ? '🔒' : '🌐';
 
             if (isRestricted) {
                 text.innerHTML = `Fitur <b>${featureName}</b> menggunakan sensor canggih (IoT).<br>Sistem berjalan 24/7 memantau kondisi real-time.<br><br><small style="color:#ef4444;">*Perlu Login untuk melihat detail data.</small>`;
@@ -534,16 +568,11 @@
 
         // --- FUNGSI LIKE (INTERAKSI VISUAL) ---
         function toggleLike(btn) {
-            // Hanya visual effect, tidak mengarah ke login
+            // Hanya visual effect
             btn.style.transform = "scale(1.2) rotate(-15deg)";
             setTimeout(() => {
                 btn.style.transform = "scale(1) rotate(0deg)";
             }, 200);
-            
-            // Opsional: Ubah icon jadi hati merah
-            if(btn.innerText === '❤️') {
-                btn.innerHTML = '❤️'; // Bisa diganti svg heart merah jika ada
-            }
         }
 
         modal.addEventListener('click', (e) => {
