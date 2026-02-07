@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Jelajah Ngebel | Smart Explore</title>
     <meta name="theme-color" content="#0f766e">
     <meta name="description" content="Smart Tourism Telaga Ngebel. Pantau cuaca, lokasi, dan info wisata real-time.">
@@ -17,7 +17,7 @@
 
     <style>
         :root {
-            --primary: #0f766e; --primary-dark: #0d5f58; --accent: #f59e0b;
+            --primary: #0f766e; --primary-light: #14b8a6; --accent: #f59e0b;
             --bg-body: #f8fafc; --glass: rgba(255, 255, 255, 0.1);
             --radius-xl: 28px; --radius-lg: 20px; --radius-md: 12px;
             --shadow-soft: 0 10px 30px -5px rgba(0,0,0,0.05);
@@ -54,15 +54,17 @@
         .header-content { width: 100%; max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
         
         .brand-area { display: flex; align-items: center; gap: 12px; }
+        
+        /* PERBAIKAN: STYLE TOMBOL KEMBALI SEPERTI HALAMAN LAINNYA */
         .btn-back {
             display: flex; align-items: center; gap: 8px;
-            font-weight: 600; color: rgba(255,255,255,0.8); font-size: 0.9rem;
-            padding: 6px 12px; border-radius: 8px;
-            background: rgba(255,255,255,0.1);
-            transition: all 0.2s;
-            border: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.8); font-weight: 600; font-size: 0.9rem;
+            padding: 8px 16px; border-radius: 50px;
+            background: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.2s ease; flex-shrink: 0; cursor: pointer;
         }
-        .btn-back:hover { background: rgba(255,255,255,0.2); color: white; }
+        .btn-back:hover { background: rgba(255,255,255,0.9); color: var(--primary); transform: translateY(-1px); }
+        .btn-back svg { width: 18px; height: 18px; stroke-width: 2.5; }
         
         .smart-title {
             font-size: 1rem; font-weight: 700; letter-spacing: 0.5px;
@@ -81,7 +83,7 @@
             backdrop-filter: blur(5px);
             transition: transform 0.2s;
         }
-        .data-pill:hover { background: rgba(255, 255, 255, 0.15); }
+        .data-pill:hover { background: rgba(255, 255, 255, 0.15); transform: translateY(-2px); }
 
         .pill-label {
             font-size: 0.6rem; text-transform: uppercase; color: rgba(255,255,255,0.6);
@@ -94,7 +96,7 @@
             display: flex; align-items: center; gap: 6px;
         }
 
-        /* STYLE KHUSUS NOTIFIKASI EVENT */
+        /* STYLE KHUSUS WIDGET "LIVE" (SEBELUMNYA INFO) */
         .notification-pill {
             display: flex; flex-direction: column; align-items: flex-end;
             background: rgba(245, 158, 11, 0.15); 
@@ -196,16 +198,9 @@
             font-size: 1.2rem; z-index: 10;
             animation: pulse-pin 2s infinite;
         }
-        .map-pin::after {
-            content: ''; position: absolute; width: 100%; height: 100%;
-            border-radius: 50% 50% 0 50%;
-            border: 2px solid rgba(255,255,255,0.5);
-            animation: pulse-pin 2s infinite;
-        }
         .map-pin:hover { 
             transform: rotate(45deg) scale(1.2) translateY(-5px); z-index: 20; animation: none; 
         }
-        .map-pin i { transform: rotate(-45deg); }
         .pin-1 { top: 40%; left: 30%; background: #ef4444; animation-delay: 0s; }
         .pin-2 { top: 25%; left: 60%; background: #f59e0b; animation-delay: 0.5s; }
         .pin-3 { top: 60%; left: 45%; background: #0ea5e9; animation-delay: 1s; }
@@ -287,8 +282,7 @@
         .modal-content {
             background: white;
             width: 100%;
-            max-width: 520px;
-            max-height: 80vh;
+            max-width: 450px; /* Lebar dikurangi sedikit agar pas dengan konten popup */
             border-radius: 24px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             display: flex; flex-direction: column;
@@ -304,7 +298,7 @@
         }
 
         .modal-header {
-            padding: 20px 24px;
+            padding: 24px;
             border-bottom: 1px solid rgba(0,0,0,0.05);
             display: flex; justify-content: space-between; align-items: center;
             background: rgba(255, 255, 255, 0.8);
@@ -312,7 +306,7 @@
             -webkit-backdrop-filter: blur(10px);
             z-index: 10;
         }
-        .modal-header h3 { color: var(--primary-dark); font-size: 1.2rem; margin: 0; font-weight: 700; }
+        .modal-header h3 { color: var(--primary-dark); font-size: 1.5rem; margin: 0; font-weight: 700; }
         .close-btn {
             background: rgba(0,0,0,0.05); border: none; font-size: 1.2rem; color: #64748b;
             cursor: pointer; transition: all 0.2s; width: 36px; height: 36px;
@@ -321,39 +315,26 @@
         .close-btn:hover { background: #ef4444; color: white; transform: rotate(90deg); }
 
         .modal-body {
-            padding: 10px 0;
+            padding: 24px;
             overflow-y: auto;
             scrollbar-width: thin;
             scrollbar-color: #cbd5e1 transparent;
+            display: flex; flex-direction: column; gap: 20px;
         }
         .modal-body::-webkit-scrollbar { width: 6px; }
         .modal-body::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
 
-        .event-list-item {
-            padding: 20px 24px;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-            transition: background 0.2s;
-            
-            opacity: 0;
-            transform: translateY(10px);
-            animation: slideUpFade 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        /* STYLE KHUSUS POPUP DATA (VISITORS & CUACA) */
+        .live-data-card {
+            background: #f0f9ff; border: 1px solid #bae6fd;
+            border-radius: 16px; padding: 20px; display: flex; align-items: center; justify-content: space-between;
         }
-        .event-list-item:last-child { border-bottom: none; }
-        .event-list-item:hover { background: #f8fafc; transform: translateX(4px); }
-
-        @keyframes slideUpFade {
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .event-date-badge {
-            display: inline-flex; align-items: center; gap: 4px;
-            background: #f0f9ff; color: #0284c7;
-            padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700;
-            margin-bottom: 8px;
-        }
-        .event-title { font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 4px; line-height: 1.3; }
-        .event-loc { font-size: 0.85rem; color: var(--accent); margin-bottom: 8px; display: flex; align-items: center; gap: 5px; font-weight: 600; }
-        .event-desc { font-size: 0.9rem; color: #64748b; line-height: 1.6; }
+        .live-data-card.weather { background: #fffbeb; border-color: #fde68a; }
+        
+        .data-icon-big { font-size: 2.5rem; }
+        .data-info h4 { font-size: 0.8rem; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; margin-bottom: 4px; }
+        .data-info .value { font-size: 1.8rem; font-weight: 800; color: #0f172a; font-family: var(--font-mono); }
+        .data-info .sub { font-size: 0.85rem; color: #64748b; margin-top: 2px; }
 
         @media (max-width: 768px) {
             .seasonal-banner { flex-direction: column; text-align: center; gap: 20px; }
@@ -368,9 +349,11 @@
     <header>
         <div class="header-content">
             <div class="brand-area">
-                <a href="index.html" class="btn-back">
+                <!-- TOMBOL KEMBALI PERBAIKAN -->
+                <div class="btn-back" onclick="window.location.href='index.html'">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                </a>
+                    Kembali
+                </div>
                 <div class="smart-title">
                     <span style="color:var(--accent)"></span>
                     <span class="smart-subtitle"></span>
@@ -379,11 +362,10 @@
             
             <div class="smart-dashboard">
                 
-                <!-- Widget Baru: Notifikasi Event Realtime -->
-                <div class="notification-pill" id="btn-open-events">
-                    <span class="notif-label">Info <span class="live-indicator"></span></span>
-                    <span class="notif-value" id="event-display">Menunggu...</span>
-                    <div class="badge-count" id="event-count-badge">0</div>
+                <!-- Widget Live (PERUBAHAN NAMA & FUNGSI) -->
+                <div class="notification-pill" id="btn-open-live-popup">
+                    <span class="notif-label">Live <span class="live-indicator"></span></span>
+                    <span class="notif-value" id="event-display">Cek Status</span>
                 </div>
 
                 <!-- Widget 1: Live Clock -->
@@ -523,18 +505,37 @@
 
     </main>
 
-    <!-- MODAL POP-UP EVENT (SMOOTH ANIMATION) -->
-    <div class="modal-overlay" id="event-modal">
+    <!-- MODAL POP-UP LIVE STATUS (VISITORS & CUACA) -->
+    <div class="modal-overlay" id="live-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>🗓️ Agenda Event</h3>
-                <button class="close-btn" id="close-modal">
+                <h3>📊 Status Realtime</h3>
+                <button class="close-btn" id="close-live-modal">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
             </div>
-            <div class="modal-body" id="modal-event-list">
-                <!-- List Event akan di-generate di sini -->
-                <div style="padding:20px; text-align:center; color:#94a3b8;">Memuat data...</div>
+            <div class="modal-body">
+                
+                <!-- DATA 1: WAKTU VISITORS -->
+                <div class="live-data-card">
+                    <div class="data-info">
+                        <h4>Pengunjung Saat Ini</h4>
+                        <div class="value" id="modal-visitor-count">--</div>
+                        <div class="sub" id="modal-visitor-status">Menghitung...</div>
+                    </div>
+                    <div class="data-icon-big">👥</div>
+                </div>
+
+                <!-- DATA 2: CUACA -->
+                <div class="live-data-card weather">
+                    <div class="data-info">
+                        <h4>Kondisi Cuaca</h4>
+                        <div class="value"><span id="modal-weather-icon">...</span> <span id="modal-weather-temp">--</span>°C</div>
+                        <div class="sub" id="modal-weather-desc">Memuat data...</div>
+                    </div>
+                    <div class="data-icon-big">🌤️</div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -549,13 +550,13 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // --- 2. REAL-TIME WEATHER LOGIC (FIXED) ---
+        // --- 2. REAL-TIME WEATHER LOGIC ---
         const weatherIconEl = document.getElementById('weather-icon');
         const weatherTempEl = document.getElementById('weather-temp');
         
-        // Variabel Global agar bisa dibaca oleh logika visitor
         let currentWeatherIcon = '';
         let isRaining = false;
+        let weatherDesc = "Cerah";
 
         async function fetchWeather() {
             const lat = -7.87;
@@ -568,79 +569,76 @@
                 const data = await response.json();
                 const current = data.current_weather;
                 
-                // Tentukan Icon & Status Hujan
-                // PERBAIKAN TYPO EMOJI (menggunakan emoji standar)
-                if (current.weathercode <= 1) { currentWeatherIcon = '☀️'; isRaining = false; }
-                else if (current.weathercode <= 3) { currentWeatherIcon = '☁️'; isRaining = false; }
-                else if (current.weathercode <= 48) { currentWeatherIcon = '🌫️'; isRaining = false; }
-                else if (current.weathercode <= 67) { currentWeatherIcon = '🌧️'; isRaining = true; }
-                else if (current.weathercode <= 77) { currentWeatherIcon = '❄️'; isRaining = true; }
-                else { currentWeatherIcon = '⚡'; isRaining = true; }
+                if (current.weathercode <= 1) { currentWeatherIcon = '☀️'; isRaining = false; weatherDesc = "Cerah Berawan"; }
+                else if (current.weathercode <= 3) { currentWeatherIcon = '☁️'; isRaining = false; weatherDesc = "Berawan Tebal"; }
+                else if (current.weathercode <= 48) { currentWeatherIcon = '🌫️'; isRaining = false; weatherDesc = "Kabut Asap"; }
+                else if (current.weathercode <= 67) { currentWeatherIcon = '🌧️'; isRaining = true; weatherDesc = "Hujan Ringan"; }
+                else if (current.weathercode <= 77) { currentWeatherIcon = '❄️'; isRaining = true; weatherDesc = "Salju Tipis"; }
+                else { currentWeatherIcon = '⚡'; isRaining = true; weatherDesc = "Badai Petir"; }
 
                 weatherIconEl.textContent = currentWeatherIcon;
                 weatherTempEl.textContent = Math.round(current.temperature);
                 
-                // Trigger update visitor saat cuaca berubah
+                // Update Modal Weather
+                document.getElementById('modal-weather-icon').textContent = currentWeatherIcon;
+                document.getElementById('modal-weather-temp').textContent = Math.round(current.temperature);
+                document.getElementById('modal-weather-desc').textContent = weatherDesc;
+
                 adjustVisitorCountByWeather();
 
             } catch (error) {
                 console.error(error);
                 weatherIconEl.textContent = '📡';
                 weatherTempEl.textContent = '--';
+                weatherDesc = "Data Offline";
                 isRaining = false;
             }
         }
 
-        // Panggil pertama kali saat load
         fetchWeather();
-        // Update cuaca setiap 10 menit (600000 ms) agar real-time tapi hemat kuota
         setInterval(fetchWeather, 600000);
 
 
-        // --- 3. ALGORITMA VISITOR CERDAS (FIXED & INTEGRATED) ---
+        // --- 3. ALGORITMA VISITOR CERDAS ---
         
         const visitorElement = document.getElementById('visitor-count');
+        const modalVisitorElement = document.getElementById('modal-visitor-count');
+        const modalVisitorStatus = document.getElementById('modal-visitor-status');
         
-        // Tentukan Base Count Berdasarkan Jam
         const hour = new Date().getHours();
         let visitorBase = 50; 
 
-        if (hour >= 9 && hour < 16) visitorBase = 200; // Siang Ramai
-        else if (hour >= 16 && hour < 19) visitorBase = 150; // Sore Agak Sepi
-        else if (hour >= 19 && hour < 22) visitorBase = 80; // Malam (Kuliner)
-        else visitorBase = 30; // Tengah Malam
+        if (hour >= 9 && hour < 16) visitorBase = 200; 
+        else if (hour >= 16 && hour < 19) visitorBase = 150; 
+        else if (hour >= 19 && hour < 22) visitorBase = 80; 
+        else visitorBase = 30; 
 
         let visitorCount = visitorBase; 
 
-        // Fungsi penyesuaian visitor jika hujan
         function adjustVisitorCountByWeather() {
             if (isRaining) {
-                // Jika baru mulai hujan, turunkan count
                 if (visitorCount > 50) visitorCount -= 40;
                 if(visitorCount < 20) visitorCount = 20;
                 visitorElement.textContent = visitorCount;
+                modalVisitorElement.textContent = visitorCount;
                 
-                // Feedback Visual
                 visitorElement.style.color = '#f87171';
                 setTimeout(() => { visitorElement.style.color = 'rgba(255,255,255,0.9)'; }, 800);
             }
         }
 
         function updateSmartVisitors() {
-            // Random fluktuasi kecil
             let minChange = -2;
             let maxChange = 3;
 
-            // Jika hujan, kecenderungan turun lebih besar
             if (isRaining) {
                 minChange = -4;
-                maxChange = 0; // Saat hujan jarang ada orang datang baru
+                maxChange = 0; 
             }
 
             const change = Math.floor(Math.random() * (maxChange - minChange + 1)) + minChange;
             visitorCount += change;
 
-            // Batasan Logis (Clamping)
             if (hour >= 6 && hour < 18) {
                 if (visitorCount < 40) visitorCount = 40;
                 if (visitorCount > 300) visitorCount = 300;
@@ -650,21 +648,30 @@
             }
 
             visitorElement.textContent = visitorCount;
+            modalVisitorElement.textContent = visitorCount; // Sync ke modal
+
+            // Update status text di modal
+            if (change > 0) {
+                modalVisitorStatus.textContent = "Wisatawan Bertambah";
+                modalVisitorStatus.style.color = "#10b981";
+            } else if (change < 0) {
+                modalVisitorStatus.textContent = "Wisatawan Berkurang";
+                modalVisitorStatus.style.color = "#ef4444";
+            } else {
+                modalVisitorStatus.textContent = "Jumlah Stabil";
+                modalVisitorStatus.style.color = "#64748b";
+            }
 
             // Visual Feedback Warna
             if (change > 0) visitorElement.style.color = '#4ade80';
             else if (change < 0) visitorElement.style.color = '#f87171';
             
-            // Reset warna perlahan
             setTimeout(() => { 
                 visitorElement.style.color = 'rgba(255,255,255,0.9)'; 
             }, 800);
         }
 
-        // Jalankan setiap 3 detik
         setInterval(updateSmartVisitors, 3000);
-        
-        // Jalankan sekali awal
         updateSmartVisitors();
 
 
@@ -693,76 +700,43 @@
             observer.observe(el);
         });
 
-        // --- 5. REALTIME EVENT & MODAL LOGIC ---
+        // --- 5. MODAL LIVE POPUP LOGIC (VISITORS & WEATHER) ---
         
-        // KONFIGURASI SUPABASE
+        const modal = document.getElementById('live-modal');
+        const btnOpenModal = document.getElementById('btn-open-live-popup');
+        const btnCloseModal = document.getElementById('close-live-modal');
+        
+        // Buka Modal
+        btnOpenModal.addEventListener('click', () => {
+            modal.classList.add('active');
+            // Pastikan data terbaru tampil
+            modalVisitorElement.textContent = visitorCount;
+            if (isRaining) {
+                modalVisitorStatus.textContent = "Sedang Hujan";
+                modalVisitorStatus.style.color = "#f59e0b";
+            } else {
+                modalVisitorStatus.textContent = "Cerah / Berawan";
+                modalVisitorStatus.style.color = "#10b981";
+            }
+        });
+
+        // Tutup Modal
+        function closeModal() {
+            modal.classList.remove('active');
+        }
+        btnCloseModal.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+        // --- 6. SUPABASE EVENT LISTENER (MENJAGA EVENT TETAP JALAN) ---
         const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
         const { createClient } = supabase;
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
         const eventDisplay = document.getElementById('event-display');
-        const eventBadge = document.getElementById('event-count-badge');
-        
-        // Elemen Modal
-        const modal = document.getElementById('event-modal');
-        const btnOpenModal = document.getElementById('btn-open-events');
-        const btnCloseModal = document.getElementById('close-modal');
-        const modalList = document.getElementById('modal-event-list');
-        
-        let activeEvents = [];
 
-        // FUNGSI: Buka Modal
-        btnOpenModal.addEventListener('click', () => {
-            modal.classList.add('active');
-            setTimeout(() => {
-                renderModalList(activeEvents);
-            }, 100);
-        });
-
-        // FUNGSI: Tutup Modal
-        function closeModal() {
-            modal.classList.remove('active');
-        }
-        btnCloseModal.addEventListener('click', closeModal);
-        
-        // Tutup jika klik di luar area konten
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeModal();
-        });
-
-        // FUNGSI: Render HTML List
-        function renderModalList(events) {
-            if (!events || events.length === 0) {
-                modalList.innerHTML = '<div style="padding:20px; text-align:center; color:#94a3b8;">Tidak ada event aktif saat ini.</div>';
-                return;
-            }
-
-            const html = events.map((event, index) => {
-                const dateObj = new Date(event.event_date);
-                const dateStr = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-                const delayStyle = `animation-delay: ${index * 0.1}s`;
-
-                return `
-                    <div class="event-list-item" style="${delayStyle}">
-                        <span class="event-date-badge">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                            ${dateStr}
-                        </span>
-                        <div class="event-title">${event.event_name}</div>
-                        <div class="event-loc">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                            ${event.event_location || 'Lokasi TBD'}
-                        </div>
-                        <div class="event-desc">${event.description || 'Tidak ada deskripsi tersedia.'}</div>
-                    </div>
-                `;
-            }).join('');
-
-            modalList.innerHTML = html;
-        }
-
-        // FUNGSI: Load Event Awal
         async function loadEvents() {
             const { data, error } = await supabaseClient
                 .from('ngebelevent')
@@ -770,31 +744,13 @@
                 .eq('is_active', true)
                 .order('event_date', { ascending: true });
 
-            if (data) {
-                activeEvents = data;
-                updateHeaderWidget(data);
-            } else {
-                console.error("Gagal load event:", error);
-            }
-        }
-
-        // FUNGSI: Update Widget Header
-        function updateHeaderWidget(events) {
-            if (events.length > 0) {
-                eventDisplay.textContent = events[0].event_name;
-                if (events.length > 1) {
-                    eventBadge.style.display = 'flex';
-                    eventBadge.textContent = events.length;
-                } else {
-                    eventBadge.style.display = 'none';
-                }
+            if (data && data.length > 0) {
+                eventDisplay.textContent = data[0].event_name;
             } else {
                 eventDisplay.textContent = "Tidak ada event";
-                eventBadge.style.display = 'none';
             }
         }
 
-        // FUNGSI: Subscribe Realtime
         function subscribeToEvents() {
             supabaseClient
                 .channel('ngebelevent_changes')
@@ -805,7 +761,6 @@
                 .subscribe();
         }
 
-        // INIT
         document.addEventListener('DOMContentLoaded', () => {
             loadEvents();
             subscribeToEvents();
