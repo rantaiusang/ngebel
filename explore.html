@@ -18,7 +18,7 @@
             --bg-body: #f8fafc; --glass: rgba(255, 255, 255, 0.1);
             --radius-xl: 28px; --radius-lg: 20px; --radius-md: 12px;
             --shadow-soft: 0 10px 30px -5px rgba(0,0,0,0.05);
-            --nav-height: 80px; /* Sedikit lebih tinggi untuk dashboard */
+            --nav-height: 80px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -36,10 +36,9 @@
         
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
 
-        /* --- SMART HEADER (Revamped) --- */
+        /* --- SMART HEADER --- */
         header {
             position: sticky; top: 0; z-index: 1000;
-            /* Gradasi Gelap untuk kesan Teknologi/Smart City */
             background: linear-gradient(135deg, #0f172a 0%, #115e59 100%);
             backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid rgba(255,255,255,0.1);
@@ -50,10 +49,7 @@
         }
         .header-content { width: 100%; display: flex; justify-content: space-between; align-items: center; }
         
-        /* Brand Area */
-        .brand-area {
-            display: flex; align-items: center; gap: 12px;
-        }
+        .brand-area { display: flex; align-items: center; gap: 12px; }
         .btn-back {
             display: flex; align-items: center; gap: 8px;
             font-weight: 600; color: rgba(255,255,255,0.8); font-size: 0.9rem;
@@ -70,13 +66,10 @@
         }
         .smart-subtitle { font-size: 0.65rem; font-weight: 400; opacity: 0.7; font-family: 'JetBrains Mono', monospace; text-transform: uppercase; }
 
-        /* Smart Dashboard Widgets */
-        .smart-dashboard {
-            display: flex; gap: 10px; align-items: center;
-        }
+        .smart-dashboard { display: flex; gap: 10px; align-items: center; }
 
         .data-pill {
-            display: flex; flex-direction: column; align-items: flex-end; /* Align right for numbers */
+            display: flex; flex-direction: column; align-items: flex-end;
             background: rgba(255, 255, 255, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 6px 14px; border-radius: 12px;
@@ -92,19 +85,11 @@
             display: flex; align-items: center; justify-content: flex-end; gap: 4px;
         }
         .pill-value {
-            font-family: 'JetBrains Mono', monospace; /* Font ala data/teknis */
+            font-family: 'JetBrains Mono', monospace;
             font-size: 1rem; font-weight: 700; color: white;
             display: flex; align-items: center; gap: 6px;
         }
         
-        /* Status Indicators */
-        .status-dot {
-            width: 8px; height: 8px; border-radius: 50%; background-color: #4ade80; /* Green */
-            box-shadow: 0 0 8px #4ade80;
-        }
-        .status-dot.busy { background-color: #f87171; box-shadow: 0 0 8px #f87171; } /* Red */
-        .status-dot.calm { background-color: #60a5fa; box-shadow: 0 0 8px #60a5fa; } /* Blue */
-
         @keyframes pulse-live {
             0% { opacity: 1; transform: scale(1); }
             50% { opacity: 0.5; transform: scale(0.8); }
@@ -116,19 +101,19 @@
             animation: pulse-live 1.5s infinite ease-in-out;
         }
 
-        /* Mobile Adjustments for Header */
         @media (max-width: 600px) {
-            .smart-title { display: none; } /* Hide text on very small screens */
+            .smart-title { display: none; }
             .data-pill { padding: 6px 10px; min-width: auto; }
             .pill-value { font-size: 0.85rem; }
             .pill-label { font-size: 0.55rem; }
         }
 
-        /* --- Existing Styles (Hero, Map, Cards) --- */
+        /* --- HERO --- */
         .hero-section { padding: 30px 0; }
         .page-title { font-size: clamp(2rem, 5vw, 3rem); color: var(--primary-dark); margin-bottom: 8px; }
         .page-subtitle { color: #64748b; font-size: 1.1rem; max-width: 500px; }
 
+        /* --- MAP & PINS (UPDATED: Blinking Effect) --- */
         .map-container {
             position: relative; width: 100%; height: 300px;
             background: #e2e8f0; border-radius: var(--radius-xl);
@@ -139,22 +124,45 @@
         }
         .map-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(15,118,110,0.1), rgba(15,118,110,0.3)); }
         
+        /* Animation Keyframes */
+        @keyframes pulse-pin {
+            0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+        }
+
         .map-pin {
             position: absolute; width: 40px; height: 40px;
             background: white; border-radius: 50% 50% 0 50%;
             transform: rotate(45deg); cursor: pointer;
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.2rem; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 10;
+            font-size: 1.2rem; z-index: 10;
+            /* Infinite Blinking Pulse */
+            animation: pulse-pin 2s infinite;
         }
-        .map-pin:hover, .map-pin.active { transform: rotate(45deg) scale(1.2) translateY(-5px); z-index: 20; }
+        
+        /* Ripple Effect (Outer Ring) */
+        .map-pin::after {
+            content: ''; position: absolute; width: 100%; height: 100%;
+            border-radius: 50% 50% 0 50%;
+            border: 2px solid rgba(255,255,255,0.5);
+            animation: pulse-pin 2s infinite;
+        }
+
+        .map-pin:hover, .map-pin.active { 
+            transform: rotate(45deg) scale(1.2) translateY(-5px); 
+            z-index: 20; 
+            animation: none; /* Stop pulsing on hover for clarity */
+        }
+        .map-pin:hover::after, .map-pin.active::after { display: none; }
+        
         .map-pin i { transform: rotate(-45deg); }
         
-        .pin-1 { top: 40%; left: 30%; background: #ef4444; }
-        .pin-2 { top: 25%; left: 60%; background: #f59e0b; }
-        .pin-3 { top: 60%; left: 45%; background: #0ea5e9; }
-        .pin-4 { top: 30%; left: 20%; background: #10b981; }
+        .pin-1 { top: 40%; left: 30%; background: #ef4444; animation-delay: 0s; }
+        .pin-2 { top: 25%; left: 60%; background: #f59e0b; animation-delay: 0.5s; }
+        .pin-3 { top: 60%; left: 45%; background: #0ea5e9; animation-delay: 1s; }
+        .pin-4 { top: 30%; left: 20%; background: #10b981; animation-delay: 1.5s; }
 
         .map-legend {
             position: absolute; bottom: 20px; left: 20px; right: 20px;
@@ -165,9 +173,8 @@
         .legend-item { display: flex; align-items: center; gap: 6px; color: #475569; }
         .dot { width: 8px; height: 8px; border-radius: 50%; }
 
-        .category-scroll {
-            display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 30px; scrollbar-width: none;
-        }
+        /* --- CARDS (UPDATED: Breathing Image Effect) --- */
+        .category-scroll { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 30px; scrollbar-width: none; }
         .category-scroll::-webkit-scrollbar { display: none; }
         .cat-chip {
             flex: 0 0 auto; padding: 10px 20px; background: white; border: 1px solid #e2e8f0;
@@ -176,14 +183,27 @@
         .cat-chip.active, .cat-chip:hover { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3); }
 
         .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px; margin-bottom: 40px; }
+        
+        @keyframes breathe-overlay {
+            0% { box-shadow: inset 0 0 20px rgba(15, 118, 110, 0.05); }
+            50% { box-shadow: inset 0 0 50px rgba(15, 118, 110, 0.3); }
+            100% { box-shadow: inset 0 0 20px rgba(15, 118, 110, 0.05); }
+        }
+
         .spot-card {
             background: white; border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-soft);
             transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer; position: relative;
         }
         .spot-card:hover { transform: translateY(-6px); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1); }
-        .card-img-wrapper { position: relative; height: 220px; overflow: hidden; }
+        
+        .card-img-wrapper { 
+            position: relative; height: 220px; overflow: hidden; 
+            /* Breathing Light Animation Applied */
+            animation: breathe-overlay 4s infinite ease-in-out;
+        }
         .card-img-wrapper img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
         .spot-card:hover .card-img-wrapper img { transform: scale(1.05); }
+        
         .card-badge {
             position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.9); backdrop-filter: blur(4px);
             padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -198,6 +218,7 @@
         }
         .btn-card:hover { background: var(--primary); color: white; }
 
+        /* --- SEASONAL BANNER --- */
         .seasonal-banner {
             background: linear-gradient(135deg, #1e293b, #0f172a); color: white; padding: 30px; border-radius: var(--radius-xl);
             display: flex; align-items: center; justify-content: space-between; margin-top: 40px;
@@ -220,11 +241,9 @@
 </head>
 <body>
 
-    <!-- SMART HEADER REDESIGNED -->
+    <!-- SMART HEADER -->
     <header>
         <div class="container header-content">
-            
-            <!-- Left: Branding -->
             <div class="brand-area">
                 <a href="index.html" class="btn-back">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
@@ -235,18 +254,16 @@
                 </div>
             </div>
             
-            <!-- Right: Real-time Data Dashboard -->
             <div class="smart-dashboard">
-                
                 <!-- Widget 1: Live Clock -->
                 <div class="data-pill">
-                    <span class="pill-label">Local Time <span class="live-indicator"></span></span>
+                    <span class="pill-label">Waktu<span class="live-indicator"></span></span>
                     <span class="pill-value" id="smart-clock">00:00</span>
                 </div>
 
-                <!-- Widget 2: Live Visitor (Simulated IoT) -->
+                <!-- Widget 2: Live Visitor -->
                 <div class="data-pill">
-                    <span class="pill-label">Active Visitors</span>
+                    <span class="pill-label">Visitors</span>
                     <span class="pill-value">
                         <span id="visitor-count">--</span> 
                         <span style="font-size:0.7em; color:rgba(255,255,255,0.6)">org</span>
@@ -255,12 +272,11 @@
 
                 <!-- Widget 3: Weather -->
                 <div class="data-pill" id="weather-widget">
-                    <span class="pill-label">Weather Live</span>
+                    <span class="pill-label">Cuaca</span>
                     <span class="pill-value">
                         <span id="weather-icon">...</span> <span id="weather-temp">--</span>°
                     </span>
                 </div>
-
             </div>
         </div>
     </header>
@@ -391,7 +407,6 @@
         const visitorElement = document.getElementById('visitor-count');
         
         function updateVisitors() {
-            // Randomly add or subtract visitors to simulate real movement
             const change = Math.floor(Math.random() * 5) - 2; // -2 to +2
             visitorCount += change;
             if(visitorCount < 50) visitorCount = 50; // Minimum limit
@@ -421,7 +436,6 @@
                 const current = data.current_weather;
                 
                 let icon = '';
-                // Simplified code mapping for the small icon space
                 if (current.weathercode <= 1) icon = '☀️';
                 else if (current.weathercode <= 3) icon = '☁️';
                 else if (current.weathercode <= 48) icon = '🌫️';
@@ -440,7 +454,7 @@
         }
         fetchWeather();
 
-        // --- 4. Existing Interactions (Pins, Scroll, etc) ---
+        // --- 4. Existing Interactions ---
         const pins = document.querySelectorAll('.map-pin');
         pins.forEach(pin => {
             pin.addEventListener('click', function() {
