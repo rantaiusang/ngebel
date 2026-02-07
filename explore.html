@@ -549,15 +549,59 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // --- 2. ALGORITMA VISITOR CERDAS (TERGANTUNG WAKTU & CUACA) ---
+        // --- 2. REAL-TIME WEATHER LOGIC (FIXED) ---
+        const weatherIconEl = document.getElementById('weather-icon');
+        const weatherTempEl = document.getElementById('weather-temp');
+        
+        // Variabel Global agar bisa dibaca oleh logika visitor
+        let currentWeatherIcon = '';
+        let isRaining = false;
+
+        async function fetchWeather() {
+            const lat = -7.87;
+            const lon = 111.55;
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
+            
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Weather Error');
+                const data = await response.json();
+                const current = data.current_weather;
+                
+                // Tentukan Icon & Status Hujan
+                // PERBAIKAN TYPO EMOJI (menggunakan emoji standar)
+                if (current.weathercode <= 1) { currentWeatherIcon = '☀️'; isRaining = false; }
+                else if (current.weathercode <= 3) { currentWeatherIcon = '☁️'; isRaining = false; }
+                else if (current.weathercode <= 48) { currentWeatherIcon = '🌫️'; isRaining = false; }
+                else if (current.weathercode <= 67) { currentWeatherIcon = '🌧️'; isRaining = true; }
+                else if (current.weathercode <= 77) { currentWeatherIcon = '❄️'; isRaining = true; }
+                else { currentWeatherIcon = '⚡'; isRaining = true; }
+
+                weatherIconEl.textContent = currentWeatherIcon;
+                weatherTempEl.textContent = Math.round(current.temperature);
+                
+                // Trigger update visitor saat cuaca berubah
+                adjustVisitorCountByWeather();
+
+            } catch (error) {
+                console.error(error);
+                weatherIconEl.textContent = '📡';
+                weatherTempEl.textContent = '--';
+                isRaining = false;
+            }
+        }
+
+        // Panggil pertama kali saat load
+        fetchWeather();
+        // Update cuaca setiap 10 menit (600000 ms) agar real-time tapi hemat kuota
+        setInterval(fetchWeather, 600000);
+
+
+        // --- 3. ALGORITMA VISITOR CERDAS (FIXED & INTEGRATED) ---
         
         const visitorElement = document.getElementById('visitor-count');
-        const weatherIconEl = document.getElementById('weather-icon');
         
-        // Variabel Global untuk cuaca
-        let isRaining = false;
-        
-        // Tentukan Base Count Berdasarkan Jam (Time-Based)
+        // Tentukan Base Count Berdasarkan Jam
         const hour = new Date().getHours();
         let visitorBase = 50; 
 
@@ -568,28 +612,22 @@
 
         let visitorCount = visitorBase; 
 
-        // Fungsi Overwrite fetchWeather agar sinkron dengan visitor
-        const originalFetchWeather = fetchWeather;
-        
-        fetchWeather = async function() {
-            // Jalankan fetch cuaca asli
-            await originalFetchWeather();
-            
-            const icon = weatherIconEl.textContent;
-            
-            // Logika Jika Hujan
-            if (icon === '🌧️' || icon === '⚡' || icon === '❄️') {
-                isRaining = true;
-                // Turunkan drastis jika hujan
-                visitorCount -= 40; 
-                if(visitorCount < 10) visitorCount = 10;
-            } else {
-                isRaining = false;
+        // Fungsi penyesuaian visitor jika hujan
+        function adjustVisitorCountByWeather() {
+            if (isRaining) {
+                // Jika baru mulai hujan, turunkan count
+                if (visitorCount > 50) visitorCount -= 40;
+                if(visitorCount < 20) visitorCount = 20;
+                visitorElement.textContent = visitorCount;
+                
+                // Feedback Visual
+                visitorElement.style.color = '#f87171';
+                setTimeout(() => { visitorElement.style.color = 'rgba(255,255,255,0.9)'; }, 800);
             }
         }
 
         function updateSmartVisitors() {
-            // Random fluktuasi kecil (-3 sampai +3)
+            // Random fluktuasi kecil
             let minChange = -2;
             let maxChange = 3;
 
@@ -603,7 +641,6 @@
             visitorCount += change;
 
             // Batasan Logis (Clamping)
-            // Siang hari tidak boleh < 50, Malam hari tidak boleh > 100
             if (hour >= 6 && hour < 18) {
                 if (visitorCount < 40) visitorCount = 40;
                 if (visitorCount > 300) visitorCount = 300;
@@ -614,12 +651,11 @@
 
             visitorElement.textContent = visitorCount;
 
-            // Visual Feedback
+            // Visual Feedback Warna
             if (change > 0) visitorElement.style.color = '#4ade80';
             else if (change < 0) visitorElement.style.color = '#f87171';
-            else visitorElement.style.color = 'rgba(255,255,255,0.9)';
-
-            // Reset warna
+            
+            // Reset warna perlahan
             setTimeout(() => { 
                 visitorElement.style.color = 'rgba(255,255,255,0.9)'; 
             }, 800);
@@ -628,12 +664,9 @@
         // Jalankan setiap 3 detik
         setInterval(updateSmartVisitors, 3000);
         
-        // Jalankan sekali awal & panggil weather
+        // Jalankan sekali awal
         updateSmartVisitors();
-        fetchWeather();
 
-        // --- 3. Real-time Weather Logic (Sudah di-Overwrite di atas) ---
-        // Note: Fungsi fetchWeather asli dipanggil di dalam overriden function
 
         // --- 4. INTERACTION & ANIMATION ---
         const pins = document.querySelectorAll('.map-pin');
