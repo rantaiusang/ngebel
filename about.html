@@ -25,7 +25,7 @@
             --radius-xl: 32px; --radius-lg: 24px; --radius-md: 12px;
             --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.05);
             --shadow-hover: 0 20px 50px -12px rgba(15, 118, 110, 0.3);
-            --nav-height: 80px;
+            --nav-height: 0px; /* Diubah jadi 0 karena nav bawah dihilangkan */
             --font-mono: 'JetBrains Mono', monospace;
         }
 
@@ -36,7 +36,7 @@
             background-color: var(--bg-body);
             color: var(--text-main);
             line-height: 1.6;
-            padding-bottom: calc(var(--nav-height) + 40px);
+            padding-bottom: 40px; 
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
         }
@@ -45,21 +45,35 @@
         
         p { color: var(--text-muted); margin-bottom: 1rem; font-size: 1.05rem; }
         a { text-decoration: none; color: inherit; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 2; }
 
-        /* --- 2. ANIMATIONS (HALUS) --- */
+        /* --- 2. ANIMATIONS --- */
         @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
         @keyframes fadeInUp { 
             from { opacity: 0; transform: translateY(30px); } 
             to { opacity: 1; transform: translateY(0); } 
         }
-        @keyframes spin-radar {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+
+        /* --- 3. HEADER STYLE (SEPERTI COMMUNITY) --- */
+        header {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(255,255,255,0.85); backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0,0,0,0.05); height: 70px;
+            display: flex; align-items: center;
         }
+        .nav-content { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; gap: 20px; }
+        
+        .back-btn {
+            display: flex; align-items: center; gap: 8px;
+            color: var(--text-muted); font-weight: 600; font-size: 0.9rem;
+            padding: 8px 16px; border-radius: 50px;
+            background: rgba(255,255,255,0.6); border: 1px solid rgba(0,0,0,0.05);
+            transition: all 0.2s ease; flex-shrink: 0; cursor: pointer;
+        }
+        .back-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+        .back-btn svg { width: 18px; height: 18px; stroke-width: 2.5; }
 
-        /* --- 3. COMPONENTS --- */
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 2; }
-
+        /* --- 4. COMPONENTS --- */
         .btn {
             display: inline-flex; align-items: center; justify-content: center;
             padding: 16px 32px; font-weight: 700; border-radius: 50px;
@@ -68,49 +82,8 @@
         .btn-primary { background: var(--primary); color: white; box-shadow: 0 10px 20px rgba(15, 118, 110, 0.3); }
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(15, 118, 110, 0.4); background: var(--primary-light); }
 
-        /* --- 4. HEADER --- */
-        header {
-            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-            background: rgba(255,255,255,0.8); backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255,255,255,0.5); height: 70px; display: flex; align-items: center;
-        }
-        .brand { display: flex; align-items: center; gap: 10px; font-family: 'Outfit'; font-weight: 800; font-size: 1.3rem; color: var(--primary); cursor: pointer; text-decoration: none; }
-        
-        /* --- 5. BOTTOM NAVIGATION --- */
-        .bottom-nav {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            width: 92%; max-width: 450px; height: auto; min-height: var(--nav-height);
-            background: rgba(255,255,255,0.9); backdrop-filter: blur(20px);
-            border-radius: 40px;
-            display: flex; justify-content: space-around; align-items: center;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-            z-index: 1000; padding: 10px;
-            border: 1px solid rgba(255,255,255,0.6); flex-wrap: nowrap;
-        }
-        .nav-item {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            color: #94a3b8; font-size: 0.7rem; font-weight: 600;
-            padding: 8px; border-radius: 20px; transition: all 0.3s ease;
-            min-width: 60px; position: relative; cursor: pointer;
-            flex: 1 1 auto; text-decoration: none;
-        }
-        .nav-item svg { width: 22px; height: 22px; stroke-width: 2; stroke: currentColor; fill: none; margin-bottom: 4px; transition: all 0.3s; }
-        
-        .nav-item.active { color: var(--primary); }
-        .nav-item.active svg { transform: scale(1.1); stroke-width: 2.5; filter: drop-shadow(0 4px 6px rgba(15, 118, 110, 0.2)); }
-
-        /* Desktop Nav */
-        @media (min-width: 768px) {
-            body { padding-bottom: 0; padding-left: 280px; }
-            .bottom-nav {
-                top: 0; bottom: 0; left: 0; transform: none; width: 280px; height: 100vh;
-                flex-direction: column; justify-content: flex-start; gap: 5px; padding-top: 100px;
-                border-radius: 0; box-shadow: 10px 0 30px rgba(0,0,0,0.05); border-right: 1px solid #eee;
-                align-items: stretch;
-            }
-            .nav-item { width: 100%; flex-direction: row; height: 50px; padding: 0 20px; justify-content: flex-start; gap: 15px; font-size: 1rem; flex: none; }
-            .nav-item svg { margin-bottom: 0; }
-        }
+        /* --- 5. BOTTOM NAVIGATION (DIHAPUS) --- */
+        .bottom-nav { display: none !important; }
 
         /* --- 6. SECTIONS & CONTENT --- */
         .page-section { display: block; animation: fadeInUp 0.6s ease-out; }
@@ -119,9 +92,8 @@
         .hero-about {
             position: relative; height: 60vh; min-height: 450px; border-radius: 32px;
             overflow: hidden; display: flex; align-items: center; justify-content: center;
-            color: white; text-align: center; margin-bottom: 60px;
+            color: white; text-align: center; margin: 30px 0 60px 0; /* Margin disesuaikan karena ada header */
             box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
-            /* Latar belakang dasar gelap untuk kontras partikel */
             background: radial-gradient(circle at bottom, #0f766e 0%, #022c22 100%);
         }
 
@@ -203,20 +175,21 @@
         .fade-up-3 { animation-delay: 0.3s; }
 
         @media (max-width: 767px) {
-            .bottom-nav { overflow-x: auto; justify-content: flex-start; gap: 6px; padding: 12px 10px; }
-            .bottom-nav::-webkit-scrollbar { display: none; }
-            .nav-item { flex: 0 0 auto !important; min-width: 70px; white-space: nowrap; }
+            .hero-about { margin-top: 20px; border-radius: 20px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- HEADER -->
+    <!-- HEADER (KEMBALI DIPAKAI, STYLE SEPERTI COMMUNITY) -->
     <header>
-        <a href="index.html" class="brand">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.74 5.88-5.74 5.88-5.74-5.88L12 2.69M12 22a9.97 9.97 0 0 1-7.07-2.93l-1.41 1.41A11.97 11.97 0 0 0 12 24a11.97 11.97 0 0 0 8.49-3.52l-1.41-1.41A9.97 9.97 0 0 1 12 22z"/></svg>
-            Ngebel
-        </a>
+        <div class="nav-content">
+            <div class="back-btn" onclick="window.location.href='index.html'">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                Kembali
+            </div>
+            <div style="font-weight: 700; color: var(--primary);"></div>
+        </div>
     </header>
 
     <main class="container">
@@ -231,7 +204,7 @@
 
             <div class="hero-content fade-up-1">
                 <div class="iot-status">
-                    <div class="blink-dot"></div> SYSTEM ONLINE: QUANTUM NETWORK ACTIVE
+                    <div class="blink-dot"></div> SYSTEM : ACTIVE
                 </div>
                 <h1 style="font-size: clamp(2.5rem, 6vw, 3.5rem); line-height: 1.1; margin-bottom: 16px;">
                     Membangun <br>
@@ -373,17 +346,18 @@
 
     </main>
 
-    <!-- NAVIGATION CONTAINER -->
-    <nav class="bottom-nav" id="main-nav"></nav>
-
+    <!-- NAVIGATION CONTAINER (DIHAPIS) -->
+    <nav class="bottom-nav" id="main-nav" style="display:none;"></nav>
     <script>
-        // --- 1. QUANTUM & IOT ANIMATION LOGIC ---
+        // --- 1. QUANTUM & IOT ANIMATION LOGIC (ENHANCED VERSION) ---
         const canvas = document.getElementById('quantumCanvas');
         const ctx = canvas.getContext('2d');
         
         let width, height;
         let particles = [];
-        let mouse = { x: null, y: null, radius: 150 };
+        // Menambah partikel background untuk efek kedalaman (depth)
+        let backgroundParticles = []; 
+        let mouse = { x: null, y: null, radius: 180 };
 
         // Resize handler
         function resize() {
@@ -408,40 +382,66 @@
 
         // Touch interaction (Mobile)
         canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault(); // Mencegah scroll saat menyentuh canvas
             const rect = canvas.getBoundingClientRect();
             mouse.x = e.touches[0].clientX - rect.left;
             mouse.y = e.touches[0].clientY - rect.top;
-        });
+        }, { passive: false });
 
         class Particle {
-            constructor() {
+            constructor(isBackground = false) {
+                this.isBackground = isBackground;
                 this.x = Math.random() * width;
                 this.y = Math.random() * height;
-                this.vx = (Math.random() - 0.5) * 0.5; // Kecepatan lambat untuk efek "Data mengalir"
-                this.vy = (Math.random() - 0.5) * 0.5;
-                this.size = Math.random() * 2 + 1;
+                
+                // Kecepatan lebih variatif untuk efek real
+                const speedMult = isBackground ? 0.2 : 0.8;
+                this.vx = (Math.random() - 0.5) * speedMult; 
+                this.vy = (Math.random() - 0.5) * speedMult;
+                
+                // Ukuran dasar
+                this.baseSize = isBackground ? Math.random() * 1.5 : Math.random() * 2.5 + 1;
+                this.size = this.baseSize;
+                
+                // Efek Bernapas (Pulse)
+                this.pulseSpeed = Math.random() * 0.05 + 0.02;
+                this.pulseAngle = Math.random() * Math.PI * 2;
                 
                 // Tipe partikel: 0 = Alam/Teal, 1 = Tech/Gold
-                this.type = Math.random() > 0.6 ? 1 : 0; 
+                // Background partikel kebanyakan tipe 0 (abu-abu/teal samar)
+                this.type = isBackground ? (Math.random() > 0.8 ? 1 : 0) : (Math.random() > 0.5 ? 1 : 0); 
+                
+                // Warna khusus untuk background agar lebih redup
+                this.alpha = isBackground ? 0.3 : 0.8;
             }
 
             draw() {
+                // Update ukuran berdasarkan efek Pulse (Berdenyut)
+                this.pulseAngle += this.pulseSpeed;
+                const pulse = Math.sin(this.pulseAngle) * 0.5 + 0.5; // 0 sampai 1
+                this.size = this.baseSize + (pulse * (this.baseSize * 0.5));
+
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                 
-                if (this.type === 0) {
-                    // Alam / Data Aman
-                    ctx.fillStyle = 'rgba(20, 184, 166, 0.7)'; // Teal
+                if (this.isBackground) {
+                    // Warna abu-abu kebiruan samar untuk kedalaman
+                    ctx.fillStyle = `rgba(100, 116, 139, ${this.alpha * 0.5})`;
                 } else {
-                    // Quantum / Tech Aktif
-                    ctx.fillStyle = 'rgba(245, 158, 11, 0.9)'; // Gold/Orange
+                    if (this.type === 0) {
+                        // Alam / Data Aman (Teal)
+                        ctx.fillStyle = `rgba(20, 184, 166, ${this.alpha})`; 
+                    } else {
+                        // Quantum / Tech Aktif (Gold/Orange)
+                        ctx.fillStyle = `rgba(245, 158, 11, ${this.alpha})`; 
+                    }
                 }
                 
                 ctx.fill();
                 
-                // Efek Glow untuk tipe tech
-                if (this.type === 1) {
-                    ctx.shadowBlur = 10;
+                // Efek Glow (Cahaya) hanya untuk partikel depan tipe Tech
+                if (!this.isBackground && this.type === 1) {
+                    ctx.shadowBlur = 15 + (pulse * 10); // Glow berkedip
                     ctx.shadowColor = '#f59e0b';
                 } else {
                     ctx.shadowBlur = 0;
@@ -449,16 +449,16 @@
             }
 
             update() {
-                // Gerakan dasar
                 this.x += this.vx;
                 this.y += this.vy;
 
-                // Pantulan dinding
+                // Pantulan dinding (Bounce)
                 if (this.x < 0 || this.x > width) this.vx *= -1;
                 if (this.y < 0 || this.y > height) this.vy *= -1;
 
                 // Interaksi Mouse (Repulsion - Menjauh jika didekati)
-                if (mouse.x != null) {
+                // Hanya partikel depan yang bereaksi kuat terhadap mouse
+                if (!this.isBackground && mouse.x != null) {
                     let dx = mouse.x - this.x;
                     let dy = mouse.y - this.y;
                     let distance = Math.sqrt(dx * dx + dy * dy);
@@ -467,11 +467,14 @@
                         const forceDirectionX = dx / distance;
                         const forceDirectionY = dy / distance;
                         const force = (mouse.radius - distance) / mouse.radius;
-                        const directionX = forceDirectionX * force * 3; // Kekuatan dorongan
-                        const directionY = forceDirectionY * force * 3;
+                        const directionX = forceDirectionX * force * 4; 
+                        const directionY = forceDirectionY * force * 4;
 
                         this.x -= directionX;
                         this.y -= directionY;
+                        
+                        // Efek tambahan: partikel membesar saat dekat mouse
+                        this.size = this.baseSize * 2.5; 
                     }
                 }
 
@@ -481,28 +484,60 @@
 
         function initParticles() {
             particles = [];
-            // Jumlah partikel berdasarkan lebar layar
-            let numberOfParticles = (width * height) / 9000;
+            backgroundParticles = [];
+            
+            // Hitung jumlah partikel berdasarkan luas layar
+            let area = width * height;
+            // Partikel utama (depan)
+            let numberOfParticles = Math.floor(area / 11000); 
+            // Partikel latar (background - lebih banyak tapi lebih kecil/samar)
+            let numberOfBgParticles = Math.floor(area / 4000);
+
             for (let i = 0; i < numberOfParticles; i++) {
-                particles.push(new Particle());
+                particles.push(new Particle(false));
+            }
+            for (let i = 0; i < numberOfBgParticles; i++) {
+                backgroundParticles.push(new Particle(true));
             }
         }
 
         function connect() {
-            // Menghubungkan partikel yang berdekatan (IoT Network Effect)
+            let maxDistance = 140;
             let opacityValue = 1;
+
+            // Hanya menghubungkan partikel depan agar performa lancar
             for (let a = 0; a < particles.length; a++) {
                 for (let b = a; b < particles.length; b++) {
                     let dx = particles[a].x - particles[b].x;
                     let dy = particles[a].y - particles[b].y;
-                    let distance = dx * dx + dy * dy;
+                    let distance = Math.sqrt(dx * dx + dy * dy);
 
-                    // Jarak koneksi
-                    if (distance < (width/7) * (height/7)) {
-                        opacityValue = 1 - (distance / 20000);
+                    if (distance < maxDistance) {
+                        // Opacity garis berubah berdasarkan jarak (makin dekat makin terang)
+                        opacityValue = 1 - (distance / maxDistance);
                         
-                        ctx.strokeStyle = `rgba(255, 255, 255, ${opacityValue * 0.2})`; // Garis tipis putih transparan
-                        ctx.lineWidth = 1;
+                        // Warna garis: Jika salah satu partikel adalah Tech (Gold), garis sedikit keemasan
+                        let isTechLine = (particles[a].type === 1 || particles[b].type === 1);
+                        let lineColor = isTechLine 
+                            ? `rgba(245, 158, 11, ${opacityValue * 0.4})` // Gold hint
+                            : `rgba(255, 255, 255, ${opacityValue * 0.15})`; // White standard
+
+                        // Jika garis dekat mouse, buat lebih terang (Interaksi)
+                        if (mouse.x != null) {
+                            let mouseDx = mouse.x - particles[a].x;
+                            let mouseDy = mouse.y - particles[a].y;
+                            let mouseDist = Math.sqrt(mouseDx*mouseDx + mouseDy*mouseDy);
+                            if (mouseDist < 100) {
+                                lineColor = `rgba(255, 255, 255, ${opacityValue * 0.5})`;
+                                ctx.lineWidth = 1.5;
+                            } else {
+                                ctx.lineWidth = 1;
+                            }
+                        } else {
+                            ctx.lineWidth = 1;
+                        }
+
+                        ctx.strokeStyle = lineColor;
                         ctx.beginPath();
                         ctx.moveTo(particles[a].x, particles[a].y);
                         ctx.lineTo(particles[b].x, particles[b].y);
@@ -516,9 +551,17 @@
             requestAnimationFrame(animate);
             ctx.clearRect(0, 0, width, height);
 
+            // 1. Gambar Partikel Background (Kedalaman)
+            for (let i = 0; i < backgroundParticles.length; i++) {
+                backgroundParticles[i].update();
+            }
+
+            // 2. Gambar Partikel Utama (Interaksi)
             for (let i = 0; i < particles.length; i++) {
                 particles[i].update();
             }
+            
+            // 3. Gambar Koneksi (Network)
             connect();
         }
 
@@ -526,40 +569,9 @@
         resize();
         animate();
 
-
-        // --- 2. KONFIGURASI MENU (ORIGINAL) ---
-        const publicMenu = [
-            { id: 'home', icon: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22 23 18 23 2 16 6 8 2 1 6"></polyline>', label: 'Home', link: 'index.html' },
-            { id: 'explore', icon: '<circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>', label: 'Explore', link: 'explore.html' },
-            { id: 'map', icon: '<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line>', label: 'Peta', link: 'map.html' },
-            { id: 'community', icon: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>', label: 'Komunitas', link: 'community.html' },
-            { id: 'market', icon: '<circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>', label: 'Market', link: 'katalog.html' },
-            { id: 'about', icon: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>', label: 'Tentang', link: 'about.html' },
-            { id: 'contact', icon: '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline>', label: 'Kontak', link: 'contact.html' }
-        ];
-
-        // --- RENDER NAVIGASI ---
-        function renderNav() {
-            const navContainer = document.getElementById('main-nav');
-            navContainer.innerHTML = '';
-            publicMenu.forEach((item) => {
-                const a = document.createElement('div');
-                a.className = `nav-item ${item.id === 'about' ? 'active' : ''}`;
-                a.innerHTML = `
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">${item.icon}</svg>
-                    <span>${item.label}</span>
-                `;
-                if (item.link) {
-                    a.onclick = () => window.location.href = item.link;
-                }
-                navContainer.appendChild(a);
-            });
-        }
-
-        // --- INIT ---
-        document.addEventListener('DOMContentLoaded', () => {
-            renderNav();
-        });
+        // --- SCRIPT NAVIGASI TIDAK DIPERLUKAN KARENA MENU DISEMBUNYIKAN ---
     </script>
+
+    
 </body>
 </html>
