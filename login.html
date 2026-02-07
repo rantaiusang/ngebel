@@ -181,23 +181,18 @@
         // --- FUNGSI LUPA PASSWORD ---
         async function handleForgotPassword(e) {
             e.preventDefault();
-            
-            // Ambil email dari input form
             const emailInput = document.getElementById('login-email');
             const email = emailInput.value;
 
-            // Validasi sederhana
             if (!email || !email.includes('@')) {
                 showError('login-error', 'Mohon masukkan email yang valid terlebih dahulu.');
                 document.getElementById('login-success').style.display = 'none';
                 return;
             }
 
-            // Reset pesan error/sukses sebelumnya
             showError('login-error', '');
             document.getElementById('login-success').style.display = 'none';
             
-            // Ubah tombol login jadi loading sementara untuk feedback visual
             const btn = document.getElementById('login-btn');
             const originalText = btn.querySelector('.btn-text').innerText;
             btn.querySelector('.btn-text').innerText = 'Mengirim...';
@@ -205,14 +200,12 @@
             btn.disabled = true;
 
             try {
-                // Panggil API Reset Password Supabase
                 const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-                    redirectTo: window.location.href // Redirect kembali ke halaman login setelah reset
+                    redirectTo: window.location.href
                 });
 
                 if (error) throw error;
 
-                // Tampilkan pesan sukses
                 const successEl = document.getElementById('login-success');
                 successEl.innerText = "Link reset password telah dikirim ke email Anda. Silakan cek inbox.";
                 successEl.style.display = 'block';
@@ -221,71 +214,98 @@
                 console.error("Reset Password Error:", err);
                 showError('login-error', 'Gagal mengirim email reset: ' + err.message);
             } finally {
-                // Kembalikan tombol ke kondisi semula
                 btn.querySelector('.btn-text').innerText = originalText;
                 btn.querySelector('.spinner').style.display = 'none';
                 btn.disabled = false;
             }
         }
 
-        // --- FUNGSI LOGIN ---
+        // --- FUNGSI LOGIN (DIPERBAIKI) ---
         async function handleLogin(e) {
             e.preventDefault();
 
             const email = document.getElementById('login-email').value;
             const password = document.getElementById('login-password').value;
 
+            // 1. Set Loading State
             setLoading('login-btn', true);
             showError('login-error', '');
-            document.getElementById('login-success').style.display = 'none'; // Sembunyikan pesan sukses reset jika ada
+            document.getElementById('login-success').style.display = 'none';
 
             try {
-                // 1. Login Auth Supabase
+                console.log("Memulai proses login...");
+                
+                // 2. Login Auth Supabase
                 const { data, error } = await supabase.auth.signInWithPassword({
                     email,
                     password
                 });
 
                 if (error) {
+                    console.error("Gagal Login Auth:", error);
                     throw new Error("Email atau password salah: " + error.message);
                 }
 
                 const userId = data.user.id;
                 console.log("Auth Berhasil. User ID:", userId);
 
-                // 2. Cek Profil di Tabel 'ngebelusers'
-                let { data: profile, error: profileError } = await supabase
-                    .from('ngebelusers')
-                    .select('*')
-                    .eq('id', userId)
-                    .single();
+                // 3. Cek Profil di Tabel 'ngebelusers'
+                let profile = null;
+                let profileError = null;
 
-                // Fallback ke kolom 'user_id' jika 'id' gagal
-                if (profileError) {
-                    console.warn("Gagal cari di kolom 'id', mencoba kolom 'user_id'...");
-                    const fallback = await supabase
+                // Coba kolom 'id' dulu
+                try {
+                    const result = await supabase
                         .from('ngebelusers')
                         .select('*')
-                        .eq('user_id', userId)
+                        .eq('id', userId)
                         .single();
                     
-                    if (fallback.error) {
-                        console.error("Profile Error:", fallback.error);
-                        throw new Error("Data profil tidak ditemukan di database. Pastikan kolom ID benar.");
-                    } else {
-                        profile = fallback.data;
-                        profileError = null;
+                    profile = result.data;
+                    profileError = result.error;
+                } catch (err) {
+                    console.warn("Exception saat cek kolom 'id':", err);
+                    profileError = err;
+                }
+
+                // Fallback ke kolom 'user_id' jika 'id' gagal atau tidak ditemukan
+                if (profileError || !profile) {
+                    console.warn("Data tidak ditemukan di kolom 'id', mencoba kolom 'user_id'...");
+                    try {
+                        const fallback = await supabase
+                            .from('ngebelusers')
+                            .select('*')
+                            .eq('user_id', userId)
+                            .single();
+                        
+                        if (fallback.data) {
+                            profile = fallback.data;
+                            profileError = null; // Reset error karena sukses di user_id
+                            console.log("Data ditemukan di kolom 'user_id'");
+                        } else {
+                            // Tetap gagal
+                            profileError = fallback.error;
+                        }
+                    } catch (err) {
+                        console.error("Exception saat cek kolom 'user_id':", err);
+                        profileError = err;
                     }
                 }
 
-                // 3. Cek Status Aktif
-                if (profile && profile.is_active === false) {
+                // 4. Evaluasi Hasil Pencarian Profil
+                if (profileError || !profile) {
+                    console.error("Profile Lookup Gagal:", profileError);
+                    throw new Error("Data profil tidak ditemukan di database. Silakan hubungi admin atau pastikan Anda sudah mendaftar.");
+                }
+
+                // 5. Cek Status Aktif
+                if (profile.is_active === false) {
                     await supabase.auth.signOut();
                     throw new Error('Akun Anda dinonaktifkan oleh admin.');
                 }
 
-                // 4. Redirect Berhasil
-                const nama = profile ? (profile.full_name || profile.nama) : email;
+                // 6. Redirect Berhasil
+                const nama = profile.full_name || profile.nama || email;
                 alert(`Selamat datang, ${nama}!`);
                 window.location.href = 'index.html';
 
@@ -293,6 +313,7 @@
                 console.error("Login Error:", err);
                 showError('login-error', err.message);
             } finally {
+                // 7. PASTIKAN LOADING SELALUUS BERHENTI (PENTING)
                 setLoading('login-btn', false);
             }
         }
