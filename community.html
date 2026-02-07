@@ -34,7 +34,7 @@
             background-color: var(--bg-body);
             color: var(--text-main);
             line-height: 1.6;
-            padding-bottom: 60px;
+            padding-bottom: 80px; /* Extra space for mobile nav if needed */
         }
 
         h1, h2, h3 { font-family: 'Outfit', sans-serif; letter-spacing: -0.02em; }
@@ -73,7 +73,7 @@
         .section-title::before { content: ''; width: 4px; height: 24px; background: var(--accent); border-radius: 2px; }
 
         .community-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;
         }
 
         /* --- Profile Card --- */
@@ -92,7 +92,7 @@
             object-fit: cover; border: 4px solid white;
             box-shadow: 0 8px 20px rgba(0,0,0,0.1);
             transition: transform 0.3s ease;
-            background-color: #f1f5f9; /* Placeholder color */
+            background-color: #f1f5f9;
         }
         .card:hover .avatar { transform: scale(1.05) rotate(3deg); }
 
@@ -108,13 +108,14 @@
         .role-umkm { background: #ede9fe; color: #6d28d9; border: 1px solid #ddd6fe; }
         .role-homestay { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
 
-        .card h3 { font-size: 1.2rem; margin-bottom: 4px; }
+        .card h3 { font-size: 1.2rem; margin-bottom: 4px; color: var(--text-main); }
         .card-sub { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 12px; font-weight: 500; }
         
         .quote {
             font-style: italic; color: #475569; font-size: 0.9rem;
             background: #f1f5f9; padding: 12px; border-radius: var(--radius-md);
             margin: 12px 0 20px; position: relative;
+            width: 100%;
         }
         .quote::before { content: '“'; position: absolute; top: -10px; left: 10px; font-size: 2rem; color: #cbd5e1; font-family: serif; }
 
@@ -134,6 +135,7 @@
         .activity-feed {
             background: white; border-radius: var(--radius-lg); padding: 24px;
             border: 1px solid #f1f5f9; margin-bottom: 40px;
+            box-shadow: var(--shadow-sm);
         }
         .feed-item {
             display: flex; gap: 15px; padding-bottom: 15px; margin-bottom: 15px;
@@ -184,9 +186,9 @@
 
     <main>
         <!-- Hero -->
-        <section class="hero">
+        <section class="hero fade-up">
             <h1>Wajah Lokal Ngebel</h1>
-            <p>Di balik keindahan alam, terdapat ekosistem manusia yang bekerja sama untuk menjaga kenyamanan dan keberlanjutan wisata.</p>
+            <p>Di balik keindahan alam, terdapat ekosistem manusia yang bekerja sama untuk menjaga kenyamanan dan keberlakujutan wisata.</p>
         </section>
 
         <div class="container">
@@ -224,22 +226,24 @@
             </section>
 
             <!-- Pelaku Wisata & Petani -->
-            <h2 class="section-title">Pelaku Ekosistem</h2>
+            <h2 class="section-title fade-up">Pelaku Ekosistem</h2>
             
-            <!-- CONTAINER UNTUK DATA DINAMIS -->
+            <!-- CONTAINER UNTUK DATA DINAMIS DARI SUPABASE -->
             <div id="community-container" class="community-grid">
-                <p style="grid-column: 1/-1; text-align: center; color: var(--text-muted);">
+                <!-- Loading state awal -->
+                <p style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">
                     Memuat data komunitas...
                 </p>
             </div>
 
-            <!-- Call to Action -->
+            <!-- Call to Action: Redirect ke Form Mitra -->
             <section class="cta-section fade-up">
                 <h3>Bergabung Menjadi Bagian Ekosistem</h3>
                 <p style="color: rgba(255,255,255,0.8); max-width: 500px; margin: 10px auto;">
                     Apakah Anda warga Ngebel? Daftarkan usaha atau profil Anda untuk terhubung dengan wisatawan lebih luas.
                 </p>
-                <a href="register.html" class="cta-btn">Daftar Mitra Sekarang</a>
+                <!-- LINK DIUBAH KE HALAMAN FORM MITRA -->
+                <a href="register_mitra.html" class="cta-btn">Daftar Mitra Sekarang</a>
             </section>
 
         </div>
@@ -248,13 +252,15 @@
     <script>
         // --- 1. KONFIGURASI SUPABASE ---
         const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
-        // Pastikan menggunakan Key 'anon' / public
+        // Menggunakan Key Anon/Public
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
+        
+        // Inisialisasi Client
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // --- 2. FUNGSI LOGIKA ---
 
-        // Menentukan warna badge berdasarkan role
+        // Menentukan warna badge berdasarkan role (Pilihan warna dinamis)
         function getRoleBadgeClass(role) {
             if (!role) return 'role-guide';
             const r = role.toLowerCase();
@@ -268,10 +274,14 @@
         // Membuat HTML Card untuk setiap member
         function createCommunityCard(member) {
             const badgeClass = getRoleBadgeClass(member.role);
-            // Fallback gambar jika avatar_url kosong, gunakan random seed berdasarkan nama
-            const avatarSrc = member.avatar_url || `https://picsum.photos/seed/${member.full_name.replace(/ /g, '')}/200/200`;
             
-            // Format nomor WA (hapus karakter non-angka)
+            // Fallback gambar: Jika avatar_url kosong, gunakan random seed berdasarkan nama
+            // Ini mencegah gambar pecah (broken image)
+            const avatarSrc = member.avatar_url 
+                ? member.avatar_url 
+                : `https://picsum.photos/seed/${member.full_name.replace(/ /g, '')}/200/200`;
+            
+            // Format nomor WA (hapus karakter selain angka)
             const cleanPhone = member.whatsapp_number ? member.whatsapp_number.replace(/[^0-9]/g, '') : '';
 
             return `
@@ -289,7 +299,7 @@
                     </div>` : ''}
 
                     <div class="card-actions">
-                        <button class="btn-action btn-outline" onclick="openWhatsApp('${cleanPhone}')" ${!cleanPhone ? 'disabled style="opacity:0.5"' : ''}>
+                        <button class="btn-action btn-outline" onclick="openWhatsApp('${cleanPhone}')" ${!cleanPhone ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''}>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
                             Chat
                         </button>
@@ -312,7 +322,7 @@
         function showDetail(id) {
             console.log("Lihat ID:", id);
             // Di sini Anda bisa menambahkan logika untuk membuka modal detail
-            alert("Fitur Detail Profil akan segera hadir!");
+            alert("Fitur Detail Profil akan segera hadir! ID: " + id);
         }
 
         // --- 3. FETCH DATA & RENDER ---
@@ -320,31 +330,42 @@
             const container = document.getElementById('community-container');
             
             try {
+                console.log("Mengambil data dari tabel ngebel_community...");
+                
                 // Ambil data dari Supabase
                 const { data, error } = await supabase
                     .from('ngebel_community')
                     .select('*')
-                    .order('created_at', { ascending: false });
+                    .order('created_at', { ascending: false }); // Urutkan dari yang terbaru
 
                 if (error) throw error;
 
                 if (!data || data.length === 0) {
-                    container.innerHTML = '<p style="grid-column: 1/-1; text-align:center; padding: 20px;">Belum ada anggota komunitas yang terdaftar.</p>';
+                    container.innerHTML = `
+                        <div style="grid-column: 1/-1; text-align:center; padding: 40px; background: #f1f5f9; border-radius: 12px;">
+                            <p style="color: var(--text-muted); margin-bottom: 10px;">Belum ada anggota komunitas yang terdaftar.</p>
+                            <a href="register_mitra.html" style="color: var(--primary); font-weight: 700; text-decoration: underline;">Jadilah yang pertama!</a>
+                        </div>
+                    `;
                     return;
                 }
 
-                // Render data
+                console.log("Data ditemukan:", data.length, "anggota.");
+
+                // Render data menggunakan map
                 container.innerHTML = data.map(member => createCommunityCard(member)).join('');
 
                 // Jalankan animasi scroll untuk elemen baru
                 observeAnimations();
 
             } catch (err) {
-                console.error("Gagal memuat data:", err);
+                console.error("Gagal memuat data komunitas:", err);
                 container.innerHTML = `
-                    <div style="grid-column: 1/-1; text-align:center; color: #ef4444; padding: 20px; background: #fef2f2; border-radius: 12px;">
-                        Gagal memuat data komunitas.<br>
+                    <div style="grid-column: 1/-1; text-align:center; color: #ef4444; padding: 20px; background: #fef2f2; border-radius: 12px; border: 1px solid #fecaca;">
+                        <p style="font-weight: 600; margin-bottom: 5px;">Gagal memuat data</p>
                         <small>${err.message}</small>
+                        <br><br>
+                        <button onclick="loadCommunity()" class="btn-action btn-primary" style="width: auto; display: inline-flex;">Coba Lagi</button>
                     </div>
                 `;
             }
