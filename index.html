@@ -129,7 +129,7 @@
             box-shadow: 0 20px 60px rgba(0,0,0,0.15);
             z-index: 1000; padding: 10px;
             border: 1px solid rgba(255,255,255,0.6);
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
         }
         .nav-item {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -140,7 +140,7 @@
         }
         .nav-item svg { width: 22px; height: 22px; stroke-width: 2; stroke: currentColor; fill: none; margin-bottom: 4px; transition: all 0.3s; }
         
-        .nav-item.active { color: var(--primary); transform: translateY(-5px); }
+        .nav-item.active { color: var(--primary); }
         .nav-item.active svg { transform: scale(1.1); stroke-width: 2.5; filter: drop-shadow(0 4px 6px rgba(15, 118, 110, 0.2)); }
         
         .lock-badge {
@@ -210,6 +210,64 @@
         #preloader { position: fixed; inset: 0; background: var(--primary); z-index: 9999; display: flex; justify-content: center; align-items: center; transition: opacity 0.5s; }
         .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 1s linear infinite; }
 
+      /* === MOBILE HORIZONTAL SCROLL MENU === */
+@media (max-width: 767px) {
+
+    .bottom-nav {
+        flex-wrap: nowrap !important;     /* paksa 1 baris */
+        overflow-x: auto;                 /* bisa scroll */
+        overflow-y: hidden;
+        justify-content: flex-start;      /* mulai dari kiri */
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+        gap: 6px;
+        padding: 12px 10px;
+    }
+
+    /* sembunyikan scrollbar */
+    .bottom-nav::-webkit-scrollbar {
+        display: none;
+    }
+
+    .nav-item {
+        flex: 0 0 auto !important;        /* jangan melebar */
+        min-width: 70px;                  /* ukuran item */
+        white-space: nowrap;
+        transition: transform 0.25s ease, color 0.25s ease;
+    }
+
+    /* efek hidup saat hover / tap */
+    .nav-item:active {
+        transform: scale(0.92);
+    }
+
+    .nav-item:hover {
+        transform: translateY(-3px);
+    }
+
+}
+ 
+    /* === FIX FLEX WIDTH + SCROLL SNAP (SUPER SMOOTH) === */
+@media (max-width: 767px) {
+
+    .bottom-nav {
+        display: flex;
+        flex-wrap: nowrap !important;
+        overflow-x: auto;
+        overflow-y: hidden;
+        justify-content: flex-start;
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x mandatory;   /* SNAP */
+    }
+
+    .nav-item {
+        flex: 0 0 auto !important;
+        min-width: 72px;
+        scroll-snap-align: center;       /* SNAP ITEM */
+    }
+
+}    
     </style>
 </head>
 <body>
