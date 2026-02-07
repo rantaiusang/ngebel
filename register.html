@@ -136,7 +136,23 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+  // ✅ CEK NOMOR HP SUDAH ADA DI TABLE PROFILES
+async function isPhoneExists(phone) {
+    const { data, error } = await supabaseClient
+        .from('profiles')       // ganti sesuai nama table profilmu
+        .select('id')
+        .eq('phone', phone)
+        .single();              // hanya ambil satu record
 
+    // jika error tapi bukan karena tidak ada row, log error
+    if (error && error.code !== 'PGRST116') { 
+        console.error(error);
+        return true; // anggap ada masalah
+    }
+
+    return data !== null;
+}
+    
 /* ===============================
    SIGNUP
 ================================= */
@@ -155,7 +171,12 @@ async function handleSignup(e) {
     hideError();
 
     try {
-
+       // 🔹 cek nomor HP unik
+      const phoneTaken = await isPhoneExists(phone);
+     if (phoneTaken) {
+    throw new Error("Nomor HP ini sudah terdaftar. Gunakan nomor lain atau login.");
+   }
+        
         const { error } = await supabaseClient.auth.signUp({
             email,
             password,
