@@ -2,9 +2,10 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Katalog Produk | Ngebel Smart Agri</title>
     <meta name="theme-color" content="#0f766e">
+    <meta name="description" content="Katalog hasil bumi pertanian segar dari Ngebel Smart Agri.">
 
     <!-- Google Fonts (Sesuai halaman lain) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -29,13 +30,13 @@
             /* Palette Konsisten dengan desain Ngebel */
             --primary: #0f766e; --primary-dark: #0d5f58; --primary-light: #14b8a6;
             --accent: #f59e0b; 
-            --bg-body: #f8fafc; /* Slate 50 */
+            --bg-body: #f8fafc;
             --bg-card: #ffffff;
             --text-main: #1e293b; --text-muted: #64748b;
+            
             --radius-xl: 24px; --radius-lg: 20px; --radius-md: 12px;
-            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
-            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.05);
+            --shadow-hover: 0 20px 50px -12px rgba(15, 118, 110, 0.3);
             --nav-height: 70px;
         }
 
@@ -46,13 +47,27 @@
             background-color: var(--bg-body);
             color: var(--text-main);
             line-height: 1.6;
-            padding-bottom: 40px;
+            padding-bottom: 40px; /* Padding bawah standar tanpa nav bawah */
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
         h1, h2, h3 { font-family: 'Outfit', sans-serif; letter-spacing: -0.02em; }
         a { text-decoration: none; color: inherit; }
         
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 2; }
+
+        /* --- SCROLL REVEAL ANIMATION --- */
+        .reveal-on-scroll {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        
+        .reveal-on-scroll.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
 
         /* --- Scrollbar Styling --- */
         ::-webkit-scrollbar { width: 8px; }
@@ -60,26 +75,26 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        /* --- Utility Animation Classes --- */
-        .fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
-        .fade-in.visible { opacity: 1; transform: translateY(0); }
-        
-        /* --- Header Style --- */
+        /* --- HEADER STYLE (SEPERTI ABOUT & CONTACT) --- */
         header {
             position: sticky; top: 0; z-index: 1000;
-            background: rgba(255,255,255,0.85); backdrop-filter: blur(16px);
-            border-bottom: 1px solid rgba(0,0,0,0.05); height: var(--nav-height);
+            background: rgba(255,255,255,0.85); backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0,0,0,0.05); height: 70px;
             display: flex; align-items: center;
         }
-        .nav-content { width: 100%; display: flex; align-items: center; justify-content: space-between; }
+        .nav-content { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; gap: 20px; }
         
-        .brand { font-weight: 800; font-size: 1.25rem; color: var(--primary); display: flex; align-items: center; gap: 8px; }
         .back-btn {
-            display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.9rem;
-            padding: 8px 16px; border-radius: 50px; background: #f1f5f9; color: var(--text-muted);
-            transition: all 0.2s; cursor: pointer; border: 1px solid transparent;
+            display: flex; align-items: center; gap: 8px;
+            color: var(--text-muted); font-weight: 600; font-size: 0.9rem;
+            padding: 8px 16px; border-radius: 50px;
+            background: rgba(255,255,255,0.6); border: 1px solid rgba(0,0,0,0.05);
+            transition: all 0.2s ease; flex-shrink: 0; cursor: pointer;
         }
-        .back-btn:hover { background: var(--primary); color: white; }
+        .back-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+        .back-btn svg { width: 18px; height: 18px; stroke-width: 2.5; }
+
+        .page-title { font-weight: 700; color: var(--primary); font-size: 1.1rem; }
 
         /* --- Button Styles --- */
         .btn-primary {
@@ -98,7 +113,7 @@
         .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
 
         /* --- Filter Chips --- */
-        .filter-container { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; -webkit-overflow-scrolling: touch; }
+        .filter-container { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; -webkit-overflow-scrolling: touch; justify-content: center; }
         .filter-chip {
             padding: 8px 20px; border-radius: 50px; font-size: 0.9rem; font-weight: 600;
             cursor: pointer; transition: all 0.3s; border: 1px solid #e2e8f0; white-space: nowrap;
@@ -109,11 +124,11 @@
         /* --- Product Card Style --- */
         .product-card {
             background: white; border-radius: var(--radius-xl); overflow: hidden;
-            box-shadow: var(--shadow-sm); border: 1px solid #f1f5f9;
+            box-shadow: var(--shadow-soft); border: 1px solid #f1f5f9;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             display: flex; flex-direction: column;
         }
-        .product-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg); }
+        .product-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-hover); }
         .card-img-wrapper { position: relative; width: 100%; aspect-video; overflow: hidden; background: #f1f5f9; }
         .card-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
         .product-card:hover .card-img { transform: scale(1.05); }
@@ -151,7 +166,7 @@
         .modal-overlay.active { opacity: 1; visibility: visible; }
         .modal-content {
             background: white; width: 90%; max-width: 400px; padding: 30px;
-            border-radius: 24px; box-shadow: var(--shadow-lg);
+            border-radius: 24px; box-shadow: var(--shadow-hover);
             transform: translateY(20px); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .modal-overlay.active .modal-content { transform: translateY(0); }
@@ -160,12 +175,13 @@
             font-weight: 700; font-size: 1.1rem; color: var(--text-main);
         }
 
-        @media (min-width: 768px) {
-            .grid-products { grid-template-columns: repeat(3, 1fr); }
+        /* --- GRID RESPONSIVE --- */
+        .grid-products { 
+            display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
         }
-        @media (min-width: 1024px) {
-            .grid-products { grid-template-columns: repeat(4, 1fr); }
-        }
+
+        /* Animasi Loading */
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="bg-[#f8fafc] text-[#1e293b] antialiased selection:bg-emerald-100 selection:text-[#0f766e]">
@@ -173,7 +189,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState, useEffect, useRef } = React;
         const { createClient } = supabase;
 
         // --- KONFIGURASI SUPABASE ---
@@ -241,6 +257,20 @@
             const [selectedProduct, setSelectedProduct] = useState(null);
             const [filterCategory, setFilterCategory] = useState('SEMUA');
 
+            // --- HOOK UNTUK SCROLL ANIMATION ---
+            const useOnScreen = (ref, rootMargin = "0px") => {
+                const [isIntersecting, setIntersecting] = useState(false);
+                useEffect(() => {
+                    const observer = new IntersectionObserver(
+                        ([entry]) => { setIntersecting(entry.isIntersecting); },
+                        { rootMargin, threshold: 0.1 }
+                    );
+                    if (ref.current) observer.observe(ref.current);
+                    return () => { if (ref.current) observer.unobserve(ref.current); };
+                }, [ref, rootMargin]);
+                return isIntersecting;
+            };
+
             // --- FETCH PRODUCTS ---
             useEffect(() => {
                 const fetchProducts = async () => {
@@ -289,17 +319,6 @@
                 }
             };
 
-            // Observer Animation
-            useEffect(() => {
-                const observer = new IntersectionObserver((entries) => {
-                    entries.forEach((entry) => {
-                        if (entry.isIntersecting) entry.target.classList.add('visible');
-                    });
-                }, { threshold: 0.1 });
-                document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
-                return () => observer.disconnect();
-            }, [products]);
-
             useEffect(() => { lucide.createIcons(); });
 
             if (loading) return (
@@ -314,42 +333,35 @@
                     
                     <PreOrderModal isOpen={!!selectedProduct} onClose={() => setSelectedProduct(null)} product={selectedProduct} />
 
-                    {/* --- HEADER --- */}
+                    {/* --- HEADER (KEMBALI KE GAYA SEBELUMNYA) --- */}
                     <header>
-                        <div className="container nav-content">
+                        <div className="nav-content">
                             {/* Tombol Kembali */}
-                            <a href="index.html" className="back-btn">
-                                <Icon name="arrow-left" size={18} />
+                            <div className="back-btn" onClick={() => window.location.href = 'index.html'}>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                                 Kembali
-                            </a>
-                            
-                            <div className="brand">
-                                <Icon name="sprout" size={24} />
-                                <span>Ngebel<span style={{color:'var(--primary)'}}>Agri</span></span>
                             </div>
                             
-                            <div style={{width:'80px', display:'flex', justifyContent:'flex-end'}}>
-                                {/* Spacer atau tombol tambahan */}
-                                <a href="login.html" className="btn-outline">Mitra</a>
-                            </div>
+                            <div className="page-title"></div>
                         </div>
                     </header>
 
-                    {/* --- HERO --- */}
-                    <section style={{padding:'60px 20px 40px', textAlign:'center'}}>
+                    {/* --- HERO (DENGAN SCROLL REVEAL) --- */}
+                    <section className="container reveal-on-scroll" style={{padding:'60px 20px 40px', textAlign:'center'}}>
                         <span style={{display:'inline-block', padding:'6px 16px', borderRadius:'50px', background:'#dcfce7', color:'#166534', fontSize:'0.8rem', fontWeight:'700', marginBottom:'16px'}}>100% Hasil Bumi Lokal</span>
-                        <h1 style={{fontSize:'clamp(2rem, 4vw, 3rem)', color:'var(--primary-dark)', marginBottom:'16px'}}>Katalog Hasil Panen</h1>
+                        <h1 style={{fontSize:'clamp(2rem, 5vw, 3rem)', color:'var(--primary-dark)', marginBottom:'16px'}}>Katalog Hasil Panen</h1>
                         <p style={{color:'var(--text-muted)', maxWidth:'600px', margin:'0 auto'}}>
                             Pilih produk pertanian terbaik dari petani mitra Ngebel. Segar, organik, dan transparan.
                         </p>
                         
-                        {/* Filter */}
-                        <div className="filter-container" style={{marginTop:'30px', justifyContent:'center'}}>
-                            {categories.map(cat => (
+                        {/* Filter (Animate) */}
+                        <div className="filter-container reveal-on-scroll" style={{marginTop:'30px', justifyContent:'center'}}>
+                            {categories.map((cat, index) => (
                                 <button
                                     key={cat}
                                     onClick={() => setFilterCategory(cat)}
                                     className={`filter-chip ${filterCategory === cat ? 'active' : ''}`}
+                                    style={{ transitionDelay: `${index * 50}ms` }}
                                 >
                                     {cat}
                                 </button>
@@ -357,18 +369,18 @@
                         </div>
                     </section>
 
-                    {/* --- GRID --- */}
+                    {/* --- GRID (DENGAN SCROLL REVEAL) --- */}
                     <section className="container">
                         {filteredProducts.length === 0 ? (
                             <div style={{textAlign:'center', padding:'60px 20px', color:'#94a3b8'}}>Belum ada produk di kategori ini.</div>
                         ) : (
-                            <div className="grid-products" style={{display:'grid', gap:'24px', gridTemplateColumns:'repeat(auto-fit, minmax(280px, 1fr))'}}>
+                            <div className="grid-products">
                                 {filteredProducts.map((product, index) => {
                                     const isReady = product.is_available === true && product.stock > 0;
                                     const imageFilter = !isReady ? "grayscale(1) opacity(0.8)" : "";
                                     
                                     return (
-                                        <div key={product.id} className="product-card fade-in" style={{animationDelay:`${index * 50}ms`}}>
+                                        <div key={product.id} className={`product-card reveal-on-scroll`} style={{ transitionDelay: `${index * 100}ms` }}>
                                             <div className="card-img-wrapper">
                                                 <img src={product.image_url} alt={product.name} className={`card-img ${imageFilter}`} />
                                                 <div className={`card-badge ${isReady ? 'badge-ready' : 'badge-preorder'}`}>
@@ -406,8 +418,8 @@
                         )}
                     </section>
 
-                    {/* --- FOOTER --- */}
-                    <footer style={{marginTop:'60px', padding:'40px 20px', borderTop:'1px solid #e2e8f0', textAlign:'center'}}>
+                    {/* --- FOOTER (DENGAN SCROLL REVEAL) --- */}
+                    <footer className="reveal-on-scroll" style={{marginTop:'80px', padding:'40px 20px', borderTop:'1px solid #e2e8f0', textAlign:'center'}}>
                         <p style={{color:'#64748b', marginBottom:'16px'}}>Butuh bantuan memesan dalam jumlah besar?</p>
                         <a 
                             href={`https://wa.me/${ADMIN_WA}`} 
@@ -425,6 +437,42 @@
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<CatalogPage />);
+    </script>
+
+    <!-- SCRIPT GLOBAL UNTUK MENANGANI KELAS REVEAL (BERJALAN SEJAJAR DENGAN REACT) -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.1
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        // Opsional: Hentikan observasi setelah muncul
+                        // observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            // Observer elemen dengan kelas .reveal-on-scroll
+            // Kita perlu menunggu sebentar agar React selesai render,
+            // jadi kita jalankan secara berkala juga jika perlu
+            const observeElements = () => {
+                document.querySelectorAll('.reveal-on-scroll:not(.is-visible)').forEach(el => {
+                    observer.observe(el);
+                });
+            };
+
+            observeElements();
+            
+            // MutationObserver untuk menangkap elemen baru yang dirender React
+            const mutationObserver = new MutationObserver(observeElements);
+            mutationObserver.observe(document.body, { childList: true, subtree: true });
+        });
     </script>
 </body>
 </html>
