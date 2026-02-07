@@ -21,7 +21,7 @@
             --primary: #0f766e;
             --primary-light: #14b8a6;
             --accent: #f59e0b;
-            --bg-body: #f0f9f8; /* Sedikit kehijauan sangat muda */
+            --bg-body: #f0f9f8;
             --glass: rgba(255, 255, 255, 0.85);
             --glass-border: rgba(255, 255, 255, 0.6);
             --text-main: #1e293b;
@@ -29,6 +29,7 @@
             
             --radius-xl: 32px;
             --radius-lg: 24px;
+            --radius-md: 16px;
             --shadow-soft: 0 10px 40px -10px rgba(15, 118, 110, 0.08);
             --shadow-hover: 0 20px 40px -12px rgba(15, 118, 110, 0.25);
             --nav-height: 80px;
@@ -44,6 +45,7 @@
             padding-bottom: calc(var(--nav-height) + 40px);
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
+            transition: opacity 0.3s ease;
         }
 
         h1, h2, h3 { font-family: 'Outfit', sans-serif; letter-spacing: -0.02em; }
@@ -58,18 +60,15 @@
         
         p { color: var(--text-muted); margin-bottom: 1rem; font-size: 1.05rem; }
 
-        /* --- 2. ANIMATIONS (ENHANCED) --- */
+        /* --- 2. ANIMATIONS --- */
         @keyframes spin { to { transform: rotate(360deg); } }
-        
-        /* Fade In Up Base */
         @keyframes fadeInUp { 
             from { opacity: 0; transform: translateY(30px); } 
             to { opacity: 1; transform: translateY(0); } 
         }
 
-        /* Class untuk trigger animasi bertahap */
         .animate-item {
-            opacity: 0; /* Mulai tersembunyi */
+            opacity: 0;
             animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
@@ -80,11 +79,9 @@
             background: white; border: 1px solid rgba(255,255,255,0.8);
             border-radius: var(--radius-lg); padding: 24px;
             box-shadow: var(--shadow-soft); margin-bottom: 20px;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy effect */
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative; overflow: hidden;
         }
-        
-        /* Highlight effect saat hover card */
         .card::before {
             content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px;
             background: var(--primary); transform: scaleX(0); transform-origin: left;
@@ -101,9 +98,17 @@
         .trend-up { background: #dcfce7; color: #166534; }
         .trend-down { background: #fee2e2; color: #991b1b; }
 
-        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px 28px; font-weight: 600; border-radius: 50px; text-decoration: none; border: none; cursor: pointer; font-size: 0.95rem; gap: 8px; transition: all 0.3s ease; position: relative; overflow: hidden; }
+        /* BUTTONS */
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 10px 20px; font-weight: 600; border-radius: 50px; text-decoration: none; border: none; cursor: pointer; font-size: 0.9rem; gap: 8px; transition: all 0.3s ease; }
+        .btn-icon-only { padding: 10px; border-radius: 50%; width: 40px; height: 40px; background: white; color: var(--text-main); box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        .btn-icon-only:hover { background: #f8fafc; transform: translateX(-3px); color: var(--primary); border-color: var(--primary); }
+        
         .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(15, 118, 110, 0.3); }
-        .btn-primary:hover { background: var(--primary-light); transform: translateY(-3px); box-shadow: 0 8px 25px rgba(15, 118, 110, 0.4); }
+        .btn-primary:hover { background: var(--primary-light); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(15, 118, 110, 0.4); }
+        
+        .btn-danger { background: white; color: #ef4444; border: 1px solid #fee2e2; }
+        .btn-danger:hover { background: #fef2f2; border-color: #ef4444; }
+
         .btn-secondary { background: white; border: 1px solid #e2e8f0; color: var(--text-main); }
         .btn-secondary:hover { border-color: var(--primary); color: var(--primary); background: #f0fdfa; }
 
@@ -113,28 +118,31 @@
             background: rgba(255,255,255,0.85); backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border-bottom: 1px solid rgba(255,255,255,0.5);
-            height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px;
+            height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px;
             transition: all 0.3s;
         }
-        .brand { display: flex; align-items: center; gap: 10px; font-family: 'Outfit'; font-weight: 800; font-size: 1.4rem; color: var(--primary); cursor: pointer; transition: transform 0.3s; }
+        
+        .header-left, .header-right { display: flex; align-items: center; gap: 12px; }
+        
+        .brand { display: flex; align-items: center; gap: 10px; font-family: 'Outfit'; font-weight: 800; font-size: 1.3rem; color: var(--primary); cursor: pointer; transition: transform 0.3s; }
         .brand:hover { transform: scale(1.02); }
         
         .user-pill { display: flex; align-items: center; gap: 10px; background: white; padding: 6px 12px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.3s; cursor: pointer; border: 1px solid transparent; }
         .user-pill:hover { transform: translateY(-2px); border-color: var(--primary); box-shadow: 0 8px 20px rgba(15, 118, 110, 0.15); }
-        .user-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid white; }
+        .user-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid white; }
 
-        /* --- 5. BOTTOM NAVIGATION (FLOATING ISLAND) --- */
+        /* --- 5. BOTTOM NAVIGATION --- */
         .bottom-nav {
-            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px); /* Start hidden below */
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px);
             width: 94%; max-width: 480px; height: auto; min-height: 70px;
             background: var(--glass); backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-radius: 24px;
             display: flex; justify-content: space-around; align-items: center;
             box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            z-index: 1000; padding: 12px; border: 1px solid var(--glass-border);
+            z-index: 1000; padding: 10px; border: 1px solid var(--glass-border);
             flex-wrap: nowrap;
-            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); /* Pop up effect */
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .bottom-nav.visible { transform: translateX(-50%) translateY(0); }
 
@@ -145,17 +153,15 @@
             min-width: 60px; cursor: pointer; flex: 1 1 auto; position: relative;
         }
         
-        /* Indicator Active (Lingkaran kecil di bawah icon) */
-        .nav-item::after {
-            content: ''; position: absolute; bottom: 4px; width: 4px; height: 4px;
-            background: var(--primary); border-radius: 50%; opacity: 0; transform: scale(0); transition: 0.3s;
-        }
-        
         .nav-item svg { width: 22px; height: 22px; stroke-width: 2; stroke: currentColor; fill: none; margin-bottom: 4px; transition: all 0.3s; }
         
         .nav-item.active { color: var(--primary); background: rgba(15, 118, 110, 0.08); }
-        .nav-item.active::after { opacity: 1; transform: scale(1); }
         .nav-item.active svg { transform: translateY(-3px); stroke-width: 2.5; filter: drop-shadow(0 4px 6px rgba(15, 118, 110, 0.2)); }
+        
+        /* Warna Khusus Tombol Logout di Nav */
+        .nav-item.logout-item { color: #ef4444; }
+        .nav-item.logout-item:hover { background: #fef2f2; }
+        .nav-item.logout-item svg { stroke: #ef4444; }
 
         @media (min-width: 768px) {
             body { padding-bottom: 0; padding-left: 280px; }
@@ -163,16 +169,14 @@
                 top: 0; bottom: 0; left: 0; transform: none; width: 280px; height: 100vh;
                 flex-direction: column; justify-content: flex-start; gap: 8px; padding-top: 100px;
                 border-radius: 0; box-shadow: 10px 0 30px rgba(0,0,0,0.05); border-right: 1px solid #eee;
-                align-items: stretch; background: white; /* Solid on desktop */
+                align-items: stretch; background: white;
             }
             .nav-item { width: 100%; flex-direction: row; height: 56px; padding: 0 24px; justify-content: flex-start; gap: 16px; font-size: 1rem; flex: none; border-radius: 12px; margin: 0 10px; }
-            .nav-item::after { display: none; } /* Hide dot on desktop */
             .nav-item svg { margin-bottom: 0; width: 24px; height: 24px; }
             .nav-item.active { background: #f0fdfa; border-right: 3px solid var(--primary); }
             .nav-item.active svg { transform: none; }
         }
 
-        /* Mobile Scroll Nav */
         @media (max-width: 767px) {
             .bottom-nav { overflow-x: auto; justify-content: flex-start; gap: 4px; padding: 10px; scroll-snap-type: x mandatory; }
             .bottom-nav::-webkit-scrollbar { display: none; }
@@ -195,21 +199,29 @@
 
     <!-- HEADER -->
     <header class="animate-item" style="animation-delay: 0.1s;">
-        <div class="brand" onclick="window.location.href='index.html'">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.74 5.88-5.74 5.88-5.74-5.88L12 2.69M12 22a9.97 9.97 0 0 1-7.07-2.93l-1.41 1.41A11.97 11.97 0 0 0 12 24a11.97 11.97 0 0 0 8.49-3.52l-1.41-1.41A9.97 9.97 0 0 1 12 22z"/></svg>
-            Ngebel
+        <div class="header-left">
+            <!-- TOMBOL KEMBALI -->
+            <button class="btn btn-icon-only" onclick="goBack()" title="Kembali ke Beranda">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            </button>
+            <div class="brand" onclick="window.location.href='index.html'">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.74 5.88-5.74 5.88-5.74-5.88L12 2.69M12 22a9.97 9.97 0 0 1-7.07-2.93l-1.41 1.41A11.97 11.97 0 0 0 12 24a11.97 11.97 0 0 0 8.49-3.52l-1.41-1.41A9.97 9.97 0 0 1 12 22z"/></svg>
+                <span style="display: none; @media(min-width: 768px){display:block;}">Ngebel</span>
+            </div>
         </div>
         
-        <div class="user-pill">
-            <img src="https://picsum.photos/seed/warga/100/100" class="user-avatar" alt="User">
-            <div style="font-size: 0.9rem; font-weight: 700; color: var(--text-main);">Warga</div>
+        <div class="header-right">
+            <!-- Profil User -->
+            <div class="user-pill" onclick="alert('Menu Profil (Opsional)')">
+                <img src="https://picsum.photos/seed/warga/100/100" class="user-avatar" alt="User">
+                <div style="font-size: 0.9rem; font-weight: 700; color: var(--text-main); display: none; @media(min-width: 400px){display:block;}">Warga</div>
+            </div>
         </div>
     </header>
 
     <!-- MAIN CONTENT -->
     <div id="main-content" class="container">
         
-        <!-- Header Text -->
         <div class="animate-item" style="animation-delay: 0.2s;">
             <h1>Halo, Warga! 👋</h1>
             <p>Statistik ekonomi digital Anda terupdate hari ini.</p>
@@ -248,7 +260,7 @@
         <div class="animate-item" style="animation-delay: 0.7s;">
             <h2 style="margin-bottom: 20px; font-size: 1.3rem;">Aktivitas Terbaru</h2>
             <div class="card">
-                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 20px; transition: 0.3s;">
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 20px;">
                     <div style="width: 45px; height: 45px; background: #dcfce7; color: #166534; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; box-shadow: 0 4px 10px rgba(22, 101, 52, 0.1);">📦</div>
                     <div style="flex:1">
                         <div style="font-weight: 700; color: var(--text-main);">Pesanan Baru #ORD-001</div>
@@ -257,7 +269,7 @@
                     <div style="font-weight: 800; color: var(--primary); font-size: 1.1rem;">Rp 75.000</div>
                 </div>
                 
-                <div style="display: flex; align-items: center; gap: 15px; transition: 0.3s;">
+                <div style="display: flex; align-items: center; gap: 15px;">
                     <div style="width: 45px; height: 45px; background: #e0f2fe; color: #075985; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; box-shadow: 0 4px 10px rgba(7, 89, 133, 0.1);">🌾</div>
                     <div style="flex:1">
                         <div style="font-weight: 700; color: var(--text-main);">Update Harga Pangan</div>
@@ -305,10 +317,7 @@
             const step = (timestamp) => {
                 if (!startTimestamp) startTimestamp = timestamp;
                 const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                
-                // Easing function for smooth stop
                 const easeOutQuad = 1 - Math.pow(1 - progress, 3);
-                
                 let currentVal = Math.floor(easeOutQuad * (end - start) + start);
                 
                 if (isCurrency) {
@@ -324,11 +333,19 @@
             window.requestAnimationFrame(step);
         }
 
+        // --- FUNGSI KEMBALI ---
+        function goBack() {
+            // Efek fade out
+            document.body.style.opacity = '0';
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 300);
+        }
+
         // --- INIT ---
         window.addEventListener('load', async () => {
             const { data: { session } } = await supabaseClient.auth.getSession();
 
-            // Hapus Preloader
             const preloader = document.getElementById('preloader');
             if(preloader) {
                 preloader.style.opacity = '0';
@@ -339,12 +356,11 @@
                 document.getElementById('main-content').style.display = 'block';
                 renderNav();
                 
-                // Tampilkan Nav dengan delay (pop up effect)
                 setTimeout(() => {
                     document.getElementById('main-nav').classList.add('visible');
                 }, 800);
 
-                // Trigger Counter Animation
+                // Counter Animation
                 const stats = document.querySelectorAll('.stat-value');
                 stats.forEach(stat => {
                     const target = parseInt(stat.getAttribute('data-target'));
@@ -367,7 +383,11 @@
             
             systemMenu.forEach((item) => {
                 const a = document.createElement('div');
-                a.className = `nav-item ${item.id === 'dashboard' ? 'active' : ''}`;
+                // Tambahkan class 'logout-item' jika id adalah logout
+                const extraClass = item.id === 'logout' ? 'logout-item' : '';
+                const activeClass = item.id === 'dashboard' ? 'active' : '';
+                
+                a.className = `nav-item ${activeClass} ${extraClass}`;
                 
                 a.innerHTML = `
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">${item.icon}</svg>
@@ -384,14 +404,20 @@
             if(element) element.classList.add('active');
 
             if (item.action === 'logout') {
-                // Animasi keluar dulu
-                document.getElementById('main-nav').classList.remove('visible');
-                setTimeout(performLogout, 300);
+                // Konfirmasi Logout sederhana (bisa diganti modal custom)
+                const confirmLogout = confirm("Apakah Anda yakin ingin keluar?");
+                if(confirmLogout) {
+                    document.getElementById('main-nav').classList.remove('visible');
+                    setTimeout(performLogout, 300);
+                } else {
+                    // Batal logout, kembalikan state active ke dashboard
+                    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+                    document.querySelector('.nav-item[id="dashboard"]').classList.add('active');
+                }
                 return;
             }
 
             if (item.link) {
-                // Fade out effect before redirect
                 document.body.style.opacity = '0';
                 setTimeout(() => window.location.href = item.link, 300);
             }
