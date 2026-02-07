@@ -2,31 +2,29 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Tentang Ngebel | Smart Living Tourism</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Komunitas Ngebel | Wajah Lokal</title>
     <meta name="theme-color" content="#0f766e">
-    <meta name="description" content="Mengenal lebih dekat visi, misi, dan teknologi di balik Smart Tourism Telaga Ngebel.">
+    <meta name="description" content="Kenali para pelaku wisata, petani buah, dan penggerak ekonomi kreatif di Telaga Ngebel.">
 
-    <!-- Fonts -->
+    <!-- Supabase Client (CDN Hanya Sekali) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 
     <style>
-        /* --- 1. VARIABLES & RESET (SAMA DENGAN INDEX) --- */
         :root {
-            --primary: #0f766e; --primary-light: #14b8a6; --primary-dark: #0d5f58;
+            --primary: #0f766e; --primary-dark: #0d5f58; --primary-light: #ccfbf1;
             --accent: #f59e0b; 
-            --gold-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            --bg-body: #f8fafc;
-            --glass: rgba(255, 255, 255, 0.7);
+            --bg-body: #f8fafc; 
+            --glass: rgba(255, 255, 255, 0.9);
             --text-main: #1e293b; --text-muted: #64748b;
-            
-            --radius-xl: 32px; --radius-lg: 24px; --radius-md: 12px;
-            --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.05);
-            --shadow-hover: 0 20px 50px -12px rgba(15, 118, 110, 0.3);
-            --nav-height: 0px; /* Diubah jadi 0 karena nav bawah dihilangkan */
-            --font-mono: 'JetBrains Mono', monospace;
+            --radius-xl: 24px; --radius-lg: 20px; --radius-md: 12px;
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -36,32 +34,22 @@
             background-color: var(--bg-body);
             color: var(--text-main);
             line-height: 1.6;
-            padding-bottom: 40px; 
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
+            padding-bottom: 80px;
         }
 
         h1, h2, h3 { font-family: 'Outfit', sans-serif; letter-spacing: -0.02em; }
-        
-        p { color: var(--text-muted); margin-bottom: 1rem; font-size: 1.05rem; }
         a { text-decoration: none; color: inherit; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 2; }
+        
+        .container { max-width: 1000px; margin: 0 auto; padding: 0 20px; }
 
-        /* --- 2. ANIMATIONS --- */
-        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
-        @keyframes fadeInUp { 
-            from { opacity: 0; transform: translateY(30px); } 
-            to { opacity: 1; transform: translateY(0); } 
-        }
-
-        /* --- 3. HEADER STYLE (SEPERTI COMMUNITY) --- */
+        /* --- Header --- */
         header {
             position: sticky; top: 0; z-index: 100;
             background: rgba(255,255,255,0.85); backdrop-filter: blur(12px);
             border-bottom: 1px solid rgba(0,0,0,0.05); height: 70px;
             display: flex; align-items: center;
         }
-        .nav-content { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; gap: 20px; }
+        .nav-content { width: 100%; display: flex; align-items: center; gap: 20px; }
         
         .back-btn {
             display: flex; align-items: center; gap: 8px;
@@ -71,506 +59,333 @@
             transition: all 0.2s ease; flex-shrink: 0; cursor: pointer;
         }
         .back-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
-        .back-btn svg { width: 18px; height: 18px; stroke-width: 2.5; }
 
-        /* --- 4. COMPONENTS --- */
-        .btn {
-            display: inline-flex; align-items: center; justify-content: center;
-            padding: 16px 32px; font-weight: 700; border-radius: 50px;
-            text-decoration: none; transition: all 0.3s ease; cursor: pointer; border: none; font-size: 1rem; gap: 10px;
+        /* --- Hero Section --- */
+        .hero { text-align: center; padding: 40px 20px; }
+        .hero h1 { font-size: clamp(2rem, 4vw, 2.8rem); color: var(--primary-dark); margin-bottom: 12px; }
+        .hero p { color: var(--text-muted); max-width: 600px; margin: 0 auto; }
+
+        /* --- Section: Community Grid --- */
+        .section-title { 
+            font-size: 1.25rem; font-weight: 700; color: var(--text-main); 
+            margin: 40px 0 20px; display: flex; align-items: center; gap: 10px; 
         }
-        .btn-primary { background: var(--primary); color: white; box-shadow: 0 10px 20px rgba(15, 118, 110, 0.3); }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(15, 118, 110, 0.4); background: var(--primary-light); }
+        .section-title::before { content: ''; width: 4px; height: 24px; background: var(--accent); border-radius: 2px; }
 
-        /* --- 5. BOTTOM NAVIGATION (DIHAPUS) --- */
-        .bottom-nav { display: none !important; }
-
-        /* --- 6. SECTIONS & CONTENT --- */
-        .page-section { display: block; animation: fadeInUp 0.6s ease-out; }
-
-        /* --- HERO LIVE ANIMATION SECTION --- */
-        .hero-about {
-            position: relative; height: 60vh; min-height: 450px; border-radius: 32px;
-            overflow: hidden; display: flex; align-items: center; justify-content: center;
-            color: white; text-align: center; margin: 30px 0 60px 0; /* Margin disesuaikan karena ada header */
-            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
-            background: radial-gradient(circle at bottom, #0f766e 0%, #022c22 100%);
+        .community-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;
         }
 
-        /* Canvas untuk animasi Quantum/IoT */
-        #quantumCanvas {
-            position: absolute; inset: 0; width: 100%; height: 100%;
-            z-index: 1; mix-blend-mode: screen;
+        /* --- Profile Card --- */
+        .card {
+            background: var(--glass); border: 1px solid rgba(255,255,255,0.6);
+            border-radius: var(--radius-lg); padding: 24px;
+            box-shadow: var(--shadow-sm); transition: all 0.3s ease;
+            display: flex; flex-direction: column; align-items: center; text-align: center;
+            position: relative; overflow: hidden;
         }
-
-        /* Overlay Gradien agar teks tetap terbaca */
-        .hero-overlay {
-            position: absolute; inset: 0; 
-            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 60%, transparent 100%);
-            z-index: 2; pointer-events: none;
-        }
-
-        .hero-content { position: relative; z-index: 3; padding: 20px; max-width: 700px; }
-
-        .iot-status {
-            display: inline-flex; align-items: center; gap: 8px; background: rgba(15, 118, 110, 0.3);
-            backdrop-filter: blur(4px); padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);
-            font-family: var(--font-mono); font-size: 0.8rem; margin-bottom: 20px;
-            color: var(--accent); text-transform: uppercase; letter-spacing: 1px;
-        }
-        .blink-dot { width: 8px; height: 8px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 10px #22c55e; animation: blink 2s infinite; }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-
-        .mission-vision-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-bottom: 60px;
-        }
-
-        .card-mv {
-            background: white; border-radius: var(--radius-lg); overflow: hidden;
-            border: 1px solid rgba(0,0,0,0.05); box-shadow: var(--shadow-soft);
+        .card:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); }
+        
+        .card-header { margin-bottom: 16px; position: relative; }
+        .avatar {
+            width: 100px; height: 100px; border-radius: 50%;
+            object-fit: cover; border: 4px solid white;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
             transition: transform 0.3s ease;
-            display: flex; flex-direction: column; height: 100%;
+            background-color: #f1f5f9;
         }
-        .card-mv:hover { transform: translateY(-5px); box-shadow: var(--shadow-hover); }
+        .card:hover .avatar { transform: scale(1.05) rotate(3deg); }
 
-        .card-header {
-            padding: 24px; background: #f8fafc; display: flex; align-items: center; gap: 15px;
+        /* Role Badges */
+        .role-badge {
+            display: inline-block; padding: 4px 12px; border-radius: 20px;
+            font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        .role-farmer { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+        .role-guide { background: #ccfbf1; color: #0f766e; border: 1px solid #99f6e4; }
+        .role-umkm { background: #ede9fe; color: #6d28d9; border: 1px solid #ddd6fe; }
+        .role-homestay { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+
+        .card h3 { font-size: 1.2rem; margin-bottom: 4px; color: var(--text-main); }
+        .card-sub { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 12px; font-weight: 500; }
+        
+        .quote {
+            font-style: italic; color: #475569; font-size: 0.9rem;
+            background: #f1f5f9; padding: 12px; border-radius: var(--radius-md);
+            margin: 12px 0 20px; position: relative; width: 100%;
+        }
+        .quote::before { content: '“'; position: absolute; top: -10px; left: 10px; font-size: 2rem; color: #cbd5e1; font-family: serif; }
+
+        .card-actions { width: 100%; display: flex; gap: 10px; margin-top: auto; }
+        .btn-action {
+            flex: 1; padding: 10px; border-radius: var(--radius-md);
+            border: none; cursor: pointer; font-weight: 600; font-size: 0.85rem;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-outline { background: white; border: 1px solid #e2e8f0; color: var(--text-muted); }
+        .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* --- Update/Activity Section --- */
+        .activity-feed {
+            background: white; border-radius: var(--radius-lg); padding: 24px;
+            border: 1px solid #f1f5f9; margin-bottom: 40px; box-shadow: var(--shadow-sm);
+        }
+        .feed-item {
+            display: flex; gap: 15px; padding-bottom: 15px; margin-bottom: 15px;
             border-bottom: 1px solid #f1f5f9;
         }
-        .card-icon {
-            width: 48px; height: 48px; background: white; border-radius: 12px;
-            display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        .feed-item:last-child { border-bottom: none; margin: 0; padding: 0; }
+        .feed-icon {
+            width: 40px; height: 40px; background: var(--bg-body); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;
         }
-        /* Icon Khusus Visi */
-        .radar-icon-svg {
-            width: 28px; height: 28px; color: var(--primary);
-        }
+        .feed-content h4 { font-size: 0.95rem; margin-bottom: 2px; }
+        .feed-content p { font-size: 0.85rem; color: var(--text-muted); margin: 0; }
+        .time-ago { font-size: 0.75rem; color: #94a3b8; display: block; margin-top: 4px; }
 
-        .card-body { padding: 24px; flex-grow: 1; display: flex; align-items: center; }
-        .card-title { font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 10px; }
-
-        .team-section {
-            display: flex; flex-wrap: wrap; gap: 24px; margin-top: 40px;
+        /* --- CTA Section --- */
+        .cta-section {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            color: white; padding: 40px; border-radius: var(--radius-xl);
+            text-align: center; box-shadow: 0 20px 40px -10px rgba(15, 118, 110, 0.3);
+            margin-top: 40px;
         }
-
-        .team-card {
-            flex: 1; min-width: 200px; background: white; border-radius: var(--radius-lg);
-            padding: 20px; text-align: center; border: 1px solid rgba(0,0,0,0.05);
-            transition: transform 0.3s ease;
+        .cta-btn {
+            display: inline-block; background: white; color: var(--primary-dark);
+            padding: 14px 32px; border-radius: 50px; font-weight: 700;
+            margin-top: 20px; transition: transform 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
-        .team-card:hover { transform: translateY(-5px); }
-        .team-avatar {
-            width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 15px;
-            border: 3px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-        .team-role {
-            display: inline-block; background: #e0f2fe; color: #0284c7; font-size: 0.75rem;
-            font-weight: 700; padding: 4px 10px; border-radius: 20px; margin-bottom: 8px;
-        }
+        .cta-btn:hover { transform: translateY(-2px); }
 
-        /* Staggered Animation Delay Class */
-        .fade-up-1 { animation-delay: 0.1s; }
-        .fade-up-2 { animation-delay: 0.2s; }
-        .fade-up-3 { animation-delay: 0.3s; }
-
-        @media (max-width: 767px) {
-            .hero-about { margin-top: 20px; border-radius: 20px; }
+        @media (max-width: 600px) {
+            .hero { padding: 30px 20px; }
+            .card { padding: 20px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- HEADER (KEMBALI DIPAKAI, STYLE SEPERTI COMMUNITY) -->
+    <!-- Header -->
     <header>
-        <div class="nav-content">
+        <div class="container nav-content">
+            <!-- PERBAIKAN: Tombol kembali sekarang mengarah ke index.html (Home) -->
             <div class="back-btn" onclick="window.location.href='index.html'">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                 Kembali
             </div>
-            <div style="font-weight: 700; color: var(--primary);">Tentang</div>
+            <div style="font-weight: 700; color: var(--primary);"></div>
         </div>
     </header>
 
-    <main class="container">
-        
-        <!-- SECTION: HERO ABOUT (LIVE ANIMATION) -->
-        <section class="page-section hero-about">
-            <!-- Canvas untuk Animasi Quantum/IoT -->
-            <canvas id="quantumCanvas"></canvas>
+    <main>
+        <!-- Hero -->
+        <section class="hero fade-up">
+            <h1>Wajah Lokal Ngebel</h1>
+            <p>Di balik keindahan alam, terdapat ekosistem manusia yang bekerja sama untuk menjaga kenyamanan dan keberlanjutan wisata.</p>
+        </section>
+
+        <div class="container">
             
-            <!-- Overlay Gelap -->
-            <div class="hero-overlay"></div>
-
-            <div class="hero-content fade-up-1">
-                <div class="iot-status">
-                    <div class="blink-dot"></div> SYSTEM : ACTIVE
+            <!-- Activity Feed (Update Ngebel) -->
+            <section class="activity-feed fade-up">
+                <h3 style="font-size: 1.1rem; margin-bottom: 20px;">🔥 Aktivitas Terbaru</h3>
+                <div class="feed-item">
+                    <div class="feed-icon">🍈</div>
+                    <div class="feed-content">
+                        <h4>Panen Raya Durian</h4>
+                        <p>Kelompok Tani Subur Makmur baru saja memanen 2 ton durian minggu ini.</p>
+                        <span class="time-ago">2 jam yang lalu</span>
+                    </div>
                 </div>
-                <h1 style="font-size: clamp(2.5rem, 6vw, 3.5rem); line-height: 1.1; margin-bottom: 16px;">
-                    Membangun <br>
-                    <span style="color: var(--accent);">Ekosistem Pintar</span>
-                </h1>
-                <p style="color: rgba(255,255,255,0.9); font-size: 1.1rem; margin-bottom: 24px;">
-                    Kami menggabungkan keindahan alam Telaga Ngebel dengan teknologi masa depan untuk menciptakan pengalaman wisata yang berkelanjutan dan memberdayakan komunitas lokal.
+                <div class="feed-item">
+                    <div class="feed-icon">🧹</div>
+                    <div class="feed-content">
+                        <h4>Gerakan Bersih Danau</h4>
+                        <p>Karang Taruna Desa Ngebel mengadakan aksi bersih sampah di area dermaga.</p>
+                        <span class="time-ago">Kemarin</span>
+                    </div>
+                </div>
+                <div class="feed-item">
+                    <div class="feed-icon">🤝</div>
+                    <div class="feed-content">
+                        <h4>Kolaborasi UMKM</h4>
+                        <p>Warung Othok-othok bekerja sama dengan Homestay Danau Indah untuk paket wisata kuliner.</p>
+                        <span class="time-ago">2 hari yang lalu</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pelaku Wisata & Petani -->
+            <h2 class="section-title fade-up">Pelaku Ekosistem</h2>
+            
+            <!-- CONTAINER UNTUK DATA -->
+            <div id="community-container" class="community-grid">
+                <p style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">
+                    Memuat data komunitas...
                 </p>
-                <a href="contact.html" class="btn btn-primary">
-                    Hubungi Kami
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-                </a>
             </div>
-        </section>
 
-        <!-- SECTION: VISI & MISI -->
-        <section class="page-section" style="margin-bottom: 60px;">
-            <div class="mission-vision-grid">
-                
-                <!-- VISI (ICON RADAR BARU) -->
-                <div class="card-mv fade-up-2">
-                    <div class="card-header">
-                        <div class="card-icon" style="background: #e0f2fe;">
-                            <!-- SVG Icon Radar/IoT -->
-                            <svg class="radar-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"></path><path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"></path><line x1="12" y1="2" x2="12" y2="6"></line></svg>
-                        </div>
-                        <h3 style="margin: 0;">Visi</h3>
-                    </div>
-                    <div class="card-body">
-                        <p style="margin-bottom: 0;">
-                            Menjadikan Telaga Ngebel sebagai destinasi wisata berbasis teknologi terdepan di Indonesia pada tahun 2030.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- MISI -->
-                <div class="card-mv fade-up-2">
-                    <div class="card-header">
-                        <div class="card-icon mv-icon-mission">🎯</div>
-                        <h3 style="margin: 0;">Misi</h3>
-                    </div>
-                    <div class="card-body">
-                        <p style="margin-bottom: 0;">
-                            1. Meningkatkan ekonomi kreatif lokal melalui digitalisasi.<br>
-                            2. Mengintegrasikan sistem IoT untuk keamanan dan kenyaman wisatawan.<br>
-                            3. Melestarikan budaya dan alam melalui wisata berkelanjutan.
-                        </p>
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-        <!-- SECTION: VALUES -->
-        <section class="page-section">
-            <h2 style="margin-bottom: 30px; font-size: 2rem;">Nilai Kami</h2>
-            <div class="mission-vision-grid">
-                
-                <div class="card-mv fade-up-3">
-                    <div class="card-header">
-                        <div class="card-icon mv-icon-values">🌱</div>
-                        <h3 style="margin: 0;">Berkelanjutan</h3>
-                    </div>
-                    <div class="card-body">
-                        <p style="margin-bottom: 0; font-size: 0.9rem;">
-                            Menjaga keseimbangan antara pembangunan pariwisata dan kelestarian lingkungan alam Telaga Ngebel.
-                        </p>
-                    </div>
-                </div>
-
-                <div class="card-mv fade-up-3">
-                    <div class="card-header">
-                        <div class="card-icon mv-icon-values">🤝</div>
-                        <h3 style="margin: 0;">Kolaborasi</h3>
-                    </div>
-                    <div class="card-body">
-                        <p style="margin-bottom: 0; font-size: 0.9rem;">
-                            Membangun sinergi antara pemerintah, komunitas, dan pelaku usaha untuk pertumbuhan bersama.
-                        </p>
-                    </div>
-                </div>
-
-                <div class="card-mv fade-up-3">
-                    <div class="card-header">
-                        <div class="card-icon mv-icon-values">💡</div>
-                        <h3 style="margin: 0;">Inovasi</h3>
-                    </div>
-                    <div class="card-body">
-                        <p style="margin-bottom: 0; font-size: 0.9rem;">
-                            Mengadopsi teknologi terbaru untuk mempermudah akses informasi dan layanan wisata.
-                        </p>
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
-        <!-- SECTION: TIM KAMI -->
-        <section class="page-section" style="margin-top: 80px; margin-bottom: 60px;">
-            <h2 style="margin-bottom: 30px; font-size: 2rem;">Team</h2>
-            <div class="team-section">
-                <!-- Anggota 1 -->
-                <div class="team-card fade-up-3">
-                   <img 
-  src="https://dikapquhusbwjccbqcsb.supabase.co/storage/v1/object/public/images/zer.webp" 
-  alt="CEO" 
-  class="team-avatar">
-
-                    <h3 style="font-size: 1.1rem; color: var(--primary-dark);">A.y</h3>
-                    <span class="team-role">Lead Developer</span>
-                    <p style="font-size: 0.85rem; margin-bottom: 0;">Web Developer</p>
-                </div>
-
-                <!-- Anggota 2 -->
-                <div class="team-card fade-up-3">
-                   <img 
-  src="https://dikapquhusbwjccbqcsb.supabase.co/storage/v1/object/public/images/zer-1.webp" 
-  alt="Designer" 
-  class="team-avatar">
-
-                    <h3 style="font-size: 1.1rem; color: var(--primary-dark);">Zer</h3>
-                    <span class="team-role">UI/UX Designer</span>
-                    <p style="font-size: 0.85rem; margin-bottom: 0;">Web App  Desain</p>
-                </div>
-
-                <!-- Anggota 3 -->
-                <div class="team-card fade-up-3">
-                    <img 
-  src="https://dikapquhusbwjccbqcsb.supabase.co/storage/v1/object/public/images/zer-2.webp"
-  alt="Data Scientist"
-  class="team-avatar">
-
-                    <h3 style="font-size: 1.1rem; color: var(--primary-dark);">Gorbon</h3>
-                    <span class="team-role">IoT Engineer</span>
-                    <p style="font-size: 0.85rem; margin-bottom: 0;">Integrasi sensor IOT</p>
-                </div>
-            </div>
-        </section>
-
+            <!-- Call to Action -->
+            <section class="cta-section fade-up">
+                <h3>Bergabung Menjadi Bagian Ekosistem</h3>
+                <p style="color: rgba(255,255,255,0.8); max-width: 500px; margin: 10px auto;">
+                    Apakah Anda warga Ngebel? Daftarkan usaha atau profil Anda untuk terhubung dengan wisatawan lebih luas.
+                </p>
+                <a href="register-mitra.html" class="cta-btn">Daftar Mitra Sekarang</a>
+            </section>
+        </div>
     </main>
 
-    <!-- NAVIGATION CONTAINER (DIHAPIS) -->
-    <nav class="bottom-nav" id="main-nav" style="display:none;"></nav>
+    <script>
+        // --- 1. KONFIGURASI SUPABASE (BEST PRACTICE V2) ---
+        const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
 
-        <script>
-        // --- 1. QUANTUM & IOT ANIMATION LOGIC (ENHANCED VERSION) ---
-        const canvas = document.getElementById('quantumCanvas');
-        const ctx = canvas.getContext('2d');
+        // ✅ CARA LEBIH BERSIH (BEST PRACTICE)
+        // Menggunakan destructuring untuk mengambil function createClient dari library global 'supabase'
+        const { createClient } = supabase;
         
-        let width, height;
-        let particles = [];
-        // Menambah partikel background untuk efek kedalaman (depth)
-        let backgroundParticles = []; 
-        let mouse = { x: null, y: null, radius: 180 };
+        // Inisialisasi client dengan nama variabel unik 'supabaseClient'
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Resize handler
-        function resize() {
-            width = canvas.width = canvas.offsetWidth;
-            height = canvas.height = canvas.offsetHeight;
-            initParticles();
+        // --- 2. DATA DUMMY (FALLBACK) ---
+        const dummyData = [
+            {
+                id: 'dummy-001',
+                full_name: 'Gorbon',
+                role: 'Full Stack Developer',
+                sub_title: 'Web Dev Platform Cyber Security',
+                quote: 'Kami membangun teknologi berbasis data, bukan hanya perkiraan.',
+                avatar_url: 'https://dikapquhusbwjccbqcsb.supabase.co/storage/v1/render/image/public/images/zer.webp?width=200&height=200&resize=cover',
+                whatsapp_number: '62816253606'
+            },
+            {
+                id: 'dummy-002',
+                full_name: 'Budi',
+                role: 'Petani Durian',
+                sub_title: 'Pemilik Warung Othok-othok',
+                quote: 'Dengan IoT Smart Farm, saya bisa memantau kelembapan tanah dan kesehatan pohon langsung dari HP. Hasil panen jadi lebih stabil.',
+                avatar_url: 'https://images.unsplash.com/photo-1583394293214-28ded15ee548?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200&q=80',
+                whatsapp_number: '6281987654321'
+            },
+           
+        ];
+
+        // --- 3. FUNGSI LOGIKA ---
+        function getRoleBadgeClass(role) {
+            if (!role) return 'role-guide';
+            const r = role.toLowerCase();
+            if (r.includes('petani') || r.includes('tani')) return 'role-farmer';
+            if (r.includes('pemandu') || r.includes('guide')) return 'role-guide';
+            if (r.includes('umkm') || r.includes('kuliner')) return 'role-umkm';
+            if (r.includes('home') || r.includes('hotel')) return 'role-homestay';
+            return 'role-guide'; 
         }
 
-        window.addEventListener('resize', resize);
-        
-        // Mouse interaction
-        canvas.addEventListener('mousemove', (e) => {
-            const rect = canvas.getBoundingClientRect();
-            mouse.x = e.clientX - rect.left;
-            mouse.y = e.clientY - rect.top;
-        });
-        
-        canvas.addEventListener('mouseleave', () => {
-            mouse.x = null;
-            mouse.y = null;
-        });
+        function createCommunityCard(member) {
+            const badgeClass = getRoleBadgeClass(member.role);
+            const avatarSrc = member.avatar_url 
+                ? member.avatar_url 
+                : `https://picsum.photos/seed/${member.full_name.replace(/ /g, '')}/200/200`;
+            const cleanPhone = member.whatsapp_number ? member.whatsapp_number.replace(/[^0-9]/g, '') : '';
 
-        // Touch interaction (Mobile)
-        canvas.addEventListener('touchmove', (e) => {
-            e.preventDefault(); // Mencegah scroll saat menyentuh canvas
-            const rect = canvas.getBoundingClientRect();
-            mouse.x = e.touches[0].clientX - rect.left;
-            mouse.y = e.touches[0].clientY - rect.top;
-        }, { passive: false });
-
-        class Particle {
-            constructor(isBackground = false) {
-                this.isBackground = isBackground;
-                this.x = Math.random() * width;
-                this.y = Math.random() * height;
-                
-                // Kecepatan lebih variatif untuk efek real
-                const speedMult = isBackground ? 0.2 : 0.8;
-                this.vx = (Math.random() - 0.5) * speedMult; 
-                this.vy = (Math.random() - 0.5) * speedMult;
-                
-                // Ukuran dasar
-                this.baseSize = isBackground ? Math.random() * 1.5 : Math.random() * 2.5 + 1;
-                this.size = this.baseSize;
-                
-                // Efek Bernapas (Pulse)
-                this.pulseSpeed = Math.random() * 0.05 + 0.02;
-                this.pulseAngle = Math.random() * Math.PI * 2;
-                
-                // Tipe partikel: 0 = Alam/Teal, 1 = Tech/Gold
-                // Background partikel kebanyakan tipe 0 (abu-abu/teal samar)
-                this.type = isBackground ? (Math.random() > 0.8 ? 1 : 0) : (Math.random() > 0.5 ? 1 : 0); 
-                
-                // Warna khusus untuk background agar lebih redup
-                this.alpha = isBackground ? 0.3 : 0.8;
-            }
-
-            draw() {
-                // Update ukuran berdasarkan efek Pulse (Berdenyut)
-                this.pulseAngle += this.pulseSpeed;
-                const pulse = Math.sin(this.pulseAngle) * 0.5 + 0.5; // 0 sampai 1
-                this.size = this.baseSize + (pulse * (this.baseSize * 0.5));
-
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                
-                if (this.isBackground) {
-                    // Warna abu-abu kebiruan samar untuk kedalaman
-                    ctx.fillStyle = `rgba(100, 116, 139, ${this.alpha * 0.5})`;
-                } else {
-                    if (this.type === 0) {
-                        // Alam / Data Aman (Teal)
-                        ctx.fillStyle = `rgba(20, 184, 166, ${this.alpha})`; 
-                    } else {
-                        // Quantum / Tech Aktif (Gold/Orange)
-                        ctx.fillStyle = `rgba(245, 158, 11, ${this.alpha})`; 
-                    }
-                }
-                
-                ctx.fill();
-                
-                // Efek Glow (Cahaya) hanya untuk partikel depan tipe Tech
-                if (!this.isBackground && this.type === 1) {
-                    ctx.shadowBlur = 15 + (pulse * 10); // Glow berkedip
-                    ctx.shadowColor = '#f59e0b';
-                } else {
-                    ctx.shadowBlur = 0;
-                }
-            }
-
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-
-                // Pantulan dinding (Bounce)
-                if (this.x < 0 || this.x > width) this.vx *= -1;
-                if (this.y < 0 || this.y > height) this.vy *= -1;
-
-                // Interaksi Mouse (Repulsion - Menjauh jika didekati)
-                // Hanya partikel depan yang bereaksi kuat terhadap mouse
-                if (!this.isBackground && mouse.x != null) {
-                    let dx = mouse.x - this.x;
-                    let dy = mouse.y - this.y;
-                    let distance = Math.sqrt(dx * dx + dy * dy);
-
-                    if (distance < mouse.radius) {
-                        const forceDirectionX = dx / distance;
-                        const forceDirectionY = dy / distance;
-                        const force = (mouse.radius - distance) / mouse.radius;
-                        const directionX = forceDirectionX * force * 4; 
-                        const directionY = forceDirectionY * force * 4;
-
-                        this.x -= directionX;
-                        this.y -= directionY;
-                        
-                        // Efek tambahan: partikel membesar saat dekat mouse
-                        this.size = this.baseSize * 2.5; 
-                    }
-                }
-
-                this.draw();
-            }
+            return `
+                <article class="card fade-up">
+                    <div class="card-header">
+                        <img src="${avatarSrc}" alt="${member.full_name}" class="avatar" onerror="this.src='https://via.placeholder.com/200?text=No+Img'">
+                    </div>
+                    <span class="role-badge ${badgeClass}">${member.role || 'Anggota'}</span>
+                    <h3>${member.full_name}</h3>
+                    <div class="card-sub">${member.sub_title || 'Warga Ngebel'}</div>
+                    ${member.quote ? `<div class="quote">"${member.quote}"</div>` : ''}
+                    <div class="card-actions">
+                        <button class="btn-action btn-outline" onclick="openWhatsApp('${cleanPhone}')" ${!cleanPhone ? 'disabled style="opacity:0.5"' : ''}>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                            Chat
+                        </button>
+                        <button class="btn-action btn-primary" onclick="showDetail('${member.id}')">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                            Profil
+                        </button>
+                    </div>
+                </article>
+            `;
         }
 
-        function initParticles() {
-            particles = [];
-            backgroundParticles = [];
+        function openWhatsApp(phone) {
+            if(!phone) return;
+            window.open(`https://wa.me/${phone}`, '_blank');
+        }
+
+        function showDetail(id) {
+            alert("Fitur Detail Profil akan segera hadir! ID: " + id);
+        }
+
+        // --- 4. FETCH DATA & RENDER DENGAN FALLBACK ---
+        async function loadCommunity() {
+            const container = document.getElementById('community-container');
             
-            // Hitung jumlah partikel berdasarkan luas layar
-            let area = width * height;
-            // Partikel utama (depan)
-            let numberOfParticles = Math.floor(area / 11000); 
-            // Partikel latar (background - lebih banyak tapi lebih kecil/samar)
-            let numberOfBgParticles = Math.floor(area / 4000);
+            try {
+                console.log("Mengambil data dari Supabase...");
+                
+                // ✅ QUERY DIPERBAIKI: Menggunakan supabaseClient
+                const { data, error } = await supabaseClient
+                    .from('ngebel_community')
+                    .select('*')
+                    .order('created_at', { ascending: false });
 
-            for (let i = 0; i < numberOfParticles; i++) {
-                particles.push(new Particle(false));
-            }
-            for (let i = 0; i < numberOfBgParticles; i++) {
-                backgroundParticles.push(new Particle(true));
-            }
-        }
-
-        function connect() {
-            let maxDistance = 140;
-            let opacityValue = 1;
-
-            // Hanya menghubungkan partikel depan agar performa lancar
-            for (let a = 0; a < particles.length; a++) {
-                for (let b = a; b < particles.length; b++) {
-                    let dx = particles[a].x - particles[b].x;
-                    let dy = particles[a].y - particles[b].y;
-                    let distance = Math.sqrt(dx * dx + dy * dy);
-
-                    if (distance < maxDistance) {
-                        // Opacity garis berubah berdasarkan jarak (makin dekat makin terang)
-                        opacityValue = 1 - (distance / maxDistance);
-                        
-                        // Warna garis: Jika salah satu partikel adalah Tech (Gold), garis sedikit keemasan
-                        let isTechLine = (particles[a].type === 1 || particles[b].type === 1);
-                        let lineColor = isTechLine 
-                            ? `rgba(245, 158, 11, ${opacityValue * 0.4})` // Gold hint
-                            : `rgba(255, 255, 255, ${opacityValue * 0.15})`; // White standard
-
-                        // Jika garis dekat mouse, buat lebih terang (Interaksi)
-                        if (mouse.x != null) {
-                            let mouseDx = mouse.x - particles[a].x;
-                            let mouseDy = mouse.y - particles[a].y;
-                            let mouseDist = Math.sqrt(mouseDx*mouseDx + mouseDy*mouseDy);
-                            if (mouseDist < 100) {
-                                lineColor = `rgba(255, 255, 255, ${opacityValue * 0.5})`;
-                                ctx.lineWidth = 1.5;
-                            } else {
-                                ctx.lineWidth = 1;
-                            }
-                        } else {
-                            ctx.lineWidth = 1;
-                        }
-
-                        ctx.strokeStyle = lineColor;
-                        ctx.beginPath();
-                        ctx.moveTo(particles[a].x, particles[a].y);
-                        ctx.lineTo(particles[b].x, particles[b].y);
-                        ctx.stroke();
-                    }
+                if (error) {
+                    console.error("Error dari Supabase:", error);
+                    throw error;
                 }
-            }
-        }
 
-        function animate() {
-            requestAnimationFrame(animate);
-            ctx.clearRect(0, 0, width, height);
+                // Jika data dari DB ada, pakai itu. Jika kosong/null, pakai Dummy.
+                const dataToRender = (data && data.length > 0) ? data : dummyData;
+                
+                console.log("Data dirender:", dataToRender.length, "anggota.");
+                container.innerHTML = dataToRender.map(member => createCommunityCard(member)).join('');
 
-            // 1. Gambar Partikel Background (Kedalaman)
-            for (let i = 0; i < backgroundParticles.length; i++) {
-                backgroundParticles[i].update();
-            }
+            } catch (err) {
+                console.error("Gagal memuat data DB, menggunakan Data Dummy:", err);
+                
+                // Opsional: Tampilkan alert error untuk debugging
+                // alert("Gagal koneksi database: " + err.message + ". Menampilkan data dummy.");
 
-            // 2. Gambar Partikel Utama (Interaksi)
-            for (let i = 0; i < particles.length; i++) {
-                particles[i].update();
+                // JIKA ERROR GAGAL KONEKSI, PAKAI DUMMY
+                container.innerHTML = dummyData.map(member => createCommunityCard(member)).join('');
             }
             
-            // 3. Gambar Koneksi (Network)
-            connect();
+            // Jalankan animasi
+            observeAnimations();
         }
 
-        // Start Animation
-        resize();
-        animate();
+        // --- 5. ANIMASI SCROLL ---
+        function observeAnimations() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, { threshold: 0.1 });
 
-        // --- SCRIPT NAVIGASI TIDAK DIPERLUKAN KARENA MENU DISEMBUNYIKAN ---
+            document.querySelectorAll('.fade-up').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(el);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadCommunity();
+            observeAnimations();
+        });
     </script>
 </body>
 </html>
