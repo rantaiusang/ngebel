@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
     <style>
-        /* --- 1. VARIABLES & RESET (SAMA DENGAN INDEX) --- */
+        /* --- 1. VARIABLES & RESET --- */
         :root {
             --primary: #0f766e; --primary-light: #14b8a6; --primary-dark: #0d5f58;
             --accent: #f59e0b; 
@@ -25,7 +25,7 @@
             --radius-xl: 32px; --radius-lg: 24px; --radius-md: 12px;
             --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.05);
             --shadow-hover: 0 20px 50px -12px rgba(15, 118, 110, 0.3);
-            --nav-height: 0px; /* Diubah jadi 0 karena nav bawah dihilangkan */
+            --nav-height: 0px;
             --font-mono: 'JetBrains Mono', monospace;
         }
 
@@ -47,14 +47,19 @@
         a { text-decoration: none; color: inherit; }
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 2; }
 
-        /* --- 2. ANIMATIONS --- */
-        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
-        @keyframes fadeInUp { 
-            from { opacity: 0; transform: translateY(30px); } 
-            to { opacity: 1; transform: translateY(0); } 
+        /* --- 2. SCROLL ANIMATION (INTERSECTION OBSERVER) --- */
+        .reveal-on-scroll {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        
+        .reveal-on-scroll.is-visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
-        /* --- 3. HEADER STYLE (SEPERTI COMMUNITY) --- */
+        /* --- 3. HEADER STYLE --- */
         header {
             position: sticky; top: 0; z-index: 100;
             background: rgba(255,255,255,0.85); backdrop-filter: blur(12px);
@@ -86,24 +91,22 @@
         .bottom-nav { display: none !important; }
 
         /* --- 6. SECTIONS & CONTENT --- */
-        .page-section { display: block; animation: fadeInUp 0.6s ease-out; }
+        .page-section { display: block; margin-bottom: 40px; }
 
         /* --- HERO LIVE ANIMATION SECTION --- */
         .hero-about {
             position: relative; height: 60vh; min-height: 450px; border-radius: 32px;
             overflow: hidden; display: flex; align-items: center; justify-content: center;
-            color: white; text-align: center; margin: 30px 0 60px 0; /* Margin disesuaikan karena ada header */
+            color: white; text-align: center; margin: 30px 0 60px 0;
             box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
             background: radial-gradient(circle at bottom, #0f766e 0%, #022c22 100%);
         }
 
-        /* Canvas untuk animasi Quantum/IoT */
         #quantumCanvas {
             position: absolute; inset: 0; width: 100%; height: 100%;
             z-index: 1; mix-blend-mode: screen;
         }
 
-        /* Overlay Gradien agar teks tetap terbaca */
         .hero-overlay {
             position: absolute; inset: 0; 
             background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 60%, transparent 100%);
@@ -111,6 +114,9 @@
         }
 
         .hero-content { position: relative; z-index: 3; padding: 20px; max-width: 700px; }
+        /* Hero content tidak pakai reveal class karena sudah di atas, kita pakai animasi sederhana */
+        .hero-content { animation: simpleFadeUp 1s ease-out; }
+        @keyframes simpleFadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
         .iot-status {
             display: inline-flex; align-items: center; gap: 8px; background: rgba(15, 118, 110, 0.3);
@@ -142,7 +148,6 @@
             display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
             box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
-        /* Icon Khusus Visi */
         .radar-icon-svg {
             width: 28px; height: 28px; color: var(--primary);
         }
@@ -169,11 +174,6 @@
             font-weight: 700; padding: 4px 10px; border-radius: 20px; margin-bottom: 8px;
         }
 
-        /* Staggered Animation Delay Class */
-        .fade-up-1 { animation-delay: 0.1s; }
-        .fade-up-2 { animation-delay: 0.2s; }
-        .fade-up-3 { animation-delay: 0.3s; }
-
         @media (max-width: 767px) {
             .hero-about { margin-top: 20px; border-radius: 20px; }
         }
@@ -181,14 +181,14 @@
 </head>
 <body>
 
-    <!-- HEADER (KEMBALI DIPAKAI, STYLE SEPERTI COMMUNITY) -->
+    <!-- HEADER -->
     <header>
         <div class="nav-content">
             <div class="back-btn" onclick="window.location.href='index.html'">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                 Kembali
             </div>
-            <div style="font-weight: 700; color: var(--primary);"></div>
+            <div style="font-weight: 700; color: var(--primary);">Tentang</div>
         </div>
     </header>
 
@@ -196,13 +196,10 @@
         
         <!-- SECTION: HERO ABOUT (LIVE ANIMATION) -->
         <section class="page-section hero-about">
-            <!-- Canvas untuk Animasi Quantum/IoT -->
             <canvas id="quantumCanvas"></canvas>
-            
-            <!-- Overlay Gelap -->
             <div class="hero-overlay"></div>
 
-            <div class="hero-content fade-up-1">
+            <div class="hero-content">
                 <div class="iot-status">
                     <div class="blink-dot"></div> SYSTEM : ACTIVE
                 </div>
@@ -220,15 +217,13 @@
             </div>
         </section>
 
-        <!-- SECTION: VISI & MISI -->
+        <!-- SECTION: VISI & MISI (Dengan Scroll Reveal) -->
         <section class="page-section" style="margin-bottom: 60px;">
             <div class="mission-vision-grid">
-                
-                <!-- VISI (ICON RADAR BARU) -->
-                <div class="card-mv fade-up-2">
+                <!-- VISI -->
+                <div class="card-mv reveal-on-scroll">
                     <div class="card-header">
                         <div class="card-icon" style="background: #e0f2fe;">
-                            <!-- SVG Icon Radar/IoT -->
                             <svg class="radar-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"></path><path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"></path><line x1="12" y1="2" x2="12" y2="6"></line></svg>
                         </div>
                         <h3 style="margin: 0;">Visi</h3>
@@ -241,7 +236,7 @@
                 </div>
 
                 <!-- MISI -->
-                <div class="card-mv fade-up-2">
+                <div class="card-mv reveal-on-scroll" style="transition-delay: 100ms;">
                     <div class="card-header">
                         <div class="card-icon mv-icon-mission">🎯</div>
                         <h3 style="margin: 0;">Misi</h3>
@@ -254,16 +249,15 @@
                         </p>
                     </div>
                 </div>
-
             </div>
         </section>
 
-        <!-- SECTION: VALUES -->
+        <!-- SECTION: VALUES (Dengan Scroll Reveal) -->
         <section class="page-section">
             <h2 style="margin-bottom: 30px; font-size: 2rem;">Nilai Kami</h2>
             <div class="mission-vision-grid">
                 
-                <div class="card-mv fade-up-3">
+                <div class="card-mv reveal-on-scroll">
                     <div class="card-header">
                         <div class="card-icon mv-icon-values">🌱</div>
                         <h3 style="margin: 0;">Berkelanjutan</h3>
@@ -275,7 +269,7 @@
                     </div>
                 </div>
 
-                <div class="card-mv fade-up-3">
+                <div class="card-mv reveal-on-scroll" style="transition-delay: 100ms;">
                     <div class="card-header">
                         <div class="card-icon mv-icon-values">🤝</div>
                         <h3 style="margin: 0;">Kolaborasi</h3>
@@ -287,7 +281,7 @@
                     </div>
                 </div>
 
-                <div class="card-mv fade-up-3">
+                <div class="card-mv reveal-on-scroll" style="transition-delay: 200ms;">
                     <div class="card-header">
                         <div class="card-icon mv-icon-values">💡</div>
                         <h3 style="margin: 0;">Inovasi</h3>
@@ -302,41 +296,38 @@
             </div>
         </section>
 
-        <!-- SECTION: TIM KAMI -->
+        <!-- SECTION: TIM KAMI (Dengan Scroll Reveal) -->
         <section class="page-section" style="margin-top: 80px; margin-bottom: 60px;">
             <h2 style="margin-bottom: 30px; font-size: 2rem;">Team</h2>
             <div class="team-section">
                 <!-- Anggota 1 -->
-                <div class="team-card fade-up-3">
+                <div class="team-card reveal-on-scroll">
                    <img 
   src="https://dikapquhusbwjccbqcsb.supabase.co/storage/v1/object/public/images/zer.webp" 
   alt="CEO" 
   class="team-avatar">
-
                     <h3 style="font-size: 1.1rem; color: var(--primary-dark);">A.y</h3>
                     <span class="team-role">Lead Developer</span>
                     <p style="font-size: 0.85rem; margin-bottom: 0;">Web Developer</p>
                 </div>
 
                 <!-- Anggota 2 -->
-                <div class="team-card fade-up-3">
+                <div class="team-card reveal-on-scroll" style="transition-delay: 100ms;">
                    <img 
   src="https://dikapquhusbwjccbqcsb.supabase.co/storage/v1/object/public/images/zer-1.webp" 
   alt="Designer" 
   class="team-avatar">
-
                     <h3 style="font-size: 1.1rem; color: var(--primary-dark);">Zer</h3>
                     <span class="team-role">UI/UX Designer</span>
                     <p style="font-size: 0.85rem; margin-bottom: 0;">Web App  Desain</p>
                 </div>
 
                 <!-- Anggota 3 -->
-                <div class="team-card fade-up-3">
+                <div class="team-card reveal-on-scroll" style="transition-delay: 200ms;">
                     <img 
   src="https://dikapquhusbwjccbqcsb.supabase.co/storage/v1/object/public/images/zer-2.webp"
   alt="Data Scientist"
   class="team-avatar">
-
                     <h3 style="font-size: 1.1rem; color: var(--primary-dark);">Gorbon</h3>
                     <span class="team-role">IoT Engineer</span>
                     <p style="font-size: 0.85rem; margin-bottom: 0;">Integrasi sensor IOT</p>
@@ -346,18 +337,45 @@
 
     </main>
 
-    <!-- NAVIGATION CONTAINER (DIHAPIS) -->
     <nav class="bottom-nav" id="main-nav" style="display:none;"></nav>
+
     <script>
-        // --- 1. QUANTUM & IOT ANIMATION LOGIC (ENHANCED VERSION) ---
+        // --- 1. SCROLL REVEAL ANIMATION (PERFORMA TINGGI) ---
+        // Menggunakan Intersection Observer API untuk mendeteksi elemen masuk layar
+        const observerOptions = {
+            root: null, // viewport
+            rootMargin: '0px',
+            threshold: 0.1 // muncul ketika 10% elemen terlihat
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    // Opsional: Hentikan observasi setelah muncul agar tidak animasi ulang saat scroll naik turun
+                    // observer.unobserve(entry.target); 
+                } else {
+                    // Jika ingin animasi berulang setiap scroll, uncomment baris bawah:
+                    // entry.target.classList.remove('is-visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.reveal-on-scroll').forEach(el => {
+            observer.observe(el);
+        });
+
+        // --- 2. OPTIMASI ANIMASI QUANTUM (PAUSE SAAT SCROLL) ---
         const canvas = document.getElementById('quantumCanvas');
         const ctx = canvas.getContext('2d');
         
         let width, height;
         let particles = [];
-        // Menambah partikel background untuk efek kedalaman (depth)
         let backgroundParticles = []; 
         let mouse = { x: null, y: null, radius: 180 };
+        
+        let isScrolling = false; // Flag untuk cek status scroll
+        let animationFrameId; // ID untuk mengontrol loop animasi
 
         // Resize handler
         function resize() {
@@ -380,9 +398,28 @@
             mouse.y = null;
         });
 
+        // PAUSE ANIMATION SAAT SCROLL (Optimasi Performa)
+        window.addEventListener('scroll', () => {
+            if (!isScrolling) {
+                isScrolling = true;
+                // Kita tidak mematikan animasi total (cancelAnimationFrame) agar transisi tidak kasar,
+                // tapi kita bisa mengurangi frekuensi update logika berat jika perlu.
+                // Untuk kasus ini, user merasa berat mungkin karena render canvas terus jalan di background.
+                // Trik sederhana: Biarkan loop jalan, tapi browser modern akan men-deprioritaskan off-screen canvas.
+            }
+
+            // Clear timeout sebelumnya (debounce)
+            window.clearTimeout(window.scrollEndTimeout);
+            
+            // Set timeout untuk mendeteksi kapan scroll berhenti
+            window.scrollEndTimeout = setTimeout(() => {
+                isScrolling = false;
+            }, 100); // Anggap scroll berhenti setelah 100ms tidak ada aktivitas
+        });
+
         // Touch interaction (Mobile)
         canvas.addEventListener('touchmove', (e) => {
-            e.preventDefault(); // Mencegah scroll saat menyentuh canvas
+            e.preventDefault(); 
             const rect = canvas.getBoundingClientRect();
             mouse.x = e.touches[0].clientX - rect.left;
             mouse.y = e.touches[0].clientY - rect.top;
@@ -394,54 +431,49 @@
                 this.x = Math.random() * width;
                 this.y = Math.random() * height;
                 
-                // Kecepatan lebih variatif untuk efek real
                 const speedMult = isBackground ? 0.2 : 0.8;
                 this.vx = (Math.random() - 0.5) * speedMult; 
                 this.vy = (Math.random() - 0.5) * speedMult;
                 
-                // Ukuran dasar
                 this.baseSize = isBackground ? Math.random() * 1.5 : Math.random() * 2.5 + 1;
                 this.size = this.baseSize;
                 
-                // Efek Bernapas (Pulse)
                 this.pulseSpeed = Math.random() * 0.05 + 0.02;
                 this.pulseAngle = Math.random() * Math.PI * 2;
                 
-                // Tipe partikel: 0 = Alam/Teal, 1 = Tech/Gold
-                // Background partikel kebanyakan tipe 0 (abu-abu/teal samar)
                 this.type = isBackground ? (Math.random() > 0.8 ? 1 : 0) : (Math.random() > 0.5 ? 1 : 0); 
-                
-                // Warna khusus untuk background agar lebih redup
                 this.alpha = isBackground ? 0.3 : 0.8;
             }
 
             draw() {
-                // Update ukuran berdasarkan efek Pulse (Berdenyut)
-                this.pulseAngle += this.pulseSpeed;
-                const pulse = Math.sin(this.pulseAngle) * 0.5 + 0.5; // 0 sampai 1
+                // OPTIMASI: Jika sedang scroll, kurangi kualitas visual (skip pulse calculation detail)
+                // agar CPU tidak terlalu bekerja berat saat user sedang scroll.
+                let pulse = 0.5; 
+                if (!isScrolling) {
+                    this.pulseAngle += this.pulseSpeed;
+                    pulse = Math.sin(this.pulseAngle) * 0.5 + 0.5;
+                }
+                
                 this.size = this.baseSize + (pulse * (this.baseSize * 0.5));
 
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                 
                 if (this.isBackground) {
-                    // Warna abu-abu kebiruan samar untuk kedalaman
                     ctx.fillStyle = `rgba(100, 116, 139, ${this.alpha * 0.5})`;
                 } else {
                     if (this.type === 0) {
-                        // Alam / Data Aman (Teal)
                         ctx.fillStyle = `rgba(20, 184, 166, ${this.alpha})`; 
                     } else {
-                        // Quantum / Tech Aktif (Gold/Orange)
                         ctx.fillStyle = `rgba(245, 158, 11, ${this.alpha})`; 
                     }
                 }
                 
                 ctx.fill();
                 
-                // Efek Glow (Cahaya) hanya untuk partikel depan tipe Tech
                 if (!this.isBackground && this.type === 1) {
-                    ctx.shadowBlur = 15 + (pulse * 10); // Glow berkedip
+                    // Glow juga dikurangi saat scroll
+                    ctx.shadowBlur = isScrolling ? 5 : (15 + (pulse * 10)); 
                     ctx.shadowColor = '#f59e0b';
                 } else {
                     ctx.shadowBlur = 0;
@@ -452,12 +484,9 @@
                 this.x += this.vx;
                 this.y += this.vy;
 
-                // Pantulan dinding (Bounce)
                 if (this.x < 0 || this.x > width) this.vx *= -1;
                 if (this.y < 0 || this.y > height) this.vy *= -1;
 
-                // Interaksi Mouse (Repulsion - Menjauh jika didekati)
-                // Hanya partikel depan yang bereaksi kuat terhadap mouse
                 if (!this.isBackground && mouse.x != null) {
                     let dx = mouse.x - this.x;
                     let dy = mouse.y - this.y;
@@ -472,8 +501,6 @@
 
                         this.x -= directionX;
                         this.y -= directionY;
-                        
-                        // Efek tambahan: partikel membesar saat dekat mouse
                         this.size = this.baseSize * 2.5; 
                     }
                 }
@@ -486,11 +513,8 @@
             particles = [];
             backgroundParticles = [];
             
-            // Hitung jumlah partikel berdasarkan luas layar
             let area = width * height;
-            // Partikel utama (depan)
             let numberOfParticles = Math.floor(area / 11000); 
-            // Partikel latar (background - lebih banyak tapi lebih kecil/samar)
             let numberOfBgParticles = Math.floor(area / 4000);
 
             for (let i = 0; i < numberOfParticles; i++) {
@@ -502,10 +526,12 @@
         }
 
         function connect() {
+            // OPTIMASI: Saat scroll, jangan gambar koneksi garis yang berat (perhitungan jarak banyak partikel)
+            if (isScrolling) return; 
+
             let maxDistance = 140;
             let opacityValue = 1;
 
-            // Hanya menghubungkan partikel depan agar performa lancar
             for (let a = 0; a < particles.length; a++) {
                 for (let b = a; b < particles.length; b++) {
                     let dx = particles[a].x - particles[b].x;
@@ -513,16 +539,12 @@
                     let distance = Math.sqrt(dx * dx + dy * dy);
 
                     if (distance < maxDistance) {
-                        // Opacity garis berubah berdasarkan jarak (makin dekat makin terang)
                         opacityValue = 1 - (distance / maxDistance);
-                        
-                        // Warna garis: Jika salah satu partikel adalah Tech (Gold), garis sedikit keemasan
                         let isTechLine = (particles[a].type === 1 || particles[b].type === 1);
                         let lineColor = isTechLine 
-                            ? `rgba(245, 158, 11, ${opacityValue * 0.4})` // Gold hint
-                            : `rgba(255, 255, 255, ${opacityValue * 0.15})`; // White standard
+                            ? `rgba(245, 158, 11, ${opacityValue * 0.4})` 
+                            : `rgba(255, 255, 255, ${opacityValue * 0.15})`;
 
-                        // Jika garis dekat mouse, buat lebih terang (Interaksi)
                         if (mouse.x != null) {
                             let mouseDx = mouse.x - particles[a].x;
                             let mouseDy = mouse.y - particles[a].y;
@@ -551,17 +573,17 @@
             requestAnimationFrame(animate);
             ctx.clearRect(0, 0, width, height);
 
-            // 1. Gambar Partikel Background (Kedalaman)
+            // Gambar Background
             for (let i = 0; i < backgroundParticles.length; i++) {
                 backgroundParticles[i].update();
             }
 
-            // 2. Gambar Partikel Utama (Interaksi)
+            // Gambar Partikel Utama
             for (let i = 0; i < particles.length; i++) {
                 particles[i].update();
             }
             
-            // 3. Gambar Koneksi (Network)
+            // Gambar Koneksi
             connect();
         }
 
@@ -569,9 +591,6 @@
         resize();
         animate();
 
-        // --- SCRIPT NAVIGASI TIDAK DIPERLUKAN KARENA MENU DISEMBUNYIKAN ---
     </script>
-
-    
 </body>
 </html>
