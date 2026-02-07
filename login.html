@@ -416,7 +416,84 @@
         }
         lastScrollY = currentY;
     });
-}                        
+} 
+         // ===============================
+// MODE RESET PASSWORD DARI EMAIL
+// ===============================
+(async () => {
+    const hash = window.location.hash;
+
+    // Kalau bukan link reset → keluar
+    if (!hash || !hash.includes("type=recovery")) return;
+
+    console.log("Mode RESET PASSWORD aktif");
+
+    const params = new URLSearchParams(hash.substring(1));
+    const access_token = params.get("access_token");
+    const refresh_token = params.get("refresh_token");
+
+    if (!access_token) {
+        alert("Link reset tidak valid / expired");
+        return;
+    }
+
+    // Set session dari link reset Supabase
+    const { error: sessionError } = await sb.auth.setSession({
+        access_token,
+        refresh_token
+    });
+
+    if (sessionError) {
+        alert("Session reset gagal: " + sessionError.message);
+        return;
+    }
+
+    // ===== UBAH UI LOGIN → FORM GANTI PASSWORD =====
+    document.querySelector("h2").innerText = "Ganti Password";
+    document.querySelector("p").innerText = "Masukkan password baru Anda";
+
+    const form = document.getElementById("login-form");
+    form.innerHTML = `
+        <div class="form-group">
+            <label>Password Baru</label>
+            <input type="password" id="new-password" required minlength="6">
+        </div>
+
+        <div class="form-group">
+            <label>Ulangi Password</label>
+            <input type="password" id="confirm-password" required minlength="6">
+        </div>
+
+        <button type="submit" class="btn">
+            Simpan Password
+        </button>
+    `;
+
+    // Submit ganti password
+    form.onsubmit = async (e) => {
+        e.preventDefault();
+
+        const pass1 = document.getElementById("new-password").value;
+        const pass2 = document.getElementById("confirm-password").value;
+
+        if (pass1 !== pass2) {
+            alert("Password tidak sama");
+            return;
+        }
+
+        const { error } = await sb.auth.updateUser({
+            password: pass1
+        });
+
+        if (error) {
+            alert("Gagal reset password: " + error.message);
+        } else {
+            alert("Password berhasil diganti. Silakan login.");
+            window.location.href = "login.html";
+        }
+    };
+})();
+            
     </script>
 </body>
 </html>
