@@ -34,7 +34,7 @@
             background-color: var(--bg-body);
             color: var(--text-main);
             line-height: 1.6;
-            padding-bottom: 80px; /* Extra space for mobile nav if needed */
+            padding-bottom: 80px;
         }
 
         h1, h2, h3 { font-family: 'Outfit', sans-serif; letter-spacing: -0.02em; }
@@ -102,7 +102,6 @@
             font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
             margin-bottom: 8px;
         }
-        /* Color Coding */
         .role-farmer { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
         .role-guide { background: #ccfbf1; color: #0f766e; border: 1px solid #99f6e4; }
         .role-umkm { background: #ede9fe; color: #6d28d9; border: 1px solid #ddd6fe; }
@@ -114,8 +113,7 @@
         .quote {
             font-style: italic; color: #475569; font-size: 0.9rem;
             background: #f1f5f9; padding: 12px; border-radius: var(--radius-md);
-            margin: 12px 0 20px; position: relative;
-            width: 100%;
+            margin: 12px 0 20px; position: relative; width: 100%;
         }
         .quote::before { content: '“'; position: absolute; top: -10px; left: 10px; font-size: 2rem; color: #cbd5e1; font-family: serif; }
 
@@ -134,8 +132,7 @@
         /* --- Update/Activity Section --- */
         .activity-feed {
             background: white; border-radius: var(--radius-lg); padding: 24px;
-            border: 1px solid #f1f5f9; margin-bottom: 40px;
-            box-shadow: var(--shadow-sm);
+            border: 1px solid #f1f5f9; margin-bottom: 40px; box-shadow: var(--shadow-sm);
         }
         .feed-item {
             display: flex; gap: 15px; padding-bottom: 15px; margin-bottom: 15px;
@@ -144,8 +141,7 @@
         .feed-item:last-child { border-bottom: none; margin: 0; padding: 0; }
         .feed-icon {
             width: 40px; height: 40px; background: var(--bg-body); border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
-            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;
         }
         .feed-content h4 { font-size: 0.95rem; margin-bottom: 2px; }
         .feed-content p { font-size: 0.85rem; color: var(--text-muted); margin: 0; }
@@ -196,7 +192,6 @@
             <!-- Activity Feed (Update Ngebel) -->
             <section class="activity-feed fade-up">
                 <h3 style="font-size: 1.1rem; margin-bottom: 20px;">🔥 Aktivitas Terbaru</h3>
-                
                 <div class="feed-item">
                     <div class="feed-icon">🍈</div>
                     <div class="feed-content">
@@ -205,7 +200,6 @@
                         <span class="time-ago">2 jam yang lalu</span>
                     </div>
                 </div>
-
                 <div class="feed-item">
                     <div class="feed-icon">🧹</div>
                     <div class="feed-content">
@@ -214,7 +208,6 @@
                         <span class="time-ago">Kemarin</span>
                     </div>
                 </div>
-
                 <div class="feed-item">
                     <div class="feed-icon">🤝</div>
                     <div class="feed-content">
@@ -228,60 +221,96 @@
             <!-- Pelaku Wisata & Petani -->
             <h2 class="section-title fade-up">Pelaku Ekosistem</h2>
             
-            <!-- CONTAINER UNTUK DATA DINAMIS DARI SUPABASE -->
+            <!-- CONTAINER UNTUK DATA DINAMIS / DUMMY -->
             <div id="community-container" class="community-grid">
-                <!-- Loading state awal -->
                 <p style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">
                     Memuat data komunitas...
                 </p>
             </div>
 
-            <!-- Call to Action: Redirect ke Form Mitra -->
+            <!-- Call to Action -->
             <section class="cta-section fade-up">
                 <h3>Bergabung Menjadi Bagian Ekosistem</h3>
                 <p style="color: rgba(255,255,255,0.8); max-width: 500px; margin: 10px auto;">
                     Apakah Anda warga Ngebel? Daftarkan usaha atau profil Anda untuk terhubung dengan wisatawan lebih luas.
                 </p>
-                <!-- LINK DIUBAH KE HALAMAN FORM MITRA -->
                 <a href="register_mitra.html" class="cta-btn">Daftar Mitra Sekarang</a>
             </section>
-
         </div>
     </main>
 
     <script>
         // --- 1. KONFIGURASI SUPABASE ---
         const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
-        // Menggunakan Key Anon/Public
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
-        
-        // Inisialisasi Client
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- 2. FUNGSI LOGIKA ---
+        // --- 2. DATA DUMMY (FALLBACK) ---
+        // Data ini akan tampil jika database kosong atau error
+        const dummyData = [
+            {
+                id: 'dummy-001',
+                full_name: 'Budi Santoso',
+                role: 'Petani',
+                sub_title: 'Pengelola Kebun Durian Lokal',
+                quote: 'Kualitas buah lokal Ngebel tidak kalah dengan durian luar negeri. Kita jaga keasliannya.',
+                avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200&q=80',
+                whatsapp_number: '6281234567890'
+            },
+            {
+                id: 'dummy-002',
+                full_name: 'Siti Aminah',
+                role: 'Pelaku UMKM',
+                sub_title: 'Pemilik Warung Othok-othok',
+                quote: 'Menyajikan resep leluhur dengan bahan segar langsung dari danau.',
+                avatar_url: 'https://images.unsplash.com/photo-1583394293214-28ded15ee548?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200&q=80',
+                whatsapp_number: '6281987654321'
+            },
+            {
+                id: 'dummy-003',
+                full_name: 'Rahmat Hidayat',
+                role: 'Pemandu Wisata',
+                sub_title: 'Ngebel Heritage Guide',
+                quote: 'Saya akan membawa Anda menjelajahi cerita di balik setiap sudut Telaga Ngebel.',
+                avatar_url: 'https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200&q=80',
+                whatsapp_number: '6285678901234'
+            },
+            {
+                id: 'dummy-004',
+                full_name: 'Dewi Sartika',
+                role: 'Pengelola Homestay',
+                sub_title: 'Danau Indah Homestay',
+                quote: 'Rumah kedua yang nyaman dengan pemandangan danau yang menenangkan jiwa.',
+                avatar_url: 'https://images.unsplash.com/photo-1596436889106-be35e843f974?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200&q=80',
+                whatsapp_number: '6288765432109'
+            },
+            {
+                id: 'dummy-005',
+                full_name: 'Agus Prasetyo',
+                role: 'Petani',
+                sub_title: 'Kopi Ngebel Asli',
+                quote: 'Menanam kopi di lereng bukit untuk cita rasa yang khas dan kuat.',
+                avatar_url: 'https://images.unsplash.com/photo-1504274066651-8d31a536b11a?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200&q=80',
+                whatsapp_number: '6283456789012'
+            }
+        ];
 
-        // Menentukan warna badge berdasarkan role (Pilihan warna dinamis)
+        // --- 3. FUNGSI LOGIKA ---
         function getRoleBadgeClass(role) {
             if (!role) return 'role-guide';
             const r = role.toLowerCase();
             if (r.includes('petani') || r.includes('tani')) return 'role-farmer';
             if (r.includes('pemandu') || r.includes('guide')) return 'role-guide';
-            if (r.includes('umkm') || r.includes('kuliner') || r.includes('makanan')) return 'role-umkm';
-            if (r.includes('home') || r.includes('hotel') || r.includes('penginapan')) return 'role-homestay';
+            if (r.includes('umkm') || r.includes('kuliner')) return 'role-umkm';
+            if (r.includes('home') || r.includes('hotel')) return 'role-homestay';
             return 'role-guide'; 
         }
 
-        // Membuat HTML Card untuk setiap member
         function createCommunityCard(member) {
             const badgeClass = getRoleBadgeClass(member.role);
-            
-            // Fallback gambar: Jika avatar_url kosong, gunakan random seed berdasarkan nama
-            // Ini mencegah gambar pecah (broken image)
             const avatarSrc = member.avatar_url 
                 ? member.avatar_url 
                 : `https://picsum.photos/seed/${member.full_name.replace(/ /g, '')}/200/200`;
-            
-            // Format nomor WA (hapus karakter selain angka)
             const cleanPhone = member.whatsapp_number ? member.whatsapp_number.replace(/[^0-9]/g, '') : '';
 
             return `
@@ -292,14 +321,9 @@
                     <span class="role-badge ${badgeClass}">${member.role || 'Anggota'}</span>
                     <h3>${member.full_name}</h3>
                     <div class="card-sub">${member.sub_title || 'Warga Ngebel'}</div>
-                    
-                    ${member.quote ? `
-                    <div class="quote">
-                        "${member.quote}"
-                    </div>` : ''}
-
+                    ${member.quote ? `<div class="quote">"${member.quote}"</div>` : ''}
                     <div class="card-actions">
-                        <button class="btn-action btn-outline" onclick="openWhatsApp('${cleanPhone}')" ${!cleanPhone ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''}>
+                        <button class="btn-action btn-outline" onclick="openWhatsApp('${cleanPhone}')" ${!cleanPhone ? 'disabled style="opacity:0.5"' : ''}>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
                             Chat
                         </button>
@@ -312,66 +336,45 @@
             `;
         }
 
-        // Membuka WhatsApp
         function openWhatsApp(phone) {
             if(!phone) return;
             window.open(`https://wa.me/${phone}`, '_blank');
         }
 
-        // Placeholder Detail Profil
         function showDetail(id) {
-            console.log("Lihat ID:", id);
-            // Di sini Anda bisa menambahkan logika untuk membuka modal detail
             alert("Fitur Detail Profil akan segera hadir! ID: " + id);
         }
 
-        // --- 3. FETCH DATA & RENDER ---
+        // --- 4. FETCH DATA & RENDER DENGAN FALLBACK ---
         async function loadCommunity() {
             const container = document.getElementById('community-container');
             
             try {
-                console.log("Mengambil data dari tabel ngebel_community...");
-                
-                // Ambil data dari Supabase
+                console.log("Mengambil data dari Supabase...");
                 const { data, error } = await supabase
                     .from('ngebel_community')
                     .select('*')
-                    .order('created_at', { ascending: false }); // Urutkan dari yang terbaru
+                    .order('created_at', { ascending: false });
 
                 if (error) throw error;
 
-                if (!data || data.length === 0) {
-                    container.innerHTML = `
-                        <div style="grid-column: 1/-1; text-align:center; padding: 40px; background: #f1f5f9; border-radius: 12px;">
-                            <p style="color: var(--text-muted); margin-bottom: 10px;">Belum ada anggota komunitas yang terdaftar.</p>
-                            <a href="register_mitra.html" style="color: var(--primary); font-weight: 700; text-decoration: underline;">Jadilah yang pertama!</a>
-                        </div>
-                    `;
-                    return;
-                }
-
-                console.log("Data ditemukan:", data.length, "anggota.");
-
-                // Render data menggunakan map
-                container.innerHTML = data.map(member => createCommunityCard(member)).join('');
-
-                // Jalankan animasi scroll untuk elemen baru
-                observeAnimations();
+                // Jika data dari DB ada, pakai itu. Jika kosong/null, pakai Dummy.
+                const dataToRender = (data && data.length > 0) ? data : dummyData;
+                
+                console.log("Data dirender:", dataToRender.length, "anggota.");
+                container.innerHTML = dataToRender.map(member => createCommunityCard(member)).join('');
 
             } catch (err) {
-                console.error("Gagal memuat data komunitas:", err);
-                container.innerHTML = `
-                    <div style="grid-column: 1/-1; text-align:center; color: #ef4444; padding: 20px; background: #fef2f2; border-radius: 12px; border: 1px solid #fecaca;">
-                        <p style="font-weight: 600; margin-bottom: 5px;">Gagal memuat data</p>
-                        <small>${err.message}</small>
-                        <br><br>
-                        <button onclick="loadCommunity()" class="btn-action btn-primary" style="width: auto; display: inline-flex;">Coba Lagi</button>
-                    </div>
-                `;
+                console.error("Gagal memuat data DB, menggunakan Data Dummy:", err);
+                // JIKA ERROR GAGAL KONEKSI, PAKAI DUMMY
+                container.innerHTML = dummyData.map(member => createCommunityCard(member)).join('');
             }
+            
+            // Jalankan animasi
+            observeAnimations();
         }
 
-        // --- 4. ANIMASI SCROLL ---
+        // --- 5. ANIMASI SCROLL ---
         function observeAnimations() {
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
@@ -390,13 +393,10 @@
             });
         }
 
-        // Jalankan saat halaman siap
         document.addEventListener('DOMContentLoaded', () => {
             loadCommunity();
-            // Jalankan animasi untuk elemen statis (Activity Feed & CTA)
             observeAnimations();
         });
-
     </script>
 </body>
 </html>
