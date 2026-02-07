@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#0f766e">
     
     <!-- Import Supabase Client dari CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7"></script>
 
     <style>
         :root {
@@ -28,22 +28,32 @@
         
         /* Tombol Kembali ke Beranda */
         .back-to-home {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: white;
-            color: var(--primary);
-            padding: 12px;
-            border-radius: 50%;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-            transition: transform 0.2s;
-            border: none;
-        }
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: #ffffff;
+    color: var(--primary);
+    padding: 10px 16px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    text-decoration: none;
+    display: inline-block;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.3px;
+    z-index: 20;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.back-to-home:hover {
+    background: var(--primary);
+    color: #fff;
+}
+
+.back-to-home:active {
+    transform: scale(0.95);
+}
         .back-to-home:active { transform: scale(0.9); }
         
         .auth-card {
@@ -127,16 +137,57 @@
         }
 
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+ /* ===== FLOATING HOME ===== */
+.home-float {
+    position: fixed;
+    top: 18px;
+    left: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 14px;
+    text-decoration: none;
+    z-index: 9999;
+    transition: all 0.25s ease;
+}
+
+.home-float:hover {
+    background: var(--primary);
+    color: #fff;
+}
+
+.home-float:active {
+    transform: scale(0.92);
+}
+
+/* Hide saat scroll turun */
+.home-hide {
+    transform: translateY(-80px);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.home-show {
+    transform: translateY(0);
+    opacity: 1;
+}   
     </style>
 </head>
 <body>
-
-    <!-- TOMBOL KEMBALI KE BERANDA -->
-    <a href="index.html" class="back-to-home" title="Kembali ke Beranda">
-        <svg width="24" height="24" viewBox=" 0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-    </a>
-
-    <div class="auth-card">
+               <!-- TOMBOL KEMBALI KE BERANDA -->
+    <a href="index.html" class="home-float home-show" id="homeBtn">
+    <span class="home-icon">🏠</span>
+    <span class="home-text">Home</span>
+</a>
+        <div class="auth-card">
         <div style="font-size: 3.5rem; margin-bottom: 10px;">🔐</div>
         
         <h2>Masuk Platform</h2>
@@ -161,25 +212,31 @@
                 <span class="btn-text">Masuk</span>
                 <div class="spinner"></div>
             </button>
-        </form>
-        
-        <!-- TOMBOL DAFTRAR -->
+        </form>        
+                   <!-- TOMBOL DAFTRAR -->
         <a href="register.html" class="btn btn-outline">
             Daftar Akun Baru
             <svg width="18" height="18" viewBox=" 0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
         </a>
     </div>
-
         <script>
-        // --- KONFIGURASI SUPABASE ---
+                     // --- KONFIGURASI SUPABASE ---
         const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
-
+       
         // Inisialisasi Supabase dengan NAMA VARIABEL YANG BERBEDA (sb)
         // Ini mencegah error 'Identifier already declared'
         const { createClient } = supabase; // Menggunakan namespace global dari library
         const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
-
+        
+               // AUTO SESSION LOGIN
+         // Jika sudah login → langsung ke index               
+       sb.auth.getSession().then(({ data }) => {
+    if (data.session) {
+        window.location.replace("index.html");
+       }
+   });
+            
         // --- FUNGSI LUPA PASSWORD ---
         async function handleForgotPassword(e) {
             e.preventDefault();
@@ -204,7 +261,7 @@
             try {
                 // Gunakan 'sb' bukan 'supabase'
                 const { data, error } = await sb.auth.resetPasswordForEmail(email, {
-                    redirectTo: window.location.href
+                    redirectTo: window.location.origin + "/login.html"
                 });
 
                 if (error) throw error;
@@ -309,7 +366,7 @@
                 // 6. Redirect Berhasil
                 const nama = profile.full_name || profile.nama || email;
                 alert(`Selamat datang, ${nama}!`);
-                window.location.href = 'index.html';
+                window.location.replace('index.html');
 
             } catch (err) {
                 console.error("Login Error:", err);
@@ -323,8 +380,7 @@
         // --- FUNGSI UTILITAS ---
         function setLoading(btnId, isLoading) {
             const btn = document.getElementById(btnId);
-            if(!btn) return;
-            
+            if(!btn) return;            
             const text = btn.querySelector('.btn-text');
             const spinner = btn.querySelector('.spinner');
             
@@ -338,14 +394,29 @@
                 btn.disabled = false;
             }
         }
-
         function showError(elementId, msg) {
             const el = document.getElementById(elementId);
             if(el) {
                 el.innerText = msg;
                 el.style.display = msg ? 'block' : 'none';
             }
+            }            
+         /* ===== AUTO HIDE FLOAT HOME ===== */
+      let lastScrollY = window.scrollY;
+      const homeBtn = document.getElementById("homeBtn");
+             if (homeBtn) {
+    window.addEventListener("scroll", () => {
+        const currentY = window.scrollY;
+        if (currentY > lastScrollY && currentY > 40) {
+            homeBtn.classList.add("home-hide");
+            homeBtn.classList.remove("home-show");
+        } else {
+            homeBtn.classList.remove("home-hide");
+            homeBtn.classList.add("home-show");
         }
+        lastScrollY = currentY;
+    });
+}                        
     </script>
 </body>
 </html>
