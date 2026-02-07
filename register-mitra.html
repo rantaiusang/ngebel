@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Daftar Mitra Baru | Ngebel Platform</title>
+    <meta name="theme-color" content="#0f766e">
+    
+    <!-- Import Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #0f766e; --primary-light: #14b8a6;
+            --bg-body: #f0f4f8;
+            --glass: rgba(255, 255, 255, 0.95);
+            --radius-xl: 32px; --radius-lg: 20px;
+            --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.1);
+            --text-main: #1e293b; --text-muted: #64748b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        body {
+            background: var(--bg-body); color: var(--text-main);
+            display: flex; align-items: center; justify-content: center;
+            min-height: 100vh; padding: 20px; position: relative;
+        }
+
+        /* Tombol Kembali */
+        .back-btn {
+            position: fixed; top: 20px; left: 20px;
+            display: flex; align-items: center; gap: 8px;
+            padding: 10px 16px; border-radius: 14px;
+            background: rgba(255,255,255,0.9); border: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            color: var(--primary); font-weight: 700; font-size: 14px;
+            text-decoration: none; z-index: 9999; transition: 0.3s;
+        }
+        .back-btn:hover { background: var(--primary); color: white; }
+
+        .auth-card {
+            background: var(--glass); padding: 30px; border-radius: var(--radius-xl);
+            width: 100%; max-width: 500px;
+            box-shadow: var(--shadow-soft);
+            text-align: left;
+            backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.5);
+            position: relative; z-index: 5;
+            animation: fadeInUp 0.6s ease-out;
+            max-height: 90vh; /* Agar bisa discroll di HP jika layar pendek */
+            overflow-y: auto;
+        }
+
+        h2 { color: var(--primary); margin-bottom: 5px; font-family: 'Outfit', sans-serif; font-size: 1.8rem; }
+        p.subtitle { color: var(--text-muted); margin-bottom: 25px; font-size: 0.9rem; }
+
+        .form-group { margin-bottom: 16px; }
+        label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: #475569; }
+        
+        input, select, textarea {
+            width: 100%; padding: 12px; border: 2px solid #e2e8f0;
+            border-radius: 10px; font-size: 0.95rem; outline: none; transition: 0.3s;
+            background: #fff; font-family: inherit;
+        }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1); }
+
+        /* File Upload Styling */
+        .file-upload-wrapper {
+            position: relative; border: 2px dashed #cbd5e1; border-radius: 12px;
+            padding: 20px; text-align: center; background: #f8fafc;
+            transition: 0.3s; cursor: pointer;
+        }
+        .file-upload-wrapper:hover { border-color: var(--primary); background: #f0fdfa; }
+        .file-upload-input {
+            position: absolute; width: 100%; height: 100%; top: 0; left: 0; opacity: 0; cursor: pointer;
+        }
+        .file-upload-label {
+            font-size: 0.9rem; color: var(--text-muted); pointer-events: none;
+        }
+        .preview-img {
+            width: 80px; height: 80px; border-radius: 50%; object-fit: cover;
+            margin-top: 10px; display: none; border: 2px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .btn {
+            width: 100%; padding: 14px; background: var(--primary);
+            color: white; border: none; border-radius: 12px;
+            font-weight: 700; font-size: 1rem; cursor: pointer;
+            transition: transform 0.2s; margin-top: 10px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn:disabled { background: #cbd5e1; cursor: not-allowed; transform: none; }
+
+        .spinner {
+            display: none; width: 18px; height: 18px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%; border-top-color: white;
+            animation: spin 1s linear infinite; margin: 0 auto;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .error-msg { 
+            color: #ef4444; font-size: 0.85rem; margin-top: 5px; 
+            background: #fef2f2; padding: 8px 12px; border-radius: 8px; 
+            display: none; text-align: left; border: 1px solid #fecaca;
+        }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+    
+    <a href="community.html" class="back-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Kembali
+    </a>
+
+    <div class="auth-card">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h2>Bergabung Sebagai Mitra</h2>
+            <p class="subtitle">Lengkapi profil Anda untuk tampil di Komunitas Ngebel</p>
+        </div>
+        
+        <form id="register-form" onsubmit="handleRegister(event)">
+            
+            <!-- ACCOUNT INFO -->
+            <div class="form-group">
+                <label>Email Akun</label>
+                <input type="email" id="email" placeholder="email@anda.com" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="Minimal 6 karakter" required minlength="6">
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;">
+
+            <!-- PROFILE INFO -->
+            <div class="form-group">
+                <label>Nama Lengkap</label>
+                <input type="text" id="full_name" placeholder="Contoh: Budi Santoso" required>
+            </div>
+
+            <div class="form-group">
+                <label>Peran (Role)</label>
+                <select id="role" required>
+                    <option value="">Pilih Peran...</option>
+                    <option value="Petani">Petani / Pekebun</option>
+                    <option value="Pemandu Wisata">Pemandu Wisata</option>
+                    <option value="Pelaku UMKM">Pelaku UMKM / Kuliner</option>
+                    <option value="Pengelola Homestay">Pengelola Homestay</option>
+                    <option value="Seniman">Seniman / Budayawan</option>
+                    <option value="Lainnya">Lainnya</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Sub Judul (Usaha/Keahlian)</label>
+                <input type="text" id="sub_title" placeholder="Contoh: Petani Durian Lokal">
+            </div>
+
+            <div class="form-group">
+                <label>Nomor WhatsApp</label>
+                <input type="tel" id="whatsapp" placeholder="Contoh: 08123456789" required>
+            </div>
+
+            <div class="form-group">
+                <label>Quote / Pesan Singkat</label>
+                <textarea id="quote" rows="2" placeholder="Tulis pesan singkat untuk pengunjung..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Foto Profil</label>
+                <div class="file-upload-wrapper">
+                    <input type="file" id="avatar_file" class="file-upload-input" accept="image/*" onchange="previewImage(this)">
+                    <div class="file-upload-label" id="file-label">
+                        Klik untuk upload foto<br><small>(Maks 2MB)</small>
+                    </div>
+                    <img id="avatar-preview" class="preview-img" alt="Preview">
+                </div>
+            </div>
+            
+            <div id="register-error" class="error-msg"></div>
+            
+            <button type="submit" class="btn" id="submit-btn">
+                <span class="btn-text">Daftar Sekarang</span>
+                <div class="spinner"></div>
+            </button>
+
+            <p style="text-align: center; margin-top: 15px; font-size: 0.85rem; color: var(--text-muted);">
+                Sudah punya akun? <a href="login.html" style="color: var(--primary); font-weight: 700; text-decoration: underline;">Login disini</a>
+            </p>
+        </form>
+    </div>
+
+    <script>
+        // --- KONFIGURASI SUPABASE ---
+        const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
+        const { createClient } = supabase;
+        const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // --- FUNGSI PREVIEW GAMBAR ---
+        function previewImage(input) {
+            const preview = document.getElementById('avatar-preview');
+            const label = document.getElementById('file-label');
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    label.style.display = 'none';
+                }
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                preview.style.display = 'none';
+                label.style.display = 'block';
+            }
+        }
+
+        // --- FUNGSI REGISTER UTAMA ---
+        async function handleRegister(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const fullName = document.getElementById('full_name').value;
+            const role = document.getElementById('role').value;
+            const subTitle = document.getElementById('sub_title').value;
+            const whatsapp = document.getElementById('whatsapp').value;
+            const quote = document.getElementById('quote').value;
+            const fileInput = document.getElementById('avatar_file');
+            const file = fileInput.files[0];
+
+            // 1. Validasi Sederhana
+            if (!file) {
+                showError('Mohon upload foto profil.');
+                return;
+            }
+
+            // 2. Set Loading
+            setLoading(true);
+            showError('');
+
+            try {
+                console.log("Mulai proses registrasi...");
+
+                // 3. Buat Akun Auth
+                const { data: authData, error: authError } = await sb.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: {
+                            full_name: fullName,
+                            role: role
+                        }
+                    }
+                });
+
+                if (authError) throw authError;
+
+                const userId = authData.user.id;
+                console.log("Auth berhasil. User ID:", userId);
+
+                // 4. Upload Foto ke Storage
+                // Nama file: user_id_timestamp.ext agar unik
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${userId}_${new Date().getTime()}.${fileExt}`;
+                const filePath = `avatars/${fileName}`;
+
+                const { error: uploadError } = await sb.storage
+                    .from('images') // Pastikan bucket bernama 'images'
+                    .upload(filePath, file);
+
+                if (uploadError) throw uploadError;
+
+                // 5. Ambil URL Publik Foto
+                const { data: publicUrlData } = sb.storage
+                    .from('images')
+                    .getPublicUrl(filePath);
+
+                const avatarUrl = publicUrlData.publicUrl;
+                console.log("Upload foto berhasil. URL:", avatarUrl);
+
+                // 6. Simpan Data ke Tabel 'ngebel_community'
+                const { error: dbError } = await sb
+                    .from('ngebel_community')
+                    .insert([{
+                        id: userId, // Gunakan ID auth sebagai primary key
+                        full_name: fullName,
+                        role: role,
+                        sub_title: subTitle,
+                        whatsapp_number: whatsapp,
+                        quote: quote,
+                        avatar_url: avatarUrl,
+                        created_at: new Date()
+                    }]);
+
+                if (dbError) throw dbError;
+
+                // 7. Login Otomatis & Redirect ke Dashboard
+                console.log("Registrasi komplit!");
+                alert("Pendaftaran Berhasil! Selamat bergabung di Komunitas Ngebel.");
+                
+                // Redirect ke Dashboard
+                window.location.replace('dashboard.html');
+
+            } catch (err) {
+                console.error("Error Register:", err);
+                showError("Terjadi kesalahan: " + err.message);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // --- UTILITAS ---
+        function setLoading(isLoading) {
+            const btn = document.getElementById('submit-btn');
+            const text = btn.querySelector('.btn-text');
+            const spinner = btn.querySelector('.spinner');
+
+            if (isLoading) {
+                text.style.display = 'none';
+                spinner.style.display = 'block';
+                btn.disabled = true;
+            } else {
+                text.style.display = 'block';
+                spinner.style.display = 'none';
+                btn.disabled = false;
+            }
+        }
+
+        function showError(msg) {
+            const el = document.getElementById('register-error');
+            if (msg) {
+                el.innerText = msg;
+                el.style.display = 'block';
+            } else {
+                el.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
