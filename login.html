@@ -149,7 +149,7 @@
             </div>
             <div class="form-group">
                 <label>Password</label>
-                <input type="password" id="login-password" placeholder="••••••••" required>
+                <input type="password" id="login-password" placeholder="•••••••••" required>
                 <!-- TOMBOL LUPA PASSWORD -->
                 <a href="#" onclick="handleForgotPassword(event)" class="forgot-password">Lupa Password?</a>
             </div>
@@ -170,13 +170,15 @@
         </a>
     </div>
 
-    <script>
+        <script>
         // --- KONFIGURASI SUPABASE ---
         const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
 
-        // Inisialisasi Supabase
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // Inisialisasi Supabase dengan NAMA VARIABEL YANG BERBEDA (sb)
+        // Ini mencegah error 'Identifier already declared'
+        const { createClient } = supabase; // Menggunakan namespace global dari library
+        const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // --- FUNGSI LUPA PASSWORD ---
         async function handleForgotPassword(e) {
@@ -200,7 +202,8 @@
             btn.disabled = true;
 
             try {
-                const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+                // Gunakan 'sb' bukan 'supabase'
+                const { data, error } = await sb.auth.resetPasswordForEmail(email, {
                     redirectTo: window.location.href
                 });
 
@@ -220,7 +223,7 @@
             }
         }
 
-        // --- FUNGSI LOGIN (DIPERBAIKI) ---
+        // --- FUNGSI LOGIN (FINAL VERSION) ---
         async function handleLogin(e) {
             e.preventDefault();
 
@@ -235,8 +238,8 @@
             try {
                 console.log("Memulai proses login...");
                 
-                // 2. Login Auth Supabase
-                const { data, error } = await supabase.auth.signInWithPassword({
+                // 2. Login Auth Supabase (Gunakan 'sb')
+                const { data, error } = await sb.auth.signInWithPassword({
                     email,
                     password
                 });
@@ -249,13 +252,13 @@
                 const userId = data.user.id;
                 console.log("Auth Berhasil. User ID:", userId);
 
-                // 3. Cek Profil di Tabel 'ngebelusers'
+                // 3. Cek Profil di Tabel 'ngebelusers' (Gunakan 'sb')
                 let profile = null;
                 let profileError = null;
 
                 // Coba kolom 'id' dulu
                 try {
-                    const result = await supabase
+                    const result = await sb
                         .from('ngebelusers')
                         .select('*')
                         .eq('id', userId)
@@ -268,11 +271,11 @@
                     profileError = err;
                 }
 
-                // Fallback ke kolom 'user_id' jika 'id' gagal atau tidak ditemukan
+                // Fallback ke kolom 'user_id' jika 'id' gagal
                 if (profileError || !profile) {
                     console.warn("Data tidak ditemukan di kolom 'id', mencoba kolom 'user_id'...");
                     try {
-                        const fallback = await supabase
+                        const fallback = await sb
                             .from('ngebelusers')
                             .select('*')
                             .eq('user_id', userId)
@@ -283,7 +286,6 @@
                             profileError = null; // Reset error karena sukses di user_id
                             console.log("Data ditemukan di kolom 'user_id'");
                         } else {
-                            // Tetap gagal
                             profileError = fallback.error;
                         }
                     } catch (err) {
@@ -295,12 +297,12 @@
                 // 4. Evaluasi Hasil Pencarian Profil
                 if (profileError || !profile) {
                     console.error("Profile Lookup Gagal:", profileError);
-                    throw new Error("Data profil tidak ditemukan di database. Silakan hubungi admin atau pastikan Anda sudah mendaftar.");
+                    throw new Error("Data profil tidak ditemukan di database. Pastikan kolom ID benar (id atau user_id).");
                 }
 
                 // 5. Cek Status Aktif
                 if (profile.is_active === false) {
-                    await supabase.auth.signOut();
+                    await sb.auth.signOut();
                     throw new Error('Akun Anda dinonaktifkan oleh admin.');
                 }
 
@@ -313,7 +315,7 @@
                 console.error("Login Error:", err);
                 showError('login-error', err.message);
             } finally {
-                // 7. PASTIKAN LOADING SELALUUS BERHENTI (PENTING)
+                // 7. PASTIKAN LOADING SELALUUS BERHENTI
                 setLoading('login-btn', false);
             }
         }
