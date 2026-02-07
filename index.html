@@ -16,7 +16,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
     <style>
-        /* --- 1. VARIABLES & RESET --- */
+        /* ---1. VARIABLES & RESET --- */
         :root {
             --primary: #0f766e; --primary-light: #14b8a6;
             --accent: #f59e0b; 
@@ -110,7 +110,7 @@
         .bottom-nav {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
             width: 92%; max-width: 450px; height: auto; min-height: var(--nav-height);
-            background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px);
+            background: rgba(255,255,255,0.9); backdrop-filter: blur(20px);
             border-radius: 40px;
             display: flex; justify-content: space-around; align-items: center;
             box-shadow: 0 20px 60px rgba(0,0,0,0.15);
@@ -291,7 +291,7 @@
                 <div class="hero-bg"></div>
                 <div class="hero-overlay"></div>
                 <div class="hero-content">
-                    <div style="background: rgba(255,255,255,0.2); backdrop-filter:blur(5px); display:inline-block; padding: 5px 15px; border-radius: 20px; margin-bottom: 15px; font-size: 0.9rem; font-weight: 600;">✨ Ekonomi Digital Berbasis Komunitas</div>
+                    <div style="background: rgba(255,255,255,0.2); backdrop-filter: blur(5px); display:inline-block; padding: 5px 15px; border-radius: 20px; margin-bottom: 15px; font-size: 0.9rem; font-weight: 600;">✨ Ekonomi Digital Berbasis Komunitas</div>
                     <h1>Ngebel untuk <br>Masa Depan</h1>
                     <p style="color: rgba(255,255,255,0.9); margin-bottom: 30px;">
                         Platform terintegrasi untuk memajukan pariwisata, pertanian, dan UMKM di Telaga Ngebel. Bergabunglah bersama kami.
@@ -308,7 +308,7 @@
             <!-- PREVIEW CONTAINER -->
             <div class="grid-3">
 
-                <!-- CARD 1: PLATFORM KECERDASAN DAERAH (NEW!) -->
+                <!-- CARD 1: PLATFORM KECERDASAN DAERAH -->
                 <div class="preview-card" onclick="handlePreviewClick('Platform Kecerdasan Daerah', false)">
                     <!-- Gambar: Representasi Dashboard Area Publik -->
                     
@@ -427,13 +427,17 @@
         const { createClient } = supabase;
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- KONFIGURASI MENU ---
+        // --- KONFIGURASI MENU (DITAMBAH ABOUT & CONTACT) ---
         const publicMenu = [
-            { id: 'home', icon: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>', label: 'Home' },
-            { id: 'explore', icon: '<circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>', label: 'Explore', link: 'explore.html' },
+            { id: 'home', icon: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22 23 18 23 2 16 6 8 2 1 6"></polyline>', label: 'Home' },
+            { id: 'explore', icon: '<circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>', label: 'Explore', link: 'explore.html' },
             { id: 'map', icon: '<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line>', label: 'Peta', link: 'map.html' },
             { id: 'community', icon: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>', label: 'Komunitas', link: 'community.html' },
-            { id: 'market', icon: '<circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>', label: 'Market', link: 'katalog.html' }
+            { id: 'market', icon: '<circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>', label: 'Market', link: 'katalog.html' },
+            // MENU BARU: ABOUT
+            { id: 'about', icon: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>', label: 'Tentang', link: 'about.html' },
+            // MENU BARU: CONTACT
+            { id: 'contact', icon: '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline>', label: 'Kontak', link: 'contact.html' }
         ];
 
         // --- INIT ---
@@ -486,7 +490,7 @@
                 btn.innerText = "Masuk untuk Melihat Data";
                 btn.onclick = goToLogin;
             } else {
-                text.innerHTML = `Akses publik untuk <b>${featureName}</b>. Data direnderahkan secara umum, namun untuk kontrol penuh, silakan masuk.`;
+                text.innerHTML = `Akses publik untuk <b>${featureName}</b>. Data direnderkan secara umum, namun untuk kontrol penuh, silakan masuk.`;
                 btn.innerText = "Masuk / Daftar";
                 btn.onclick = goToLogin;
             }
