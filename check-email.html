@@ -1,124 +1,143 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Cek Email | Ngebel Platform</title>
-    <meta name="theme-color" content="#0f766e">
-    
-    <style>
-        :root {
-            --primary: #0f766e; --primary-light: #14b8a6;
-            --bg-body: #f0f4f8;
-            --glass: rgba(255, 255, 255, 0.95);
-            --radius-xl: 32px; --radius-lg: 24px;
-            --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.1);
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-        
-        body {
-            background: var(--bg-body); color: #1e293b;
-            display: flex; align-items: center; justify-content: center;
-            min-height: 100vh; padding: 20px;
-            position: relative;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Cek Email | Ngebel Platform</title>
+<meta name="theme-color" content="#0f766e">
 
-        .card {
-            background: var(--glass);
-            padding: 40px; border-radius: var(--radius-xl);
-            width: 100%; max-width: 400px;
-            box-shadow: var(--shadow-soft);
-            text-align: center;
-            backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.5);
-            animation: fadeInUp 0.6s ease-out;
-        }
+<!-- Import Supabase Client dari CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-        .icon-wrapper {
-            width: 80px; height: 80px;
-            background: rgba(15, 118, 110, 0.1);
-            color: var(--primary);
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 24px auto;
-            font-size: 2.5rem;
-        }
+<style>
+:root {
+    --primary: #0f766e; --primary-light: #14b8a6;
+    --bg-body: #f0f4f8;
+    --glass: rgba(255, 255, 255, 0.95);
+    --radius-xl: 32px; --radius-lg: 24px;
+    --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.1);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
 
-        h2 { color: var(--primary); margin-bottom: 10px; font-family: 'Outfit', sans-serif; font-size: 1.8rem; }
-        p { color: #64748b; margin-bottom: 20px; font-size: 0.95rem; line-height: 1.6; }
+body {
+    background: var(--bg-body); color: #1e293b;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 20px; position: relative;
+}
 
-        .email-box {
-            background: #f1f5f9;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 24px;
-            border: 1px dashed #cbd5e1;
-        }
+.auth-card {
+    background: var(--glass); padding: 40px; border-radius: var(--radius-xl);
+    width: 100%; max-width: 450px;
+    box-shadow: var(--shadow-soft);
+    text-align: center;
+    backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.5);
+    position: relative; z-index: 5;
+    animation: fadeInUp 0.6s ease-out;
+}
 
-        .btn {
-            display: block; width: 100%; padding: 16px; 
-            background: var(--primary); color: white; 
-            text-decoration: none; border: none; border-radius: 12px;
-            font-weight: 700; font-size: 1rem; cursor: pointer;
-            transition: transform 0.2s; text-align: center;
-        }
-        .btn:active { transform: scale(0.97); }
+h2 { color: var(--primary); margin-bottom: 10px; font-family: 'Outfit', sans-serif; font-size: 1.8rem; }
+p { color: #64748b; margin-bottom: 30px; font-size: 0.95rem; line-height: 1.5; }
 
-        .btn-secondary {
-            background: transparent; color: var(--primary);
-            margin-top: 15px; border: 2px solid var(--primary);
-        }
-        .btn-secondary:hover { background: rgba(15, 118, 110, 0.05); }
+.btn {
+    width: 100%; padding: 16px; background: var(--primary);
+    color: white; border: none; border-radius: 12px;
+    font-weight: 700; font-size: 1rem; cursor: pointer;
+    transition: transform 0.2s; margin-top: 10px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    font-family: inherit; text-decoration: none;
+}
+.btn:disabled { background: #cbd5e1; cursor: not-allowed; }
 
-        .resend-link {
-            display: inline-block; margin-top: 15px;
-            font-size: 0.9rem; color: #64748b; text-decoration: none;
-            border-bottom: 1px dashed #94a3b8;
-        }
-        .resend-link:hover { color: var(--primary); border-bottom-style: solid; }
+.btn-outline {
+    background: transparent; border: 2px solid var(--primary);
+    color: var(--primary); margin-top: 15px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    text-decoration: none; border-radius: 12px; padding: 14px;
+    font-weight: 700;
+}
+.btn-outline:hover { background: rgba(15,118,110,0.05); }
 
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
+.spinner {
+    display: none; width: 20px; height: 20px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-radius: 50%; border-top-color: white;
+    animation: spin 1s linear infinite; margin: 0 auto;
+}
+
+@keyframes spin { 100% { transform: rotate(360deg); } }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+a { text-decoration: none; }
+a:hover { text-decoration: underline; }
+</style>
 </head>
 <body>
 
-    <div class="card">
-        <div class="icon-wrapper">
-            ✉️
-        </div>
-        
-        <h2>Cek Email Anda</h2>
-        <p>
-            Kami telah mengirimkan tautan konfirmasi ke alamat email Anda. Silakan buka email untuk mengaktifkan akun Ngebel Anda.
-        </p>
+<div class="auth-card">
+    <div style="font-size: 3.5rem; margin-bottom: 10px;">📧</div>
+    <h2>Cek Email Anda</h2>
+    <p>
+        Kami telah mengirimkan tautan konfirmasi ke alamat email Anda.<br>
+        Silakan buka email untuk mengaktifkan akun Ngebel Anda.<br>
+        Jika tidak melihat email dalam 1-2 menit, cek folder <strong>Spam</strong> atau <strong>Junk</strong>.
+    </p>
 
-        <div class="email-box" id="email-display">
-            user@email.com
-        </div>
+    <button class="btn" id="btn-activation" disabled>
+        <span class="btn-text">Sudah Aktivasi, Masuk</span>
+        <div class="spinner"></div>
+    </button>
 
-        <p style="font-size: 0.85rem;">
-            Jika tidak melihat email dalam 1-2 menit, cek folder <b>Spam</b> atau <b>Junk</b>.
-        </p>
+    <a href="#" id="resend-email" class="btn-outline">Kirim Ulang Email</a>
+    <a href="register.html" class="btn-outline">Salah alamat email? Daftar ulang</a>
+</div>
 
-        <a href="login.html" class="btn">Sudah Aktivasi, Masuk</a>
-        <button class="btn btn-secondary" onclick="window.location.reload()">Kirim Ulang Email</button>
+<script>
+// Supabase setup (gunakan akunmu sendiri)
+const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        <br>
-        <a href="register.html" class="resend-link">Salah alamat email? Daftar ulang</a>
-    </div>
+// Tombol Masuk, aktif jika user sudah verifikasi
+const btnActivation = document.getElementById("btn-activation");
 
-    <script>
-        // Script sederhana untuk mengambil email dari URL jika ada (opsional)
-        // Jika user redirect dengan parameter ?email=user@email.com
-        const urlParams = new URLSearchParams(window.location.search);
-        const email = urlParams.get('email');
+// Contoh pengecekan status verifikasi email (async)
+async function checkEmailVerified() {
+    try {
+        const { data, error } = await sb.auth.getUser();
+        if (error) throw error;
 
-        if (email) {
-            document.getElementById('email-display').innerText = email;
+        if (data.user?.email_confirmed_at) {
+            btnActivation.disabled = false;
         } else {
-            document.getElementById('email-display').style.display = 'none';
+            btnActivation.disabled = true;
         }
-    </script>
+    } catch(err) {
+        console.error("Cek verifikasi email error:", err);
+    }
+}
+
+// Panggil setiap 5 detik untuk auto enable tombol jika sudah aktivasi
+setInterval(checkEmailVerified, 5000);
+
+// Klik tombol “Sudah Aktivasi, Masuk” redirect ke login
+btnActivation.addEventListener('click', () => {
+    window.location.href = 'login.html';
+});
+
+// Kirim ulang email
+document.getElementById("resend-email").addEventListener('click', async (e) => {
+    e.preventDefault();
+    try {
+        const { data, error } = await sb.auth.resendConfirmationEmail();
+        if (error) throw error;
+        alert("Email konfirmasi telah dikirim ulang.");
+    } catch(err) {
+        console.error(err);
+        alert("Gagal mengirim ulang email: " + err.message);
+    }
+});
+</script>
+
 </body>
 </html>
