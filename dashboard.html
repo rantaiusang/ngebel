@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Dashboard | Ngebel Platform</title>
+    <meta name="theme-color" content="#0f766e">
+    <meta name="description" content="Dashboard Warga Ngebel">
+
+    <!-- SUPABASE CLIENT -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- 1. VARIABLES & RESET --- */
+        :root {
+            --primary: #0f766e;
+            --primary-light: #14b8a6;
+            --accent: #f59e0b;
+            --bg-body: #f0f9f8; /* Sedikit kehijauan sangat muda */
+            --glass: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.6);
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            
+            --radius-xl: 32px;
+            --radius-lg: 24px;
+            --shadow-soft: 0 10px 40px -10px rgba(15, 118, 110, 0.08);
+            --shadow-hover: 0 20px 40px -12px rgba(15, 118, 110, 0.25);
+            --nav-height: 80px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: calc(var(--nav-height) + 40px);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3 { font-family: 'Outfit', sans-serif; letter-spacing: -0.02em; }
+        
+        h1 { 
+            font-size: clamp(2rem, 5vw, 2.5rem); 
+            color: var(--primary); 
+            margin-bottom: 0.5rem; 
+        }
+        
+        h2 { font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--text-main); position: relative; display: inline-block; }
+        
+        p { color: var(--text-muted); margin-bottom: 1rem; font-size: 1.05rem; }
+
+        /* --- 2. ANIMATIONS (ENHANCED) --- */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* Fade In Up Base */
+        @keyframes fadeInUp { 
+            from { opacity: 0; transform: translateY(30px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+
+        /* Class untuk trigger animasi bertahap */
+        .animate-item {
+            opacity: 0; /* Mulai tersembunyi */
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* --- 3. COMPONENTS --- */
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 2; padding-top: 100px; }
+
+        .card {
+            background: white; border: 1px solid rgba(255,255,255,0.8);
+            border-radius: var(--radius-lg); padding: 24px;
+            box-shadow: var(--shadow-soft); margin-bottom: 20px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy effect */
+            position: relative; overflow: hidden;
+        }
+        
+        /* Highlight effect saat hover card */
+        .card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px;
+            background: var(--primary); transform: scaleX(0); transform-origin: left;
+            transition: transform 0.4s ease;
+        }
+        .card:hover { transform: translateY(-8px); box-shadow: var(--shadow-hover); }
+        .card:hover::before { transform: scaleX(1); }
+
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 30px; }
+
+        .stat-value { font-size: 2.5rem; color: var(--primary); font-weight: 800; display: block; margin-bottom: 5px; line-height: 1.2; }
+        .stat-label { color: var(--text-muted); font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px; }
+        .stat-trend { font-size: 0.85rem; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; }
+        .trend-up { background: #dcfce7; color: #166534; }
+        .trend-down { background: #fee2e2; color: #991b1b; }
+
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px 28px; font-weight: 600; border-radius: 50px; text-decoration: none; border: none; cursor: pointer; font-size: 0.95rem; gap: 8px; transition: all 0.3s ease; position: relative; overflow: hidden; }
+        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(15, 118, 110, 0.3); }
+        .btn-primary:hover { background: var(--primary-light); transform: translateY(-3px); box-shadow: 0 8px 25px rgba(15, 118, 110, 0.4); }
+        .btn-secondary { background: white; border: 1px solid #e2e8f0; color: var(--text-main); }
+        .btn-secondary:hover { border-color: var(--primary); color: var(--primary); background: #f0fdfa; }
+
+        /* --- 4. HEADER --- */
+        header {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            background: rgba(255,255,255,0.85); backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255,255,255,0.5);
+            height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px;
+            transition: all 0.3s;
+        }
+        .brand { display: flex; align-items: center; gap: 10px; font-family: 'Outfit'; font-weight: 800; font-size: 1.4rem; color: var(--primary); cursor: pointer; transition: transform 0.3s; }
+        .brand:hover { transform: scale(1.02); }
+        
+        .user-pill { display: flex; align-items: center; gap: 10px; background: white; padding: 6px 12px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.3s; cursor: pointer; border: 1px solid transparent; }
+        .user-pill:hover { transform: translateY(-2px); border-color: var(--primary); box-shadow: 0 8px 20px rgba(15, 118, 110, 0.15); }
+        .user-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid white; }
+
+        /* --- 5. BOTTOM NAVIGATION (FLOATING ISLAND) --- */
+        .bottom-nav {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px); /* Start hidden below */
+            width: 94%; max-width: 480px; height: auto; min-height: 70px;
+            background: var(--glass); backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            display: flex; justify-content: space-around; align-items: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            z-index: 1000; padding: 12px; border: 1px solid var(--glass-border);
+            flex-wrap: nowrap;
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); /* Pop up effect */
+        }
+        .bottom-nav.visible { transform: translateX(-50%) translateY(0); }
+
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: #94a3b8; font-size: 0.7rem; font-weight: 600;
+            padding: 8px; border-radius: 16px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 60px; cursor: pointer; flex: 1 1 auto; position: relative;
+        }
+        
+        /* Indicator Active (Lingkaran kecil di bawah icon) */
+        .nav-item::after {
+            content: ''; position: absolute; bottom: 4px; width: 4px; height: 4px;
+            background: var(--primary); border-radius: 50%; opacity: 0; transform: scale(0); transition: 0.3s;
+        }
+        
+        .nav-item svg { width: 22px; height: 22px; stroke-width: 2; stroke: currentColor; fill: none; margin-bottom: 4px; transition: all 0.3s; }
+        
+        .nav-item.active { color: var(--primary); background: rgba(15, 118, 110, 0.08); }
+        .nav-item.active::after { opacity: 1; transform: scale(1); }
+        .nav-item.active svg { transform: translateY(-3px); stroke-width: 2.5; filter: drop-shadow(0 4px 6px rgba(15, 118, 110, 0.2)); }
+
+        @media (min-width: 768px) {
+            body { padding-bottom: 0; padding-left: 280px; }
+            .bottom-nav {
+                top: 0; bottom: 0; left: 0; transform: none; width: 280px; height: 100vh;
+                flex-direction: column; justify-content: flex-start; gap: 8px; padding-top: 100px;
+                border-radius: 0; box-shadow: 10px 0 30px rgba(0,0,0,0.05); border-right: 1px solid #eee;
+                align-items: stretch; background: white; /* Solid on desktop */
+            }
+            .nav-item { width: 100%; flex-direction: row; height: 56px; padding: 0 24px; justify-content: flex-start; gap: 16px; font-size: 1rem; flex: none; border-radius: 12px; margin: 0 10px; }
+            .nav-item::after { display: none; } /* Hide dot on desktop */
+            .nav-item svg { margin-bottom: 0; width: 24px; height: 24px; }
+            .nav-item.active { background: #f0fdfa; border-right: 3px solid var(--primary); }
+            .nav-item.active svg { transform: none; }
+        }
+
+        /* Mobile Scroll Nav */
+        @media (max-width: 767px) {
+            .bottom-nav { overflow-x: auto; justify-content: flex-start; gap: 4px; padding: 10px; scroll-snap-type: x mandatory; }
+            .bottom-nav::-webkit-scrollbar { display: none; }
+            .nav-item { flex: 0 0 auto !important; min-width: 65px; scroll-snap-align: center; padding: 8px 12px; }
+        }
+
+        /* --- 6. LOGIN PROMPT --- */
+        #login-prompt { text-align: center; margin-top: 100px; display: none; }
+        #main-content { display: none; }
+        
+        #preloader { position: fixed; inset: 0; background: white; z-index: 9999; display: flex; justify-content: center; align-items: center; transition: opacity 0.6s ease; }
+        .spinner { width: 45px; height: 45px; border: 4px solid #e2e8f0; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+
+    </style>
+</head>
+<body>
+
+    <!-- PRELOADER -->
+    <div id="preloader"><div class="spinner"></div></div>
+
+    <!-- HEADER -->
+    <header class="animate-item" style="animation-delay: 0.1s;">
+        <div class="brand" onclick="window.location.href='index.html'">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.74 5.88-5.74 5.88-5.74-5.88L12 2.69M12 22a9.97 9.97 0 0 1-7.07-2.93l-1.41 1.41A11.97 11.97 0 0 0 12 24a11.97 11.97 0 0 0 8.49-3.52l-1.41-1.41A9.97 9.97 0 0 1 12 22z"/></svg>
+            Ngebel
+        </div>
+        
+        <div class="user-pill">
+            <img src="https://picsum.photos/seed/warga/100/100" class="user-avatar" alt="User">
+            <div style="font-size: 0.9rem; font-weight: 700; color: var(--text-main);">Warga</div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <div id="main-content" class="container">
+        
+        <!-- Header Text -->
+        <div class="animate-item" style="animation-delay: 0.2s;">
+            <h1>Halo, Warga! 👋</h1>
+            <p>Statistik ekonomi digital Anda terupdate hari ini.</p>
+        </div>
+
+        <!-- STATS GRID -->
+        <div class="grid-3">
+            <div class="card animate-item" style="animation-delay: 0.3s;">
+                <span class="stat-label">Total Pendapatan</span>
+                <span class="stat-value" data-target="4500000">Rp 0</span>
+                <span class="stat-trend trend-up">▲ 12% bulan ini</span>
+            </div>
+            <div class="card animate-item" style="animation-delay: 0.4s;">
+                <span class="stat-label">Pesanan Baru</span>
+                <span class="stat-value" data-target="12">0</span>
+                <span class="stat-trend" style="background:#fff7ed; color:#c2410c;">⚠ Perlu diproses</span>
+            </div>
+            <div class="card animate-item" style="animation-delay: 0.5s;">
+                <span class="stat-label">Profil Dilihat</span>
+                <span class="stat-value" data-target="850">0</span>
+                <span class="stat-trend trend-up">▲ 5% minggu ini</span>
+            </div>
+        </div>
+
+        <!-- QUICK ACTIONS -->
+        <div class="animate-item" style="margin-bottom: 40px; animation-delay: 0.6s;">
+            <h2 style="margin-bottom: 20px; font-size: 1.3rem;">Aksi Cepat</h2>
+            <div style="display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none;">
+                <button class="btn btn-primary">+ Tambah Produk</button>
+                <button class="btn btn-secondary">Lihat Laporan</button>
+                <button class="btn btn-secondary">Update Stok</button>
+            </div>
+        </div>
+
+        <!-- RECENT ACTIVITY -->
+        <div class="animate-item" style="animation-delay: 0.7s;">
+            <h2 style="margin-bottom: 20px; font-size: 1.3rem;">Aktivitas Terbaru</h2>
+            <div class="card">
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 20px; transition: 0.3s;">
+                    <div style="width: 45px; height: 45px; background: #dcfce7; color: #166534; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; box-shadow: 0 4px 10px rgba(22, 101, 52, 0.1);">📦</div>
+                    <div style="flex:1">
+                        <div style="font-weight: 700; color: var(--text-main);">Pesanan Baru #ORD-001</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted);">Beras Organik 5kg - Budi Santoso</div>
+                    </div>
+                    <div style="font-weight: 800; color: var(--primary); font-size: 1.1rem;">Rp 75.000</div>
+                </div>
+                
+                <div style="display: flex; align-items: center; gap: 15px; transition: 0.3s;">
+                    <div style="width: 45px; height: 45px; background: #e0f2fe; color: #075985; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; box-shadow: 0 4px 10px rgba(7, 89, 133, 0.1);">🌾</div>
+                    <div style="flex:1">
+                        <div style="font-weight: 700; color: var(--text-main);">Update Harga Pangan</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted);">Harga cabai naik 5% hari ini</div>
+                    </div>
+                    <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); background: #f1f5f9; padding: 4px 8px; border-radius: 8px;">2j</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGIN PROMPT -->
+    <div id="login-prompt">
+        <h2 style="font-size: 2rem; color: var(--primary); margin-bottom: 10px;">Akses Terbatas</h2>
+        <p style="margin-bottom: 30px;">Halaman Dashboard hanya dapat diakses oleh anggota.</p>
+        <a href="index.html" class="btn btn-primary">Kembali ke Beranda</a>
+    </div>
+
+    <!-- NAVIGATION CONTAINER -->
+    <nav class="bottom-nav" id="main-nav"></nav>
+
+    <script>
+        // --- KONFIGURASI SUPABASE ---
+        const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // --- MENU MEMBER ---
+        const systemMenu = [
+            { id: 'dashboard', icon: '<rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>', label: 'Dashboard', link: 'dashboard.html' },
+            { id: 'analytics', icon: '<line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line>', label: 'Analitik', link: 'analytics.html' },
+            { id: 'agriculture', icon: '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path>', label: 'Agrikultur', link: 'agriculture.html' },
+            { id: 'distribution', icon: '<rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle>', label: 'Distribusi', link: 'distribution.html' },
+            { id: 'ecosystem', icon: '<circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path><path d="M12 8v8"></path>', label: 'Ekosistem', link: 'ecosystem.html' },
+            { id: 'monitoring', icon: '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>', label: 'Monitoring', link: 'monitoring.html' },
+            { id: 'price', icon: '<line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>', label: 'Harga', link: 'price.html' },
+            { id: 'platform', icon: '<polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline>', label: 'Platform', link: 'platform.html' },
+            { id: 'logout', icon: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line>', label: 'Keluar', action: 'logout' }
+        ];
+
+        // --- ANIMATED COUNTER FUNCTION ---
+        function animateValue(obj, start, end, duration, isCurrency = false) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                
+                // Easing function for smooth stop
+                const easeOutQuad = 1 - Math.pow(1 - progress, 3);
+                
+                let currentVal = Math.floor(easeOutQuad * (end - start) + start);
+                
+                if (isCurrency) {
+                    obj.innerHTML = "Rp " + currentVal.toLocaleString('id-ID');
+                } else {
+                    obj.innerHTML = currentVal;
+                }
+
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        // --- INIT ---
+        window.addEventListener('load', async () => {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+
+            // Hapus Preloader
+            const preloader = document.getElementById('preloader');
+            if(preloader) {
+                preloader.style.opacity = '0';
+                setTimeout(() => preloader.remove(), 600);
+            }
+
+            if (session) {
+                document.getElementById('main-content').style.display = 'block';
+                renderNav();
+                
+                // Tampilkan Nav dengan delay (pop up effect)
+                setTimeout(() => {
+                    document.getElementById('main-nav').classList.add('visible');
+                }, 800);
+
+                // Trigger Counter Animation
+                const stats = document.querySelectorAll('.stat-value');
+                stats.forEach(stat => {
+                    const target = parseInt(stat.getAttribute('data-target'));
+                    if (target > 1000) {
+                        animateValue(stat, 0, target, 2000, true);
+                    } else {
+                        animateValue(stat, 0, target, 1500, false);
+                    }
+                });
+
+            } else {
+                document.getElementById('login-prompt').style.display = 'block';
+            }
+        });
+
+        // --- NAVIGATION LOGIC ---
+        function renderNav() {
+            const navContainer = document.getElementById('main-nav');
+            navContainer.innerHTML = '';
+            
+            systemMenu.forEach((item) => {
+                const a = document.createElement('div');
+                a.className = `nav-item ${item.id === 'dashboard' ? 'active' : ''}`;
+                
+                a.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">${item.icon}</svg>
+                    <span>${item.label}</span>
+                `;
+
+                a.onclick = () => handleNavClick(item, a);
+                navContainer.appendChild(a);
+            });
+        }
+
+        function handleNavClick(item, element) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            if(element) element.classList.add('active');
+
+            if (item.action === 'logout') {
+                // Animasi keluar dulu
+                document.getElementById('main-nav').classList.remove('visible');
+                setTimeout(performLogout, 300);
+                return;
+            }
+
+            if (item.link) {
+                // Fade out effect before redirect
+                document.body.style.opacity = '0';
+                setTimeout(() => window.location.href = item.link, 300);
+            }
+        }
+
+        async function performLogout() {
+            await supabaseClient.auth.signOut();
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
