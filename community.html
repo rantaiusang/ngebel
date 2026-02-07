@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#0f766e">
     <meta name="description" content="Kenali para pelaku wisata, petani buah, dan penggerak ekonomi kreatif di Telaga Ngebel.">
 
-    <!-- Supabase Client -->
+    <!-- Supabase Client (CDN Hanya Sekali) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <!-- Google Fonts -->
@@ -221,7 +221,7 @@
             <!-- Pelaku Wisata & Petani -->
             <h2 class="section-title fade-up">Pelaku Ekosistem</h2>
             
-            <!-- CONTAINER UNTUK DATA DINAMIS / DUMMY -->
+            <!-- CONTAINER UNTUK DATA -->
             <div id="community-container" class="community-grid">
                 <p style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">
                     Memuat data komunitas...
@@ -234,19 +234,24 @@
                 <p style="color: rgba(255,255,255,0.8); max-width: 500px; margin: 10px auto;">
                     Apakah Anda warga Ngebel? Daftarkan usaha atau profil Anda untuk terhubung dengan wisatawan lebih luas.
                 </p>
-                <a href="register-mitra.html" class="cta-btn">Daftar Mitra Sekarang</a>
+                <a href="register_mitra.html" class="cta-btn">Daftar Mitra Sekarang</a>
             </section>
         </div>
     </main>
 
     <script>
-        // --- 1. KONFIGURASI SUPABASE ---
+        // --- 1. KONFIGURASI SUPABASE (BEST PRACTICE V2) ---
         const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // ✅ CARA LEBIH BERSIH (BEST PRACTICE)
+        // Menggunakan destructuring untuk mengambil function createClient dari library global 'supabase'
+        const { createClient } = supabase;
+        
+        // Inisialisasi client dengan nama variabel unik 'supabaseClient'
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // --- 2. DATA DUMMY (FALLBACK) ---
-        // Data ini akan tampil jika database kosong atau error
         const dummyData = [
             {
                 id: 'dummy-001',
@@ -351,12 +356,17 @@
             
             try {
                 console.log("Mengambil data dari Supabase...");
-                const { data, error } = await supabase
+                
+                // ✅ QUERY DIPERBAIKI: Menggunakan supabaseClient
+                const { data, error } = await supabaseClient
                     .from('ngebel_community')
                     .select('*')
                     .order('created_at', { ascending: false });
 
-                if (error) throw error;
+                if (error) {
+                    console.error("Error dari Supabase:", error);
+                    throw error;
+                }
 
                 // Jika data dari DB ada, pakai itu. Jika kosong/null, pakai Dummy.
                 const dataToRender = (data && data.length > 0) ? data : dummyData;
@@ -366,6 +376,10 @@
 
             } catch (err) {
                 console.error("Gagal memuat data DB, menggunakan Data Dummy:", err);
+                
+                // Opsional: Tampilkan alert error untuk debugging
+                // alert("Gagal koneksi database: " + err.message + ". Menampilkan data dummy.");
+
                 // JIKA ERROR GAGAL KONEKSI, PAKAI DUMMY
                 container.innerHTML = dummyData.map(member => createCommunityCard(member)).join('');
             }
