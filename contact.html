@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Kontak Kami | Ngebel Smart Tourism</title>
+    <meta name="theme-color" content="#0f766e">
+    <meta name="description" content="Hubungi tim Smart Tourism Ngebel untuk kolaborasi atau pertanyaan seputar wisata.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- 1. VARIABLES & RESET --- */
+        :root {
+            --primary: #0f766e; --primary-light: #14b8a6; --primary-dark: #0d5f58;
+            --accent: #f59e0b; 
+            --bg-body: #f8fafc;
+            --glass: rgba(255, 255, 255, 0.7);
+            --text-main: #1e293b; --text-muted: #64748b;
+            
+            --radius-xl: 32px; --radius-lg: 24px; --radius-md: 12px;
+            --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.05);
+            --shadow-hover: 0 20px 50px -12px rgba(15, 118, 110, 0.3);
+            --nav-height: 80px;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: calc(var(--nav-height) + 40px);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3 { font-family: 'Outfit', sans-serif; letter-spacing: -0.02em; }
+        p { color: var(--text-muted); margin-bottom: 1rem; }
+        a { text-decoration: none; color: inherit; }
+
+        /* --- 2. ANIMATIONS --- */
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+
+        /* --- 3. COMPONENTS --- */
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 2; }
+
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 16px 32px; font-weight: 700; border-radius: 50px;
+            text-decoration: none; transition: all 0.3s ease; cursor: pointer; border: none; font-size: 1rem; gap: 10px;
+        }
+        .btn-primary { background: var(--primary); color: white; box-shadow: 0 10px 20px rgba(15, 118, 110, 0.3); width: 100%; }
+        .btn-primary:hover { transform: translateY(-2px); background: var(--primary-light); }
+        .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+        /* --- 4. HEADER --- */
+        header {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            background: rgba(255,255,255,0.8); backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.5); height: 70px; display: flex; align-items: center;
+        }
+        .brand { display: flex; align-items: center; gap: 10px; font-family: 'Outfit'; font-weight: 800; font-size: 1.3rem; color: var(--primary); cursor: pointer; text-decoration: none; }
+        
+        /* --- 5. BOTTOM NAVIGATION --- */
+        .bottom-nav {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            width: 92%; max-width: 450px; height: auto; min-height: var(--nav-height);
+            background: rgba(255,255,255,0.9); backdrop-filter: blur(20px);
+            border-radius: 40px;
+            display: flex; justify-content: space-around; align-items: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            z-index: 1000; padding: 10px;
+            border: 1px solid rgba(255,255,255,0.6); flex-wrap: nowrap;
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: #94a3b8; font-size: 0.7rem; font-weight: 600;
+            padding: 8px; border-radius: 20px; transition: all 0.3s ease;
+            min-width: 60px; position: relative; cursor: pointer;
+            flex: 1 1 auto; text-decoration: none;
+        }
+        .nav-item svg { width: 22px; height: 22px; stroke-width: 2; stroke: currentColor; fill: none; margin-bottom: 4px; transition: all 0.3s; }
+        
+        .nav-item.active { color: var(--primary); }
+        .nav-item.active svg { transform: scale(1.1); stroke-width: 2.5; filter: drop-shadow(0 4px 6px rgba(15, 118, 110, 0.2)); }
+
+        /* Desktop Nav */
+        @media (min-width: 768px) {
+            body { padding-bottom: 0; padding-left: 280px; }
+            .bottom-nav {
+                top: 0; bottom: 0; left: 0; transform: none; width: 280px; height: 100vh;
+                flex-direction: column; justify-content: flex-start; gap: 5px; padding-top: 100px;
+                border-radius: 0; box-shadow: 10px 0 30px rgba(0,0,0,0.05); border-right: 1px solid #eee;
+                align-items: stretch;
+            }
+            .nav-item { width: 100%; flex-direction: row; height: 50px; padding: 0 20px; justify-content: flex-start; gap: 15px; font-size: 1rem; flex: none; }
+            .nav-item svg { margin-bottom: 0; }
+        }
+
+        /* --- 6. CONTENT --- */
+        .page-section { display: block; animation: fadeInUp 0.6s ease-out; }
+
+        .hero-contact {
+            text-align: center; padding: 60px 20px; margin-bottom: 40px;
+        }
+        .hero-contact h1 { font-size: clamp(2rem, 5vw, 3rem); margin-bottom: 16px; color: var(--primary-dark); }
+        .hero-contact p { max-width: 600px; margin: 0 auto; }
+
+        /* Grid Layout */
+        .contact-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        /* Form Card */
+        .contact-form-card {
+            background: white; border-radius: var(--radius-lg); padding: 30px;
+            box-shadow: var(--shadow-soft); border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .form-group { margin-bottom: 20px; position: relative; }
+        .form-label {
+            display: block; font-weight: 600; margin-bottom: 8px; color: var(--text-main); font-size: 0.9rem;
+        }
+        .form-input, .form-textarea {
+            width: 100%; padding: 14px 16px; border-radius: 12px;
+            border: 2px solid #e2e8f0; background: #f8fafc;
+            font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem;
+            transition: all 0.3s ease; outline: none;
+        }
+        .form-input:focus, .form-textarea:focus {
+            border-color: var(--primary); background: white;
+            box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
+        }
+        .form-textarea { resize: vertical; min-height: 120px; }
+
+        /* Info Card */
+        .info-card {
+            background: var(--primary); color: white; border-radius: var(--radius-lg);
+            padding: 30px; display: flex; flex-direction: column; justify-content: center;
+            box-shadow: 0 20px 40px -10px rgba(15, 118, 110, 0.2);
+        }
+        .info-item {
+            display: flex; align-items: center; gap: 15px; margin-bottom: 20px; width: 100%;
+        }
+        .info-icon {
+            width: 48px; height: 48px; background: rgba(255,255,255,0.2); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+        }
+        .info-text h4 { margin-bottom: 4px; font-size: 1.1rem; }
+        .info-text p { color: rgba(255,255,255,0.8); font-size: 0.9rem; margin: 0; }
+
+        /* Map Visual */
+        .map-preview {
+            margin-top: 30px; border-radius: 20px; overflow: hidden;
+            height: 200px; position: relative; background: #e2e8f0;
+            background-image: url('https://images.unsplash.com/photo-1524661137765-945e62303247?q=80&w=800&auto=format&fit=crop');
+            background-size: cover; background-position: center;
+        }
+        .map-overlay-visual {
+            position: absolute; inset: 0; background: rgba(15, 118, 110, 0.3); display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 700; font-size: 1.2rem;
+        }
+
+        .social-links {
+            display: flex; gap: 15px; margin-top: 20px; justify-content: center;
+        }
+        .social-btn {
+            width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.2);
+            display: flex; align-items: center; justify-content: center; transition: all 0.3s;
+            color: white;
+        }
+        .social-btn:hover { background: white; color: var(--primary); transform: scale(1.1); }
+
+        /* Animasi Loading Button */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spin { animation: spin 1s linear infinite; }
+
+        @media (max-width: 767px) {
+            .contact-grid { grid-template-columns: 1fr; }
+            .bottom-nav { overflow-x: auto; justify-content: flex-start; gap: 6px; padding: 12px 10px; }
+            .bottom-nav::-webkit-scrollbar { display: none; }
+            .nav-item { flex: 0 0 auto !important; min-width: 70px; white-space: nowrap; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <a href="index.html" class="brand">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.74 5.88-5.74 5.88-5.74-5.88L12 2.69M12 22a9.97 9.97 0 0 1-7.07-2.93l-1.41 1.41A11.97 11.97 0 0 0 12 24a11.97 11.97 0 0 0 8.49-3.52l-1.41-1.41A9.97 9.97 0 0 1 12 22z"/></svg>
+            Ngebel
+        </a>
+    </header>
+
+    <main class="container">
+        
+        <!-- SECTION: HERO -->
+        <section class="page-section hero-contact">
+            <h1 style="animation-delay: 0.1s;">Mari Berkolaborasi</h1>
+            <p style="animation-delay: 0.2s;">Punya pertanyaan seputar wisata di Telaga Ngebel? Tim kami siap membantu Anda.</p>
+        </section>
+
+        <!-- SECTION: GRID CONTENT -->
+        <div class="contact-grid page-section" style="animation-delay: 0.3s;">
+            
+            <!-- KIRI: FORM KONTAK -->
+            <div class="contact-form-card">
+                <h3 style="margin-bottom: 24px; color: var(--primary-dark);">Kirim Pesan</h3>
+                
+                <form id="contactForm">
+                    <div class="form-group">
+                        <label class="form-label">Nama Lengkap</label>
+                        <input type="text" id="inputName" class="form-input" placeholder="Masukkan nama Anda" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" id="inputEmail" class="form-input" placeholder="contoh@email.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Pesan</label>
+                        <textarea id="inputMessage" class="form-textarea" placeholder="Tulis pesan Anda di sini..." required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        Kirim Pesan
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 11 22 2 15 22 2 11 13 11 22 22 2 15 22 2 11 13 11 22"></polygon></svg>
+                    </button>
+                </form>
+            </div>
+
+            <!-- KANAN: INFO & LOKASI -->
+            <div class="info-card">
+                <div class="info-item">
+                    <div class="info-icon">📍</div>
+                    <div class="info-text">
+                        <h4>Kantor Pusat</h4>
+                        <p>Jl. Raya Ngebel No. 12, Ponorogo, Jawa Timur</p>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-icon">📧</div>
+                    <div class="info-text">
+                        <h4>Email Resmi</h4>
+                        <p>info@ngebelwisata.id</p>
+                    </div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-icon">📞</div>
+                    <div class="info-text">
+                        <h4>Hotline Wisata</h4>
+                        <p>+62 812 3456</p>
+                    </div>
+                </div>
+
+                <!-- Map Mini -->
+                <div class="map-preview">
+                    <div class="map-overlay-visual">📍 Lokasi Kantor</div>
+                </div>
+
+                <div class="social-links">
+                    <a href="#" class="social-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3a5 5 0 0 0 5 5h3a5 5 0 0 0 5-5v-3a5 5 0 0 0-5-5z"></path><line x1="2" y1="12" x2="22" y2="12"></line></svg></a>
+                    <a href="#" class="social-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1-3.13 1.82L11.41 16l-1.42 1.41a4 4 0 0 1 3.13-1.82z"></path></svg></a>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- NAVIGATION CONTAINER -->
+    <nav class="bottom-nav" id="main-nav"></nav>
+
+    <!-- SCRIPT UPDATE (SUPABASE + LOGIKA KIRIM) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        // --- 1. KONFIGURASI SUPABASE ---
+        const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
+        const { createClient } = supabase;
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // --- 2. KONFIGURASI MENU ---
+        const publicMenu = [
+            { id: 'home', icon: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22 23 18 23 2 16 6 8 2 1 6"></polyline>', label: 'Home', link: 'index.html' },
+            { id: 'explore', icon: '<circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>', label: 'Explore', link: 'explore.html' },
+            { id: 'map', icon: '<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line>', label: 'Peta', link: 'map.html' },
+            { id: 'community', icon: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>', label: 'Komunitas', link: 'community.html' },
+            { id: 'market', icon: '<circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>', label: 'Market', link: 'katalog.html' },
+            { id: 'about', icon: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>', label: 'Tentang', link: 'about.html' },
+            { id: 'contact', icon: '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline>', label: 'Kontak', link: 'contact.html' }
+        ];
+
+        // --- 3. RENDER NAVIGASI ---
+        function renderNav() {
+            const navContainer = document.getElementById('main-nav');
+            navContainer.innerHTML = '';
+            publicMenu.forEach((item) => {
+                const a = document.createElement('div');
+                a.className = `nav-item ${item.id === 'contact' ? 'active' : ''}`;
+                a.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">${item.icon}</svg>
+                    <span>${item.label}</span>
+                `;
+                if (item.link) {
+                    a.onclick = () => window.location.href = item.link;
+                }
+                navContainer.appendChild(a);
+            });
+        }
+
+        // --- 4. LOGIKA KIRIM PESAN (KE SUPABASE) ---
+        async function handleFormSubmit(event) {
+            event.preventDefault(); // Mencegah refresh halaman
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const inputName = document.getElementById('inputName');
+            const inputEmail = document.getElementById('inputEmail');
+            const inputMessage = document.getElementById('inputMessage');
+            
+            // Validasi Sederhana
+            if(!inputName.value || !inputEmail.value || !inputMessage.value) {
+                alert('Mohon lengkapi semua data!');
+                return;
+            }
+
+            // Tampilkan Loading
+            const originalContent = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<svg class="spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6 2.3l-4-4"></path></path><path d="M21 12a9 9 0 1 1-6 2.3l-4-4"></path></svg> Mengirim...`;
+            submitBtn.style.opacity = '0.7';
+
+            try {
+                // Kirim ke Supabase
+                const { data, error } = await supabaseClient
+                    .from('messages')
+                    .insert([
+                        { 
+                            name: inputName.value, 
+                            email: inputEmail.value, 
+                            message: inputMessage.value 
+                        }
+                    ]);
+
+                if (error) throw error;
+
+                // Jika Sukses
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `✅ Terkirim`;
+                submitBtn.style.backgroundColor = '#10b981'; // Warna Hijau
+                submitBtn.style.color = 'white';
+                
+                // Reset Form
+                document.getElementById('contactForm').reset();
+
+                // Kembalikan tombol ke keadaan semula setelah 3 detik
+                setTimeout(() => {
+                    submitBtn.innerHTML = originalContent;
+                    submitBtn.style.backgroundColor = '';
+                    submitBtn.style.color = ''; // Kembalikan ke warna default CSS
+                    submitBtn.style.opacity = '1';
+                }, 3000);
+
+            } catch (err) {
+                console.error("Error:", err);
+                // Jika Gagal
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `❌ Gagal`;
+                submitBtn.style.backgroundColor = '#ef4444'; // Warna Merah
+                submitBtn.style.color = 'white';
+                
+                setTimeout(() => {
+                    submitBtn.innerHTML = originalContent;
+                    submitBtn.style.backgroundColor = '';
+                    submitBtn.style.opacity = '1';
+                }, 3000);
+            }
+        }
+
+        // --- 5. INIT ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderNav();
+            
+            // Pasang event listener ke form
+            const form = document.getElementById('contactForm');
+            if(form) {
+                form.addEventListener('submit', handleFormSubmit);
+            }
+        });
+    </script>
+</body>
+</html>
