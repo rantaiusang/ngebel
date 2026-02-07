@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 
-    <!-- Supabase JS (Ditambahkan untuk Notifikasi Event) -->
+    <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
@@ -97,7 +97,7 @@
         /* STYLE KHUSUS NOTIFIKASI EVENT */
         .notification-pill {
             display: flex; flex-direction: column; align-items: flex-end;
-            background: rgba(245, 158, 11, 0.15); /* Sedikit oranye transparan */
+            background: rgba(245, 158, 11, 0.15); 
             border: 1px solid rgba(245, 158, 11, 0.3);
             padding: 6px 14px; border-radius: 12px;
             min-width: 140px;
@@ -120,13 +120,12 @@
             font-size: 0.8rem; font-weight: 600; color: white;
             text-align: right;
             line-height: 1.1;
-            max-height: 2.2em; /* Batasi 2 baris */
+            max-height: 2.2em;
             overflow: hidden;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
         }
-        /* Badge kecil untuk jumlah event */
         .badge-count {
             position: absolute; top: -5px; right: -5px;
             background: #ef4444; color: white;
@@ -134,7 +133,7 @@
             width: 18px; height: 18px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             border: 2px solid #0f172a;
-            display: none; /* Hidden by default */
+            display: none; 
         }
         
         @keyframes pulse-live {
@@ -162,7 +161,7 @@
         .page-title { font-size: clamp(2rem, 5vw, 3rem); color: var(--primary-dark); margin-bottom: 8px; }
         .page-subtitle { color: #64748b; font-size: 1.1rem; max-width: 500px; }
 
-        /* --- MAP & PINS (UPDATED: Blinking Effect) --- */
+        /* --- MAP --- */
         .map-container {
             position: relative; width: 100%; height: 300px;
             background: #e2e8f0; border-radius: var(--radius-xl);
@@ -173,13 +172,11 @@
         }
         .map-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(15,118,110,0.1), rgba(15,118,110,0.3)); }
         
-        /* Animation Keyframes */
         @keyframes pulse-pin {
             0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
             70% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
             100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
         }
-
         .map-pin {
             position: absolute; width: 40px; height: 40px;
             background: white; border-radius: 50% 50% 0 50%;
@@ -187,27 +184,18 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
             display: flex; align-items: center; justify-content: center;
             font-size: 1.2rem; z-index: 10;
-            /* Infinite Blinking Pulse */
             animation: pulse-pin 2s infinite;
         }
-        
-        /* Ripple Effect (Outer Ring) */
         .map-pin::after {
             content: ''; position: absolute; width: 100%; height: 100%;
             border-radius: 50% 50% 0 50%;
             border: 2px solid rgba(255,255,255,0.5);
             animation: pulse-pin 2s infinite;
         }
-
-        .map-pin:hover, .map-pin.active { 
-            transform: rotate(45deg) scale(1.2) translateY(-5px); 
-            z-index: 20; 
-            animation: none; /* Stop pulsing on hover for clarity */
+        .map-pin:hover { 
+            transform: rotate(45deg) scale(1.2) translateY(-5px); z-index: 20; animation: none; 
         }
-        .map-pin:hover::after, .map-pin.active::after { display: none; }
-        
         .map-pin i { transform: rotate(-45deg); }
-        
         .pin-1 { top: 40%; left: 30%; background: #ef4444; animation-delay: 0s; }
         .pin-2 { top: 25%; left: 60%; background: #f59e0b; animation-delay: 0.5s; }
         .pin-3 { top: 60%; left: 45%; background: #0ea5e9; animation-delay: 1s; }
@@ -222,15 +210,7 @@
         .legend-item { display: flex; align-items: center; gap: 6px; color: #475569; }
         .dot { width: 8px; height: 8px; border-radius: 50%; }
 
-        /* --- CARDS (UPDATED: Breathing Image Effect) --- */
-        .category-scroll { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 30px; scrollbar-width: none; }
-        .category-scroll::-webkit-scrollbar { display: none; }
-        .cat-chip {
-            flex: 0 0 auto; padding: 10px 20px; background: white; border: 1px solid #e2e8f0;
-            border-radius: 50px; font-weight: 600; color: #64748b; cursor: pointer; transition: all 0.3s ease;
-        }
-        .cat-chip.active, .cat-chip:hover { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3); }
-
+        /* --- CARDS --- */
         .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px; margin-bottom: 40px; }
         
         @keyframes breathe-overlay {
@@ -244,15 +224,9 @@
             transition: transform 0.3s ease, box-shadow 0.3s ease; cursor: pointer; position: relative;
         }
         .spot-card:hover { transform: translateY(-6px); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1); }
-        
-        .card-img-wrapper { 
-            position: relative; height: 220px; overflow: hidden; 
-            /* Breathing Light Animation Applied */
-            animation: breathe-overlay 4s infinite ease-in-out;
-        }
+        .card-img-wrapper { position: relative; height: 220px; overflow: hidden; animation: breathe-overlay 4s infinite ease-in-out; }
         .card-img-wrapper img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
         .spot-card:hover .card-img-wrapper img { transform: scale(1.05); }
-        
         .card-badge {
             position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.9); backdrop-filter: blur(4px);
             padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -282,6 +256,78 @@
             padding: 4px 10px; border-radius: 4px; margin-bottom: 10px; text-transform: uppercase;
         }
 
+        /* --- STYLE MODAL POP-UP (BARU) --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);
+            z-index: 2000;
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            max-height: 85vh;
+            border-radius: var(--radius-xl);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            display: flex;
+            flex-direction: column;
+            transform: translateY(20px);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+            border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+        }
+        .modal-header h3 { color: var(--primary-dark); font-size: 1.25rem; margin: 0; }
+        .close-btn {
+            background: transparent; border: none; font-size: 1.5rem; color: #94a3b8;
+            cursor: pointer; transition: color 0.2s;
+        }
+        .close-btn:hover { color: var(--primary); }
+
+        .modal-body {
+            padding: 0;
+            overflow-y: auto; /* Scroll jika list panjang */
+        }
+
+        /* Style List Event di dalam Modal */
+        .event-list-item {
+            padding: 20px 24px;
+            border-bottom: 1px solid #f1f5f9;
+            transition: background 0.2s;
+        }
+        .event-list-item:last-child { border-bottom: none; }
+        .event-list-item:hover { background: #f8fafc; }
+        
+        .event-date-badge {
+            display: inline-block; background: #e0f2fe; color: #0369a1;
+            padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .event-title { font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 4px; }
+        .event-loc { font-size: 0.85rem; color: var(--accent); margin-bottom: 8px; display: flex; align-items: center; gap: 4px; }
+        .event-desc { font-size: 0.9rem; color: #64748b; line-height: 1.5; }
+
         @media (max-width: 768px) {
             .seasonal-banner { flex-direction: column; text-align: center; gap: 20px; }
             .map-container { height: 250px; }
@@ -305,9 +351,9 @@
             
             <div class="smart-dashboard">
                 
-                <!-- Widget Baru: Notifikasi Event Realtime -->
-                <div class="notification-pill" onclick="alert('Fitur Detail Event akan segera hadir!')">
-                    <span class="notif-label">Info Event<span class="live-indicator"></span></span>
+                <!-- Widget Baru: Notifikasi Event Realtime (DIUBAH ONCLICK) -->
+                <div class="notification-pill" id="btn-open-events">
+                    <span class="notif-label">Info <span class="live-indicator"></span></span>
                     <span class="notif-value" id="event-display">Menunggu...</span>
                     <div class="badge-count" id="event-count-badge">0</div>
                 </div>
@@ -449,6 +495,20 @@
 
     </main>
 
+    <!-- MODAL POP-UP EVENT (BARU) -->
+    <div class="modal-overlay" id="event-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🗓️ Agenda Event Ngebel</h3>
+                <button class="close-btn" id="close-modal">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-event-list">
+                <!-- List Event akan di-generate di sini oleh Javascript -->
+                <div style="padding:20px; text-align:center; color:#94a3b8;">Memuat data...</div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // --- 1. Real-time Clock Logic ---
         function updateClock() {
@@ -459,39 +519,32 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // --- 2. Simulated Live Visitor Count (IoT Feel) ---
-        let visitorCount = 142; // Base count
+        // --- 2. Simulated Live Visitor Count ---
+        let visitorCount = 142; 
         const visitorElement = document.getElementById('visitor-count');
-        
         function updateVisitors() {
-            const change = Math.floor(Math.random() * 5) - 2; // -2 to +2
+            const change = Math.floor(Math.random() * 5) - 2; 
             visitorCount += change;
-            if(visitorCount < 50) visitorCount = 50; // Minimum limit
-            
+            if(visitorCount < 50) visitorCount = 50; 
             visitorElement.textContent = visitorCount;
-            
-            // Visual feedback on change
             visitorElement.style.color = change > 0 ? '#4ade80' : '#f87171';
             setTimeout(() => { visitorElement.style.color = 'white'; }, 500);
         }
-        setInterval(updateVisitors, 3000); // Update every 3 seconds
+        setInterval(updateVisitors, 3000);
         updateVisitors();
 
-        // --- 3. Real-time Weather Logic (Open-Meteo API) ---
+        // --- 3. Real-time Weather Logic ---
         const weatherIconEl = document.getElementById('weather-icon');
         const weatherTempEl = document.getElementById('weather-temp');
-
         async function fetchWeather() {
             const lat = -7.87;
             const lon = 111.55;
             const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
-
             try {
                 const response = await fetch(url);
                 if (!response.ok) throw new Error('Weather Error');
                 const data = await response.json();
                 const current = data.current_weather;
-                
                 let icon = '';
                 if (current.weathercode <= 1) icon = '☀️';
                 else if (current.weathercode <= 3) icon = '☁️';
@@ -499,10 +552,8 @@
                 else if (current.weathercode <= 67) icon = '🌧️';
                 else if (current.weathercode <= 77) icon = '❄️';
                 else icon = '⚡';
-
                 weatherIconEl.textContent = icon;
                 weatherTempEl.textContent = Math.round(current.temperature);
-
             } catch (error) {
                 console.error(error);
                 weatherIconEl.textContent = '📡';
@@ -511,21 +562,12 @@
         }
         fetchWeather();
 
-        // --- 4. EXISTING INTERACTIONS ---
+        // --- 4. INTERACTION & ANIMATION ---
         const pins = document.querySelectorAll('.map-pin');
         pins.forEach(pin => {
             pin.addEventListener('click', function() {
                 pins.forEach(p => p.classList.remove('active'));
                 this.classList.add('active');
-                console.log('Selected location:', this.title);
-            });
-        });
-
-        const chips = document.querySelectorAll('.cat-chip');
-        chips.forEach(chip => {
-            chip.addEventListener('click', () => {
-                chips.forEach(c => c.classList.remove('active'));
-                chip.classList.add('active');
             });
         });
 
@@ -545,9 +587,9 @@
             observer.observe(el);
         });
 
-        // --- 5. REALTIME EVENT NOTIFICATION (SUPABASE) ---
+        // --- 5. REALTIME EVENT & MODAL LOGIC ---
         
-        // KONFIGURASI SUPABASE (Sama dengan file lain)
+        // KONFIGURASI SUPABASE
         const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
         const { createClient } = supabase;
@@ -555,29 +597,81 @@
 
         const eventDisplay = document.getElementById('event-display');
         const eventBadge = document.getElementById('event-count-badge');
+        
+        // Elemen Modal
+        const modal = document.getElementById('event-modal');
+        const btnOpenModal = document.getElementById('btn-open-events');
+        const btnCloseModal = document.getElementById('close-modal');
+        const modalList = document.getElementById('modal-event-list');
+        
         let activeEvents = [];
 
-        // Fungsi Load Event Awal
+        // FUNGSI: Buka Modal
+        btnOpenModal.addEventListener('click', () => {
+            modal.classList.add('active');
+            renderModalList(activeEvents); // Render list event ke dalam modal
+        });
+
+        // FUNGSI: Tutup Modal
+        function closeModal() {
+            modal.classList.remove('active');
+        }
+        btnCloseModal.addEventListener('click', closeModal);
+        
+        // Tutup jika klik di luar area konten
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+
+        // FUNGSI: Render HTML List di dalam Modal
+        function renderModalList(events) {
+            if (!events || events.length === 0) {
+                modalList.innerHTML = '<div style="padding:20px; text-align:center; color:#94a3b8;">Tidak ada event aktif saat ini.</div>';
+                return;
+            }
+
+            const html = events.map(event => {
+                // Format tanggal sederhana
+                const dateObj = new Date(event.event_date);
+                const dateStr = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+                return `
+                    <div class="event-list-item">
+                        <span class="event-date-badge">${dateStr}</span>
+                        <div class="event-title">${event.event_name}</div>
+                        <div class="event-loc">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                            ${event.event_location || 'Lokasi TBD'}
+                        </div>
+                        <div class="event-desc">${event.description || 'Tidak ada deskripsi tersedia.'}</div>
+                    </div>
+                `;
+            }).join('');
+
+            modalList.innerHTML = html;
+        }
+
+        // FUNGSI: Load Event Awal
         async function loadEvents() {
             const { data, error } = await supabaseClient
                 .from('ngebelevent')
                 .select('*')
                 .eq('is_active', true)
-                .order('created_at', { ascending: false });
+                .order('event_date', { ascending: true }); // Urutkan berdasarkan tanggal
 
             if (data) {
-                updateUI(data);
+                activeEvents = data;
+                updateHeaderWidget(data);
+                // Jangan render modal di sini, render saat klik saja
+            } else {
+                console.error("Gagal load event:", error);
             }
         }
 
-        // Fungsi Update UI Widget
-        function updateUI(events) {
-            activeEvents = events;
-            
+        // FUNGSI: Update Widget Header (Hanya nama event terbaru & count)
+        function updateHeaderWidget(events) {
             if (events.length > 0) {
-                // Tampilkan event terbaru
                 eventDisplay.textContent = events[0].event_name;
-                // Jika ada lebih dari 1, tampilkan badge count
                 if (events.length > 1) {
                     eventBadge.style.display = 'flex';
                     eventBadge.textContent = events.length;
@@ -590,20 +684,18 @@
             }
         }
 
-        // Subscribe Realtime Changes
+        // FUNGSI: Subscribe Realtime
         function subscribeToEvents() {
             supabaseClient
                 .channel('ngebelevent_changes')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'ngebelevent' }, (payload) => {
                     console.log('Perubahan Event Terdeteksi!', payload);
-                    
-                    // Refresh data saat ada perubahan (INSERT/UPDATE/DELETE)
-                    loadEvents(); 
+                    loadEvents(); // Reload data
                 })
                 .subscribe();
         }
 
-        // Jalankan saat load
+        // INIT
         document.addEventListener('DOMContentLoaded', () => {
             loadEvents();
             subscribeToEvents();
