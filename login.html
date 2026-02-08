@@ -12,15 +12,14 @@
 
     <style>
         :root {
-            /* Palette Warna Clean White */
             --primary: #0d9488; /* Teal */
-            --primary-light: #ccfbf1; /* Teal Sangat Muda */
-            --text-main: #0f172a; /* Hitam Pekat (bukan abu-abu) */
-            --text-muted: #64748b; /* Abu-abu teks sekunder */
-            --bg-body: #ffffff; /* Putih Bersih */
-            
+            --primary-light: #ccfbf1;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --bg-body: #ffffff;
             --radius: 16px;
             --shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.08);
+            --danger: #ef4444;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -30,29 +29,24 @@
             min-height: 100vh;
             display: flex; align-items: center; justify-content: center;
             padding: 20px;
-            background-color: var(--bg-body); /* Background Putih */
+            background-color: var(--bg-body);
             position: relative;
-            overflow-x: hidden;
             color: var(--text-main);
         }
 
-        /* Dekorasi Background Minimalis (Abstrak Lingkaran) */
+        /* Background Dekorasi */
         .deco-circle {
-            position: absolute; border-radius: 50%; z-index: 0;
-            pointer-events: none;
+            position: absolute; border-radius: 50%; z-index: 0; pointer-events: none;
         }
         .circle-1 {
             top: -100px; right: -100px; width: 400px; height: 400px;
-            background: var(--primary-light); opacity: 0.5;
-            filter: blur(80px);
+            background: var(--primary-light); opacity: 0.5; filter: blur(80px);
         }
         .circle-2 {
             bottom: -50px; left: -50px; width: 300px; height: 300px;
-            background: #e0f2fe; opacity: 0.6; /* Biru sangat muda */
-            filter: blur(60px);
+            background: #e0f2fe; opacity: 0.6; filter: blur(60px);
         }
 
-        /* Tombol Home Minimalis */
         .home-btn {
             position: fixed; top: 25px; left: 25px;
             display: flex; align-items: center; gap: 8px;
@@ -62,24 +56,17 @@
             text-decoration: none; box-shadow: 0 4px 6px rgba(0,0,0,0.02);
             transition: all 0.2s ease; z-index: 100;
         }
-        .home-btn:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-1px); }
+        .home-btn:hover { border-color: var(--primary); color: var(--primary); }
 
-        /* Kartu Login (Solid Card, Bukan Glass) */
         .login-card {
-            background: white;
-            border: 1px solid #f1f5f9;
-            border-radius: var(--radius);
-            padding: 48px 32px;
+            background: white; border: 1px solid #f1f5f9;
+            border-radius: var(--radius); padding: 40px 30px;
             width: 100%; max-width: 400px;
             box-shadow: var(--shadow);
             position: relative; z-index: 10;
             text-align: center;
-            animation: fadeIn 0.6s ease-out;
         }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Ikon */
         .icon-wrapper {
             width: 64px; height: 64px; margin: 0 auto 24px;
             background: var(--primary-light);
@@ -89,293 +76,170 @@
         }
 
         h2 {
-            font-family: 'Outfit', sans-serif; font-size: 1.75rem; color: var(--text-main);
-            margin-bottom: 8px; font-weight: 700; letter-spacing: -0.5px;
+            font-family: 'Outfit', sans-serif; font-size: 1.75rem;
+            color: var(--text-main); margin-bottom: 8px; font-weight: 700;
         }
-        p.subtitle { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 32px; line-height: 1.5; }
+        p.subtitle { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; }
 
-        /* Form Styling */
         .form-group { margin-bottom: 20px; text-align: left; }
         label {
             font-size: 0.85rem; font-weight: 600; color: var(--text-main);
             margin-bottom: 8px; display: block;
         }
         input {
-            width: 100%; padding: 12px 16px;
-            background: #f8fafc; /* Abu sangat muda */
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            font-size: 1rem; color: var(--text-main);
-            transition: all 0.2s ease;
+            width: 100%; padding: 12px 16px; background: #f8fafc;
+            border: 1px solid #e2e8f0; border-radius: 12px;
+            font-size: 1rem; transition: all 0.2s;
         }
-        input::placeholder { color: #94a3b8; }
         input:focus {
-            background: white;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px var(--primary-light);
-            outline: none;
+            background: white; border-color: var(--primary);
+            outline: none; box-shadow: 0 0 0 3px var(--primary-light);
         }
 
-        .forgot-link {
-            display: block; text-align: right; margin-top: 6px;
-            font-size: 0.85rem; color: var(--primary); font-weight: 600;
-            text-decoration: none; transition: 0.2s;
-        }
-        .forgot-link:hover { color: #0f766e; text-decoration: underline; }
-
-        /* Tombol Utama (Solid Teal) */
         .btn {
             width: 100%; padding: 14px; border: none; border-radius: 12px;
             background: var(--primary); color: white;
             font-weight: 600; font-size: 1rem; cursor: pointer;
-            margin-top: 10px;
-            transition: transform 0.1s, background-color 0.2s;
+            transition: 0.2s; margin-top: 10px;
             box-shadow: 0 4px 6px rgba(13, 148, 136, 0.2);
-            display: flex; align-items: center; justify-content: center; gap: 8px;
         }
         .btn:hover { background-color: #0f766e; }
-        .btn:active { transform: scale(0.98); }
+        .btn:disabled { background: #cbd5e1; cursor: not-allowed; }
 
         .btn-outline {
             background: white; border: 1px solid #e2e8f0;
             color: var(--text-main); margin-top: 16px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-            text-decoration: none; border-radius: 12px; padding: 12px; font-weight: 600;
-            transition: 0.2s;
+            text-decoration: none; border-radius: 12px; padding: 12px;
+            font-weight: 600; display: block; transition: 0.2s;
         }
-        .btn-outline:hover { border-color: var(--primary); color: var(--primary); background: #f0fdfa; }
+        .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
 
-        /* Pesan */
         .msg-box {
             font-size: 0.85rem; padding: 12px; border-radius: 8px;
-            margin-bottom: 20px; display: none; text-align: left; line-height: 1.4;
+            margin-bottom: 20px; display: none; text-align: left;
         }
-        .error-msg { background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; }
-        .success-msg { background: #f0fdf4; color: #059669; border: 1px solid #bbf7d0; }
+        .error-msg { background: #fef2f2; color: var(--danger); border: 1px solid #fecaca; }
 
         /* Spinner */
         .spinner {
-            width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3);
+            width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3);
             border-radius: 50%; border-top-color: white;
-            animation: spin 0.8s linear infinite; display: none;
+            animation: spin 0.8s linear infinite; display: inline-block;
+            margin-left: 10px; vertical-align: middle;
         }
+        .hidden { display: none; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
     </style>
 </head>
 <body>
 
-    <!-- Dekorasi Background Abstrak -->
     <div class="deco-circle circle-1"></div>
     <div class="deco-circle circle-2"></div>
 
-    <!-- Tombol Home -->
     <a href="index.html" class="home-btn">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
         Beranda
     </a>
 
-    <!-- Kartu Login -->
     <div class="login-card">
         <div class="icon-wrapper">🌿</div>
-        <h2 id="auth-title">Selamat Datang</h2>
-        <p class="subtitle" id="auth-desc">Silakan masuk untuk mengakses dashboard Ngebel.</p>
+        <h2>Selamat Datang</h2>
+        <p class="subtitle">Masuk ke akun Ngebel Anda.</p>
         
         <form id="login-form" onsubmit="handleLogin(event)">
             <div class="form-group">
                 <label>Email</label>
-                <input type="email" id="login-email" placeholder="nama@email.com" required autocomplete="email">
+                <input type="email" id="email" placeholder="nama@email.com" required>
             </div>
             
             <div class="form-group">
                 <label>Password</label>
-                <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password">
-                <a href="#" onclick="handleForgotPassword(event)" class="forgot-link">Lupa password?</a>
+                <input type="password" id="password" placeholder="••••••••" required>
             </div>
             
             <div id="login-error" class="msg-box error-msg"></div>
-            <div id="login-success" class="msg-box success-msg"></div>
             
-            <button type="submit" class="btn" id="login-btn">
-                <span class="btn-text">Masuk Sekarang</span>
-                <div class="spinner"></div>
+            <button type="submit" class="btn" id="submit-btn">
+                <span id="btn-text">Masuk Sekarang</span>
+                <div id="btn-spinner" class="spinner hidden"></div>
             </button>
         </form>        
         
-        <a href="register.html" class="btn btn-outline" id="register-btn">
-            Buat Akun Baru
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        <a href="register.html" class="btn btn-outline">
+            Belum punya akun? Daftar
         </a>
     </div>
 
     <script>
-        // --- KONFIGURASI SUPABASE ---
+        // --- 1. KONFIGURASI SUPABASE ---
         const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
-       
+        
         const { createClient } = supabase;
         const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
-        
-        // --- AUTO REDIRECT JIKA SUDAH LOGIN ---
-        sb.auth.getSession().then(({ data: { session } }) => {
-            if (session) {
-                window.location.replace("dashboard.html"); 
-            }
-        });
 
-        // --- FUNGSI LUPA PASSWORD ---
-        async function handleForgotPassword(e) {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            if (!email || !email.includes('@')) {
-                showMsg('login-error', 'Masukkan email yang valid.');
-                return;
-            }
-            hideMsgs();
-            
-            const btn = document.getElementById('login-btn');
-            const originalText = btn.querySelector('.btn-text').innerText;
-            btn.querySelector('.btn-text').innerText = 'Mengirim...';
-            btn.querySelector('.spinner').style.display = 'block';
-            btn.disabled = true;
-
-            try {
-                const { error } = await sb.auth.resetPasswordForEmail(email, {
-                    redirectTo: window.location.origin + "/login.html"
-                });
-                if (error) throw error;
-                showMsg('login-success', "Link reset password telah dikirim ke email Anda.");
-            } catch (err) {
-                showMsg('login-error', 'Gagal mengirim email: ' + err.message);
-            } finally {
-                btn.querySelector('.btn-text').innerText = originalText;
-                btn.querySelector('.spinner').style.display = 'none';
-                btn.disabled = false;
-            }
-        }
-
-        // --- FUNGSI LOGIN UTAMA ---
+        // --- 2. FUNGSI LOGIN UTAMA (LOGIKA MANUAL) ---
         async function handleLogin(e) {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
+            e.preventDefault(); // Mencegah reload halaman
 
-            setLoading('login-btn', true);
-            hideMsgs();
+            // Ambil nilai input
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorBox = document.getElementById('login-error');
+            const btnText = document.getElementById('btn-text');
+            const btnSpinner = document.getElementById('btn-spinner');
+            const submitBtn = document.getElementById('submit-btn');
+
+            // Reset Error
+            errorBox.style.display = 'none';
+            
+            // Tampilkan Loading
+            btnText.innerText = 'Memproses...';
+            btnSpinner.classList.remove('hidden');
+            submitBtn.disabled = true;
 
             try {
-                // 1. Auth
-                const { data, error } = await sb.auth.signInWithPassword({ email, password });
-                if (error) throw error;
-                const userId = data.user.id;
-
-                // 2. Get Profile
-                let profile = null;
-                const { data: pData, error: pError } = await sb
+                // QUERY MANUAL KE TABEL ngebelusers
+                // Kita cari baris yang EMAIL dan PASSWORD cocok
+                const { data, error } = await sb
                     .from('ngebelusers')
                     .select('*')
-                    .eq('id', userId)
-                    .single();
-                
-                // Fallback ke user_id
-                if (pError || !pData) {
-                    const { data: pFallback } = await sb.from('ngebelusers').select('*').eq('user_id', userId).single();
-                    if(pFallback) profile = pFallback;
-                    else throw new Error("Data profil tidak ditemukan.");
-                } else {
-                    profile = pData;
+                    .eq('email', email)
+                    .eq('password', password) // Cek Password (Plain Text untuk demo)
+                    .maybeSingle(); // maybeSingle agar tidak error jika data tidak ketemu
+
+                if (error) {
+                    throw error;
                 }
 
-                if (!profile) throw new Error("Profil user tidak ditemukan.");
+                // CEK: Jika data tidak ditemukan
+                if (!data) {
+                    errorBox.innerText = "Email atau Password salah.";
+                    errorBox.style.display = 'block';
+                    return; // Stop di sini
+                }
 
-                // 3. Check Role
-                const role = profile.role;
-                console.log(`Role: ${role}`);
-
-                if (role === 'admin') {
-                    window.location.replace('admin.html');
+                // CEK: Jika data ditemukan, cek Role
+                if (data.role === 'admin') {
+                    alert('Login Berhasil sebagai ADMIN!');
+                    window.location.href = 'admin.html';
                 } else {
-                    window.location.replace('dashboard.html');
+                    alert('Login Berhasil sebagai USER!');
+                    window.location.href = 'dashboard.html'; // Pastikan file ini ada
                 }
 
             } catch (err) {
-                console.error(err);
-                showMsg('login-error', err.message);
+                console.error("Login Error:", err);
+                errorBox.innerText = "Terjadi kesalahan koneksi: " + err.message;
+                errorBox.style.display = 'block';
             } finally {
-                setLoading('login-btn', false);
+                // Kembalikan tombol ke kondisi semula
+                btnText.innerText = 'Masuk Sekarang';
+                btnSpinner.classList.add('hidden');
+                submitBtn.disabled = false;
             }
         }
-
-        // --- UTILITAS ---
-        function setLoading(btnId, isLoading) {
-            const btn = document.getElementById(btnId);
-            const text = btn.querySelector('.btn-text');
-            const spinner = btn.querySelector('.spinner');
-            if(isLoading) {
-                text.style.display = 'none';
-                spinner.style.display = 'block';
-                btn.disabled = true;
-            } else {
-                text.style.display = 'block';
-                spinner.style.display = 'none';
-                btn.disabled = false;
-            }
-        }
-
-        function showMsg(id, text) {
-            const el = document.getElementById(id);
-            el.innerText = text;
-            el.style.display = 'block';
-        }
-
-        function hideMsgs() {
-            document.getElementById('login-error').style.display = 'none';
-            document.getElementById('login-success').style.display = 'none';
-        }
-
-        // --- MODE RESET PASSWORD ---
-        (async () => {
-            const hash = window.location.hash;
-            if (!hash || !hash.includes("type=recovery")) return;
-
-            document.querySelector('.icon-wrapper').innerText = '🔑';
-            document.getElementById("auth-title").innerText = "Reset Password";
-            document.getElementById("auth-desc").innerText = "Masukkan password baru Anda.";
-            document.getElementById("register-btn").style.display = "none";
-
-            const form = document.getElementById("login-form");
-            const errDiv = document.getElementById("login-error");
-            const succDiv = document.getElementById("login-success");
-            form.innerHTML = ''; 
-            form.appendChild(errDiv);
-            form.appendChild(succDiv);
-
-            const passGroup = document.createElement('div'); passGroup.className = 'form-group';
-            passGroup.innerHTML = `<label>Password Baru</label><input type="password" id="new-pass" required minlength="6">`;
-            form.appendChild(passGroup);
-
-            const confirmGroup = document.createElement('div'); confirmGroup.className = 'form-group';
-            confirmGroup.innerHTML = `<label>Konfirmasi Password</label><input type="password" id="confirm-pass" required minlength="6">`;
-            form.appendChild(confirmGroup);
-
-            const btn = document.createElement('button');
-            btn.type = 'submit'; btn.className = 'btn'; btn.id = 'reset-btn';
-            btn.innerHTML = `<span class="btn-text">Simpan Password</span><div class="spinner"></div>`;
-            form.appendChild(btn);
-
-            form.onsubmit = async (ev) => {
-                ev.preventDefault();
-                const p1 = document.getElementById("new-pass").value;
-                const p2 = document.getElementById("confirm-pass").value;
-                if(p1 !== p2) { showMsg('login-error', "Password tidak sama."); return; }
-                
-                btn.disabled = true; btn.querySelector('.btn-text').innerText = "Menyimpan...";
-                const { error } = await sb.auth.updateUser({ password: p1 });
-                if (error) { showMsg('login-error', "Gagal: " + error.message); btn.disabled = false; btn.querySelector('.btn-text').innerText = "Simpan Password"; }
-                else { alert("Password berhasil diubah. Silakan login."); window.location.href = "login.html"; }
-            };
-        })();
     </script>
 </body>
 </html>
