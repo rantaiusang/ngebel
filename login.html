@@ -2,253 +2,448 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | Ngebel Platform</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600&display=swap" rel="stylesheet">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Masuk | Ngebel Smart Tourism</title>
+    <meta name="theme-color" content="#0f766e">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
     <style>
+        /* --- 1. VARIABLES & RESET (SAMA PERSIS DENGAN KONTAK) --- */
+        :root {
+            --primary: #0f766e; --primary-light: #14b8a6; --primary-dark: #0d5f58;
+            --accent: #f59e0b; 
+            --bg-body: #f8fafc;
+            --glass: rgba(255, 255, 255, 0.7);
+            --text-main: #1e293b; --text-muted: #64748b;
+            
+            --radius-xl: 32px; --radius-lg: 24px; --radius-md: 12px;
+            --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.05);
+            --shadow-hover: 0 20px 50px -12px rgba(15, 118, 110, 0.3);
+            --nav-height: 0px;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background: #f0f9ff;
-            display: flex; justify-content: center; align-items: center; height: 100vh;
-            margin: 0;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 40px;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
-        .card {
-            background: white; padding: 40px; border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 380px;
+
+        h1, h2, h3 { font-family: 'Outfit', sans-serif; letter-spacing: -0.02em; }
+        p { color: var(--text-muted); margin-bottom: 1rem; }
+        a { text-decoration: none; color: inherit; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 2; }
+
+        /* --- 2. ANIMATIONS --- */
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- 3. HEADER STYLE --- */
+        header {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(255,255,255,0.85); backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0,0,0,0.05); height: 70px;
+            display: flex; align-items: center;
+        }
+        .nav-content { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; gap: 20px; }
+        
+        .back-btn {
+            display: flex; align-items: center; gap: 8px;
+            color: var(--text-muted); font-weight: 600; font-size: 0.9rem;
+            padding: 8px 16px; border-radius: 50px;
+            background: rgba(255,255,255,0.6); border: 1px solid rgba(0,0,0,0.05);
+            transition: all 0.2s ease; flex-shrink: 0; cursor: pointer;
+        }
+        .back-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+        .back-btn svg { width: 18px; height: 18px; stroke-width: 2.5; }
+
+        /* --- 4. COMPONENTS --- */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 16px 32px; font-weight: 700; border-radius: 50px;
+            text-decoration: none; transition: all 0.3s ease; cursor: pointer; border: none; font-size: 1rem; gap: 10px;
+        }
+        .btn-primary { background: var(--primary); color: white; box-shadow: 0 10px 20px rgba(15, 118, 110, 0.3); width: 100%; }
+        .btn-primary:hover { transform: translateY(-2px); background: var(--primary-light); }
+        .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+        .btn-link {
+            background: none; border: none; color: var(--primary); font-weight: 600; cursor: pointer; margin-top: 10px; font-size: 0.9rem;
+        }
+        .btn-link:hover { text-decoration: underline; }
+
+        /* --- 5. CONTENT --- */
+        .page-section { display: block; animation: fadeInUp 0.6s ease-out; margin-bottom: 40px; }
+
+        .hero-login {
+            text-align: center; padding: 40px 20px; margin-bottom: 20px;
+        }
+        .hero-login h1 { font-size: clamp(2rem, 5vw, 3rem); margin-bottom: 16px; color: var(--primary-dark); }
+        .hero-login p { max-width: 600px; margin: 0 auto; }
+
+        /* Grid Layout */
+        .login-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        /* Form Card */
+        .login-form-card {
+            background: white; border-radius: var(--radius-lg); padding: 30px;
+            box-shadow: var(--shadow-soft); border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .form-group { margin-bottom: 20px; position: relative; }
+        .form-label {
+            display: block; font-weight: 600; margin-bottom: 8px; color: var(--text-main); font-size: 0.9rem;
+        }
+        .form-input {
+            width: 100%; padding: 14px 16px; border-radius: 12px;
+            border: 2px solid #e2e8f0; background: #f8fafc;
+            font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem;
+            transition: all 0.3s ease; outline: none;
+        }
+        .form-input:focus {
+            border-color: var(--primary); background: white;
+            box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
+        }
+
+        /* Info Card (Visual Sisi Kanan) */
+        .info-card {
+            background: var(--primary); color: white; border-radius: var(--radius-lg);
+            padding: 40px 30px; display: flex; flex-direction: column; justify-content: center;
+            box-shadow: 0 20px 40px -10px rgba(15, 118, 110, 0.2);
             text-align: center;
         }
-        h2 { color: #0f172a; margin-bottom: 5px; }
-        p.subtitle { color: #64748b; font-size: 0.9rem; margin-bottom: 25px; }
-        
-        input {
-            width: 100%; padding: 12px; margin-bottom: 15px;
-            border: 1px solid #cbd5e1; border-radius: 8px;
-            box-sizing: border-box; font-size: 14px;
+        .info-visual {
+            font-size: 4rem; margin-bottom: 20px; animation: float 3s ease-in-out infinite;
         }
-        input:focus { outline: 2px solid #0d9488; border-color: transparent; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         
-        button {
-            width: 100%; padding: 12px; background: #0d9488; color: white;
-            border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
-            transition: 0.2s;
-        }
-        button:hover { background: #0f766e; }
-        button:disabled { background: #cbd5e1; cursor: not-allowed; }
-        
-        .link-btn {
-            background: none; border: none; color: #0d9488; 
-            font-size: 0.85rem; padding: 0; margin-top: 5px; 
-            text-decoration: underline; cursor: pointer; width: auto;
-        }
-        
-        .msg { font-size: 0.85rem; margin-top: 15px; padding: 10px; border-radius: 6px; display: none; }
-        .error { background: #fef2f2; color: #ef4444; }
-        .success { background: #f0fdf4; color: #15803d; }
-        
-        /* Animasi fade */
+        .info-text h3 { font-size: 1.8rem; margin-bottom: 10px; }
+        .info-text p { color: rgba(255,255,255,0.8); font-size: 1rem; margin-bottom: 30px; }
+
+        /* Fitur List */
+        .feature-list { list-style: none; text-align: left; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 16px; }
+        .feature-item { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; color: white; font-weight: 500; }
+        .feature-item svg { width: 20px; height: 20px; stroke-width: 3; color: var(--accent); }
+
+        /* Pesan Error/Success */
+        .msg-box { font-size: 0.9rem; padding: 12px; border-radius: 12px; margin-top: 15px; display: none; text-align: center; }
+        .msg-error { background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; }
+        .msg-success { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+
+        /* Spinner */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spin { animation: spin 1s linear infinite; }
+
+        /* Mode Forgot Password (Hidden by default) */
         .hidden { display: none; }
-        .fade-in { animation: fadeIn 0.3s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 767px) {
+            .login-grid { grid-template-columns: 1fr; }
+            .hero-login { padding: 20px 20px; }
+            .info-card { padding: 30px 20px; }
+        }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <!-- LOGO / HEADER -->
-    <div style="font-size: 40px; margin-bottom: 10px;">🌿</div>
-    
-    <!-- MODE 1: LOGIN NORMAL -->
-    <div id="view-login" class="fade-in">
-        <h2>Selamat Datang</h2>
-        <p class="subtitle">Masuk ke dashboard Ngebel</p>
-        
-        <form id="form-login" onsubmit="handleLogin(event)">
-            <input type="email" id="login-email" placeholder="Email" required>
-            <input type="password" id="login-password" placeholder="Password" required>
-            
-            <div style="text-align: right;">
-                <button type="button" class="link-btn" onclick="switchView('forgot')">Lupa password?</button>
+    <!-- HEADER -->
+    <header>
+        <div class="nav-content">
+            <!-- Tombol Kembali Pintar -->
+            <div class="back-btn" onclick="goBack()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                Kembali
             </div>
+            <div style="font-weight: 700; color: var(--primary);"></div>
+        </div>
+    </header>
+
+    <main class="container">
+        
+        <!-- HERO SECTION -->
+        <section class="page-section hero-login">
+            <h1 style="animation-delay: 0.1s;">Selamat Datang</h1>
+            <p style="animation-delay: 0.2s;">Masuk untuk mengelola destinasi wisata dan analisa data pengunjung.</p>
+        </section>
+
+        <!-- GRID CONTENT -->
+        <div class="login-grid page-section" style="animation-delay: 0.3s;">
             
-            <button type="submit" id="btn-login">Masuk</button>
-        </form>
-        
-        <div id="msg-login" class="msg"></div>
-        <br>
-        <a href="register.html" style="font-size: 0.85rem; color: #64748b; text-decoration: none;">Belum punya akun? Daftar</a>
-    </div>
+            <!-- KIRI: FORM LOGIN -->
+            <div class="login-form-card">
+                
+                <!-- MODE 1: LOGIN FORM -->
+                <div id="view-login">
+                    <h3 style="margin-bottom: 24px; color: var(--primary-dark);">Login Akun</h3>
+                    
+                    <form id="form-login">
+                        <div class="form-group">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" id="login-email" class="form-input" placeholder="nama@email.com" required>
+                        </div>
 
-    <!-- MODE 2: REQUEST RESET PASSWORD -->
-    <div id="view-forgot" class="hidden fade-in">
-        <h2>Lupa Password?</h2>
-        <p class="subtitle">Masukkan email untuk menerima link reset.</p>
-        
-        <form id="form-forgot" onsubmit="handleForgot(event)">
-            <input type="email" id="forgot-email" placeholder="Email terdaftar" required>
-            <button type="submit" id="btn-forgot">Kirim Link Reset</button>
-        </form>
-        
-        <div id="msg-forgot" class="msg"></div>
-        <br>
-        <button type="button" class="link-btn" onclick="switchView('login')">Kembali ke Login</button>
-    </div>
+                        <div class="form-group">
+                            <label class="form-label">Password</label>
+                            <input type="password" id="login-password" class="form-input" placeholder="••••••••" required>
+                            <button type="button" class="btn-link" onclick="switchView('forgot')">Lupa Password?</button>
+                        </div>
 
-    <!-- MODE 3: UPDATE PASSWORD (Muncul jika buka link dari email) -->
-    <div id="view-update" class="hidden fade-in">
-        <h2>Reset Password</h2>
-        <p class="subtitle">Masukkan password baru Anda.</p>
-        
-        <form id="form-update" onsubmit="handleUpdate(event)">
-            <input type="password" id="new-pass" placeholder="Password Baru" required minlength="6">
-            <input type="password" id="confirm-pass" placeholder="Ulangi Password Baru" required minlength="6">
-            <button type="submit" id="btn-update">Simpan Password Baru</button>
-        </form>
-        
-        <div id="msg-update" class="msg"></div>
-    </div>
+                        <div id="msg-login" class="msg-box"></div>
+                        
+                        <button type="submit" class="btn btn-primary" id="btn-login">
+                            Masuk Sekarang
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+                        </button>
+                    </form>
+                    
+                    <div style="text-align: center; margin-top: 20px; font-size: 0.9rem; color: var(--text-muted);">
+                        Belum punya akun? <a href="register.html" style="color: var(--primary); font-weight: 600;">Daftar disini</a>
+                    </div>
+                </div>
 
-</div>
+                <!-- MODE 2: FORGOT PASSWORD -->
+                <div id="view-forgot" class="hidden">
+                    <h3 style="margin-bottom: 24px; color: var(--primary-dark);">Reset Password</h3>
+                    
+                    <form id="form-forgot">
+                        <div class="form-group">
+                            <label class="form-label">Email Terdaftar</label>
+                            <input type="email" id="forgot-email" class="form-input" placeholder="nama@email.com" required>
+                        </div>
 
-<script>
-    // --- KONFIGURASI ---
-    const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
-    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                        <div id="msg-forgot" class="msg-box"></div>
+                        
+                        <button type="submit" class="btn btn-primary" id="btn-forgot">
+                            Kirim Link Reset
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 11 22 2 15 22 2 11 13 11 22"></polygon></svg>
+                        </button>
+                    </form>
+                    
+                    <button type="button" class="btn-link" onclick="switchView('login')">Kembali ke Login</button>
+                </div>
 
-    // --- MANAJEMEN TAMPILAN ---
-    function switchView(viewName) {
-        document.getElementById('view-login').classList.add('hidden');
-        document.getElementById('view-forgot').classList.add('hidden');
-        document.getElementById('view-update').classList.add('hidden');
-        document.getElementById('msg-login').style.display = 'none';
-        document.getElementById('msg-forgot').style.display = 'none';
-        document.getElementById('msg-update').style.display = 'none';
+                <!-- MODE 3: UPDATE PASSWORD (LINK EMAIL) -->
+                <div id="view-update" class="hidden">
+                    <h3 style="margin-bottom: 24px; color: var(--primary-dark);">Password Baru</h3>
+                    
+                    <form id="form-update">
+                        <div class="form-group">
+                            <label class="form-label">Password Baru</label>
+                            <input type="password" id="new-pass" class="form-input" placeholder="Minimal 6 karakter" required minlength="6">
+                        </div>
 
-        document.getElementById('view-' + viewName).classList.remove('hidden');
-    }
+                        <div class="form-group">
+                            <label class="form-label">Ulangi Password</label>
+                            <input type="password" id="confirm-pass" class="form-input" placeholder="Ketik ulang password" required>
+                        </div>
 
-    function showMsg(type, text) {
-        const id = 'msg-' + type;
-        const el = document.getElementById(id);
-        el.innerText = text;
-        el.style.display = 'block';
-        el.className = 'msg ' + (text.includes('Gagal') || text.includes('Salah') ? 'error' : 'success');
-    }
+                        <div id="msg-update" class="msg-box"></div>
+                        
+                        <button type="submit" class="btn btn-primary" id="btn-update">
+                            Simpan Password
+                        </button>
+                    </form>
+                </div>
 
-    // --- 1. FUNGSI LOGIN MANUAL (Cek Tabel ngebelusers) ---
-    async function handleLogin(e) {
-        e.preventDefault();
-        const email = document.getElementById('login-email').value;
-        const password = document.getElementById('login-password').value;
-        const btn = document.getElementById('btn-login');
+            </div>
 
-        btn.disabled = true; btn.innerText = 'Memproses...';
-        showMsg('login', ''); // reset
+            <!-- KANAN: INFO CARD (VISUAL) -->
+            <div class="info-card">
+                <div class="info-visual">🏔️</div>
+                <div class="info-text">
+                    <h3>Sistem Manajemen<br>Telaga Ngebel</h3>
+                    <p>Platform terintegrasi untuk monitoring pengunjung dan manajemen destinasi wisata secara realtime.</p>
+                </div>
 
-        try {
-            const { data, error } = await sb
-                .from('ngebelusers')
-                .select('*')
-                .eq('email', email)
-                .eq('password', password)
-                .maybeSingle();
+                <ul class="feature-list">
+                    <li class="feature-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                        Monitoring Data Realtime
+                    </li>
+                    <li class="feature-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                        Keamanan Data Terjamin
+                    </li>
+                    <li class="feature-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                        Dukungan Cepat
+                    </li>
+                </ul>
+            </div>
 
-            if (error) throw error;
+        </div>
 
-            if (!data) {
-                showMsg('login', 'Email atau Password salah!');
+    </main>
+
+    <!-- NAVIGATION (Hidden) -->
+    <nav class="bottom-nav" style="display:none;"></nav>
+
+    <!-- SCRIPT SUPABASE & LOGIC -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        // --- 0. FUNGSI KEMBALI PINTAR ---
+        // Ini membuat tombol kembali bekerja seperti tombol "Back" di browser aplikasi
+        function goBack() {
+            if (window.history.length > 1) {
+                window.history.back();
             } else {
-                // Cek Role
-                if(data.role === 'admin') {
-                    window.location.href = 'admin.html';
-                } else {
-                    window.location.href = 'dashboard.html';
-                }
+                // Jika tidak ada history (misal dibuka di tab baru), lempar ke index
+                window.location.href = 'index.html';
             }
-        } catch (err) {
-            showMsg('login', 'Terjadi kesalahan: ' + err.message);
-        } finally {
-            btn.disabled = false; btn.innerText = 'Masuk';
-        }
-    }
-
-    // --- 2. FUNGSI LUPA PASSWORD (Kirim Email via Supabase Auth) ---
-    async function handleForgot(e) {
-        e.preventDefault();
-        const email = document.getElementById('forgot-email').value;
-        const btn = document.getElementById('btn-forgot');
-
-        btn.disabled = true; btn.innerText = 'Mengirim...';
-        showMsg('forgot', '');
-
-        try {
-            // Kirim email reset
-            const { error } = await sb.auth.resetPasswordForEmail(email, {
-                redirectTo: window.location.href // Redirect balik ke halaman ini
-            });
-
-            if (error) throw error;
-
-            showMsg('forgot', 'Link reset password telah dikirim ke email Anda. Silakan cek Inbox/Spam.');
-        } catch (err) {
-            showMsg('forgot', 'Gagal mengirim email: ' + err.message);
-        } finally {
-            btn.disabled = false; btn.innerText = 'Kirim Link Reset';
-        }
-    }
-
-    // --- 3. FUNGSI UPDATE PASSWORD (Dari Link Email) ---
-    async function handleUpdate(e) {
-        e.preventDefault();
-        const p1 = document.getElementById('new-pass').value;
-        const p2 = document.getElementById('confirm-pass').value;
-        const btn = document.getElementById('btn-update');
-
-        if (p1 !== p2) {
-            showMsg('update', 'Password tidak sama!');
-            return;
         }
 
-        btn.disabled = true; btn.innerText = 'Menyimpan...';
-        showMsg('update', '');
+        // --- 1. KONFIGURASI SUPABASE ---
+        const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
+        const { createClient } = supabase;
+        const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        try {
-            // Update password di Supabase Auth
-            const { error } = await sb.auth.updateUser({ password: p1 });
+        // --- 2. MANAJEMEN TAMPILAN ---
+        function switchView(viewName) {
+            document.getElementById('view-login').classList.add('hidden');
+            document.getElementById('view-forgot').classList.add('hidden');
+            document.getElementById('view-update').classList.add('hidden');
             
-            if (error) throw error;
+            // Reset pesan
+            document.querySelectorAll('.msg-box').forEach(el => el.style.display = 'none');
 
-            // TAMBAHAN: Update juga password di tabel manual ngebelusers
-            // Kita perlu ambil email user yang sedang login di session auth
-            const { data: { user } } = await sb.auth.getUser();
-            if(user) {
-                await sb.from('ngebelusers')
-                    .update({ password: p1 })
-                    .eq('email', user.email);
+            document.getElementById('view-' + viewName).classList.remove('hidden');
+        }
+
+        function showMsg(type, text, isError = false) {
+            const el = document.getElementById('msg-' + type);
+            el.innerText = text;
+            el.style.display = 'block';
+            el.className = 'msg-box ' + (isError ? 'msg-error' : 'msg-success');
+        }
+
+        function setLoading(btnId, isLoading, textNormal) {
+            const btn = document.getElementById(btnId);
+            if (isLoading) {
+                btn.disabled = true;
+                btn.innerHTML = `<svg class="spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 12a9 9 0 1 1-6 2.3l-4-4"></path></svg> ${textNormal}...`;
+            } else {
+                btn.disabled = false;
+                btn.innerText = textNormal;
+            }
+        }
+
+        // --- 3. LOGIKA LOGIN MANUAL ---
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            setLoading('btn-login', true, 'Memproses');
+            showMsg('login', '', false);
+
+            try {
+                const { data, error } = await sb
+                    .from('ngebelusers')
+                    .select('*')
+                    .eq('email', email)
+                    .eq('password', password)
+                    .maybeSingle();
+
+                if (error) throw error;
+
+                if (!data) {
+                    showMsg('login', 'Email atau Password salah!', true);
+                } else {
+                    if(data.role === 'admin') {
+                        window.location.href = 'admin.html';
+                    } else {
+                        window.location.href = 'dashboard.html';
+                    }
+                }
+            } catch (err) {
+                showMsg('login', 'Terjadi kesalahan koneksi.', true);
+            } finally {
+                setLoading('btn-login', false, 'Masuk Sekarang');
+            }
+        }
+
+        // --- 4. LOGIKA LUPA PASSWORD (OTOMATIS) ---
+        async function handleForgot(e) {
+            e.preventDefault();
+            const email = document.getElementById('forgot-email').value;
+
+            setLoading('btn-forgot', true, 'Mengirim');
+            showMsg('forgot', '', false);
+
+            try {
+                const { error } = await sb.auth.resetPasswordForEmail(email, {
+                    redirectTo: window.location.href
+                });
+
+                if (error) throw error;
+                showMsg('forgot', 'Link reset telah dikirim ke email Anda.', false);
+            } catch (err) {
+                showMsg('forgot', 'Gagal mengirim email.', true);
+            } finally {
+                setLoading('btn-forgot', false, 'Kirim Link Reset');
+            }
+        }
+
+        // --- 5. LOGIKA UPDATE PASSWORD ---
+        async function handleUpdate(e) {
+            e.preventDefault();
+            const p1 = document.getElementById('new-pass').value;
+            const p2 = document.getElementById('confirm-pass').value;
+
+            if (p1 !== p2) {
+                showMsg('update', 'Password tidak sama!', true);
+                return;
             }
 
-            alert('Password berhasil diubah! Silakan login dengan password baru.');
-            window.location.href = 'login.html'; // Reload bersih
+            setLoading('btn-update', true, 'Menyimpan');
 
-        } catch (err) {
-            showMsg('update', 'Gagal mengubah password: ' + err.message);
-            btn.disabled = false; btn.innerText = 'Simpan Password Baru';
+            try {
+                // 1. Update di Auth
+                const { error } = await sb.auth.updateUser({ password: p1 });
+                if (error) throw error;
+
+                // 2. Update di Tabel Manual (Sinkronisasi)
+                const { data: { user } } = await sb.auth.getUser();
+                if(user) {
+                    await sb.from('ngebelusers')
+                        .update({ password: p1 })
+                        .eq('email', user.email);
+                }
+
+                alert('Password berhasil diubah!');
+                window.location.href = 'login.html';
+
+            } catch (err) {
+                showMsg('update', 'Gagal: ' + err.message, true);
+                setLoading('btn-update', false, 'Simpan Password');
+            }
         }
-    }
 
-    // --- CEK URL SAAT LOAD (Apakah ini mode reset dari email?) ---
-    window.addEventListener('load', async () => {
-        const hash = window.location.hash;
-        // Cek apakah URL mengandung token reset
-        if (hash.includes('type=recovery') || hash.includes('access_token')) {
-            switchView('update');
-        } else {
-            switchView('login');
-        }
-    });
+        // --- 6. INIT ---
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('form-login').addEventListener('submit', handleLogin);
+            document.getElementById('form-forgot').addEventListener('submit', handleForgot);
+            document.getElementById('form-update').addEventListener('submit', handleUpdate);
 
-</script>
+            // Cek mode reset password dari URL
+            if (window.location.hash.includes('type=recovery')) {
+                switchView('update');
+            }
+        });
+    </script>
 </body>
 </html>
