@@ -80,6 +80,7 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
         .btn-google:hover { background: #f8fafc; border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
+        .btn-google:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
         .btn-google svg { width: 22px; height: 22px; }
 
         /* --- 5. CONTENT --- */
@@ -127,14 +128,26 @@
         /* Spinner */
         .spin { animation: spin 1s linear infinite; }
 
+        /* Toast/Notification */
+        .toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: #333; color: white; padding: 12px 24px; border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); font-size: 0.9rem; z-index: 2000;
+            opacity: 0; transition: opacity 0.3s; pointer-events: none;
+        }
+        .toast.show { opacity: 1; }
+
         @media (max-width: 767px) {
             .login-grid { grid-template-columns: 1fr; }
             .hero-login { padding: 30px 20px; }
-            .info-card { display: none; } /* Sembunyikan visual di HP agar fokus ke tombol login */
+            .info-card { display: none; }
         }
     </style>
 </head>
 <body>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="toast">Notifikasi</div>
 
     <!-- HEADER -->
     <header class="animate-item" style="animation-delay: 0.1s;">
@@ -158,11 +171,10 @@
         <!-- GRID CONTENT -->
         <div class="login-grid page-section animate-item" style="animation-delay: 0.3s;">
             
-            <!-- KIRI: FORM LOGIN (SIMPLIFIED) -->
+            <!-- KIRI: FORM LOGIN -->
             <div class="login-form-card">
                 <h3 style="margin-bottom: 30px; color: var(--primary-dark); font-size: 1.5rem;">Login Akun</h3>
                 
-                <!-- TOMBOL GOOGLE SAJA -->
                 <button type="button" class="btn btn-google" id="btn-google" onclick="handleGoogleLogin()">
                     <svg viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
                         <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
@@ -176,11 +188,11 @@
                 </button>
                 
                 <p style="margin-top: 20px; font-size: 0.85rem; color: var(--text-muted);">
-                    Dengan melanjutkan, Anda menyetujui Syarat & Ketentuan kami.
+                    Sistem akan otomatis mengarahkan Anda berdasarkan hak akses (Admin/User).
                 </p>
             </div>
 
-            <!-- KANAN: INFO CARD (VISUAL) -->
+            <!-- KANAN: INFO CARD -->
             <div class="info-card">
                 <div class="info-visual">🏔️</div>
                 <div class="info-text">
@@ -212,13 +224,20 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
-        // --- 0. FUNGSI KEMBALI ---
+        // --- 0. FUNGSI UTILITY ---
         function goBack() {
             if (window.history.length > 1) {
                 window.history.back();
             } else {
                 window.location.href = 'index.html';
             }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
         // --- 1. KONFIGURASI SUPABASE ---
@@ -238,8 +257,6 @@
             btn.style.opacity = '0.7';
 
             try {
-                // Minta Supabase buka popup Google
-                // Redirect back to THIS page so checkSession can handle the routing
                 const { data, error } = await sb.auth.signInWithOAuth({
                     provider: 'google',
                     options: {
@@ -248,46 +265,83 @@
                 });
 
                 if (error) throw error;
-                // Browser akan membuka popup Google. 
-                // Setelah sukses, halaman ini akan reload dan masuk ke checkSession()
 
             } catch (err) {
                 console.error("Login Error:", err);
-                alert("Gagal menghubungkan ke Google. Silakan coba lagi.");
+                showToast("Gagal menghubungkan ke Google: " + err.message);
                 btn.disabled = false;
                 btn.innerHTML = originalContent;
                 btn.style.opacity = '1';
             }
         }
 
-        // --- 3. CEK SESSION & REDIRECT BERDASARKAN ROLE ---
+        // --- 3. LOGIKA UTAMA: CEK SESSION, INSERT USER & REDIRECT ---
         async function checkSession() {
             // Cek apakah user SUDAH login (session aktif)
             const { data: { session } } = await sb.auth.getSession();
             
             if (session) {
-                // Tampilkan Loading kecil (opsional, agar user sadar sedang dicek)
+                console.log("✅ User login terdeteksi. ID:", session.user.id);
+                
+                // Tampilkan Loading pada tombol
                 const btn = document.getElementById('btn-google');
                 if(btn) {
-                    btn.innerHTML = `<svg class="spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 12a9 9 0 1 1-6 2.3l-4-4"></path></svg> Mengecek Role...`;
+                    btn.innerHTML = `<svg class="spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 12a9 9 0 1 1-6 2.3l-4-4"></path></svg> Memuat Akses...`;
                 }
 
-                // 1. Ambil data user dari tabel 'ngebelusers' untuk melihat role-nya
-                const { data: userData, error } = await sb
+                // 1. Cek data user di tabel 'ngebelusers'
+                const { data: userData, error: fetchError } = await sb
                     .from('ngebelusers')
                     .select('role') 
                     .eq('id', session.user.id)
                     .maybeSingle();
 
-                // 2. Logika Redirect
-                if (userData && userData.role === 'admin') {
-                    console.log("Login sebagai Admin, menuju admin.html");
+                // Jika TERJADI ERROR (misal Policy RLS belum diatur)
+                if (fetchError) {
+                    console.error("❌ Error Database:", fetchError);
+                    alert("Terjadi kesalahan sistem. Pastikan Anda sudah menjalankan SQL Policy di Supabase.\nError: " + fetchError.message);
+                    return; // Stop disini
+                }
+
+                let userRole = 'user'; // Default role
+
+                // 2. Logika Jika Data User TIDAK ADA (User Baru)
+                if (!userData) {
+                    console.log("ℹ️ User belum ada di DB. Mendaftarkan user baru...");
+                    showToast("Pendaftaran akun otomatis...");
+
+                    // Insert user baru
+                    const { data: newUser, insertError } = await sb
+                        .from('ngebelusers')
+                        .insert([{
+                            id: session.user.id,
+                            email: session.user.email,
+                            full_name: session.user.user_metadata.full_name || session.user.email.split('@')[0],
+                            role: 'user', // Default: User Biasa
+                            created_at: new Date()
+                        }]);
+                    
+                    if (insertError) {
+                        console.error("Gagal Insert User:", insertError);
+                        alert("Gagal mendaftarkan user: " + insertError.message);
+                        return;
+                    }
+                    
+                    userRole = 'user'; // Pastikan role baru adalah user
+                } else {
+                    // 3. Jika Data ADA, Ambil Role
+                    console.log("✅ Data user ditemukan:", userData);
+                    userRole = userData.role;
+                }
+
+                // 4. Redirect berdasarkan Role
+                if (userRole === 'admin') {
+                    console.log("🚀 Akses Admin Terdeteksi. Redirect ke admin.html");
                     setTimeout(() => {
                         window.location.href = 'admin.html';
-                    }, 500); // Delay sedikit biar loading terlihat
-                    
+                    }, 500);
                 } else {
-                    console.log("Login sebagai User Biasa, menuju dashboard.html");
+                    console.log("👤 Akses User Biasa. Redirect ke dashboard.html");
                     setTimeout(() => {
                         window.location.href = 'dashboard.html';
                     }, 500);
@@ -297,7 +351,7 @@
 
         // --- 4. INIT ---
         window.addEventListener('load', () => {
-            // Cek apakah user baru saja login via Google
+            // Cek session saat halaman dimuat
             checkSession();
         });
     </script>
