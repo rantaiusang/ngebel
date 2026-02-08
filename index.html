@@ -482,12 +482,12 @@
             if (isRestricted) {
                 icon.innerText = '📡'; // Icon Sinyal
                 text.innerHTML = `Fitur <b>${featureName}</b> menggunakan sensor canggih (IoT).<br>Sistem berjalan 24/7 memantau kondisi real-time.<br><br><small style="color:#ef4444;">*Perlu Login untuk melihat detail data.</small>`;
-                btn.innerText = "Masuk untuk Melihat Data";
+                btn.innerText = "Masuk";
                 btn.onclick = goToLogin;
             } else {
                 icon.innerText = '⛓️'; // Icon Blockchain (Perubahan disini)
                 text.innerHTML = `Akses publik untuk <b>${featureName}</b>. Data direnderkan secara umum, namun untuk kontrol penuh, silakan masuk.`;
-                btn.innerText = "Masuk / Daftar";
+                btn.innerText = "Masuk";
                 btn.onclick = goToLogin;
             }
             
