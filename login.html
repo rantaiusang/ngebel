@@ -81,6 +81,23 @@
         }
         .btn-link:hover { text-decoration: underline; }
 
+        /* Tombol Google Baru */
+        .btn-google {
+            background: white; color: var(--text-main); border: 2px solid #e2e8f0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); width: 100%; margin-top: 15px;
+        }
+        .btn-google:hover { background: #f8fafc; border-color: #cbd5e1; transform: translateY(-1px); }
+        .btn-google svg { width: 20px; height: 20px; }
+
+        /* Divider */
+        .divider {
+            display: flex; align-items: center; text-align: center; margin: 20px 0; color: var(--text-muted); font-size: 0.85rem;
+        }
+        .divider::before, .divider::after {
+            content: ''; flex: 1; border-bottom: 1px solid #e2e8f0;
+        }
+        .divider span { padding: 0 10px; }
+
         /* --- 5. CONTENT --- */
         .page-section { display: block; animation: fadeInUp 0.6s ease-out; margin-bottom: 40px; }
 
@@ -188,6 +205,21 @@
                 <div id="view-login">
                     <h3 style="margin-bottom: 24px; color: var(--primary-dark);">Login Akun</h3>
                     
+                    <!-- TOMBOL GOOGLE (BARU) -->
+                    <button type="button" class="btn btn-google" id="btn-google" onclick="handleGoogleLogin()">
+                        <svg viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+                            <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
+                                <path fill="#4285F4" d="M -3.264 51.509 C -3.264 50.719 -3.334 49.969 -3.454 49.239 L -14.754 49.239 L -14.754 53.749 L -8.284 53.749 C -8.574 55.229 -9.424 56.479 -10.684 57.329 L -10.684 60.329 L -6.824 60.329 C -4.564 58.239 -3.264 55.159 -3.264 51.509 Z"/>
+                                <path fill="#34A853" d="M -14.754 63.239 C -11.514 63.239 -8.804 62.159 -6.824 60.329 L -10.684 57.329 C -11.764 58.049 -13.134 58.489 -14.754 58.489 C -17.884 58.489 -20.534 56.379 -21.484 53.529 L -25.464 53.529 L -25.464 56.619 C -23.494 60.539 -19.444 63.239 -14.754 63.239 Z"/>
+                                <path fill="#FBBC05" d="M -21.484 53.529 C -21.734 52.809 -21.864 52.039 -21.864 51.239 C -21.864 50.439 -21.734 49.669 -21.484 48.949 L -21.484 45.859 L -25.464 45.859 C -26.284 47.479 -26.754 49.299 -26.754 51.239 C -26.754 53.179 -26.284 54.999 -25.464 56.619 L -21.484 53.529 Z"/>
+                                <path fill="#EA4335" d="M -14.754 43.989 C -12.984 43.989 -11.404 44.599 -10.154 45.789 L -6.734 42.369 C -8.804 40.429 -11.514 39.239 -14.754 39.239 C -19.444 39.239 -23.494 41.939 -25.464 45.859 L -21.484 48.949 C -20.534 46.099 -17.884 43.989 -14.754 43.989 Z"/>
+                            </g>
+                        </svg>
+                        Masuk dengan Google
+                    </button>
+
+                    <div class="divider"><span>ATAU</span></div>
+
                     <form id="form-login">
                         <div class="form-group">
                             <label class="form-label">Email Address</label>
@@ -295,12 +327,10 @@
 
     <script>
         // --- 0. FUNGSI KEMBALI PINTAR ---
-        // Ini membuat tombol kembali bekerja seperti tombol "Back" di browser aplikasi
         function goBack() {
             if (window.history.length > 1) {
                 window.history.back();
             } else {
-                // Jika tidak ada history (misal dibuka di tab baru), lempar ke index
                 window.location.href = 'index.html';
             }
         }
@@ -317,9 +347,7 @@
             document.getElementById('view-forgot').classList.add('hidden');
             document.getElementById('view-update').classList.add('hidden');
             
-            // Reset pesan
             document.querySelectorAll('.msg-box').forEach(el => el.style.display = 'none');
-
             document.getElementById('view-' + viewName).classList.remove('hidden');
         }
 
@@ -341,7 +369,66 @@
             }
         }
 
-        // --- 3. LOGIKA LOGIN MANUAL ---
+        // --- 3. LOGIKA LOGIN GOOGLE (BARU) ---
+        async function handleGoogleLogin() {
+            const btn = document.getElementById('btn-google');
+            const originalText = btn.innerHTML;
+            
+            setLoading('btn-google', true, 'Menghubungkan');
+
+            try {
+                // 1. Minta Supabase buka popup Google
+                const { data, error } = await sb.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: window.location.href // Redirect balik ke sini setelah sukses
+                    }
+                });
+
+                if (error) throw error;
+
+                // Supabase akan membuka popup Google. 
+                // Setelah user memilih akun, Google akan redirect ke halaman ini.
+                // Kita perlu listener untuk mendeteksi login sukses.
+
+            } catch (err) {
+                showMsg('login', 'Gagal login Google: ' + err.message, true);
+                setLoading('btn-google', false, 'Masuk dengan Google');
+            }
+        }
+
+        // --- 3.5 DETEKSI LOGIN BERHASIL (SETELAH REDIRECT DARI GOOGLE) ---
+        // Fungsi ini jalan saat halaman dimuat ulang setelah login Google
+        async function checkGoogleSession() {
+            const { data: { session } } = await sb.auth.getSession();
+            
+            if (session) {
+                // User sudah login via Google. 
+                // Sekarang cek data di tabel manual ngebelusers
+                const { data: userManual, error } = await sb
+                    .from('ngebelusers')
+                    .select('*')
+                    .eq('id', session.user.id) // Cek berdasarkan ID Auth
+                    .maybeSingle();
+
+                if (userManual) {
+                    // Jika data ada, arahkan sesuai role
+                    if(userManual.role === 'admin') {
+                        window.location.href = 'admin.html';
+                    } else {
+                        window.location.href = 'dashboard.html';
+                    }
+                } else {
+                    // Jika data belum ada di ngebelusers (Trigger mungkin lambat), 
+                    // coba refresh sebentar atau biarkan user di halaman ini
+                    // Namun karena kita pakai Trigger, seharusnya langsung ada.
+                    // Jika error, kita arahkan ke dashboard default
+                    window.location.href = 'dashboard.html';
+                }
+            }
+        }
+
+        // --- 4. LOGIKA LOGIN MANUAL (EMAIL/PASSWORD) ---
         async function handleLogin(e) {
             e.preventDefault();
             const email = document.getElementById('login-email').value;
@@ -376,7 +463,7 @@
             }
         }
 
-        // --- 4. LOGIKA LUPA PASSWORD (OTOMATIS) ---
+        // --- 5. LOGIKA LUPA PASSWORD (OTOMATIS) ---
         async function handleForgot(e) {
             e.preventDefault();
             const email = document.getElementById('forgot-email').value;
@@ -398,7 +485,7 @@
             }
         }
 
-        // --- 5. LOGIKA UPDATE PASSWORD ---
+        // --- 6. LOGIKA UPDATE PASSWORD ---
         async function handleUpdate(e) {
             e.preventDefault();
             const p1 = document.getElementById('new-pass').value;
@@ -412,11 +499,9 @@
             setLoading('btn-update', true, 'Menyimpan');
 
             try {
-                // 1. Update di Auth
                 const { error } = await sb.auth.updateUser({ password: p1 });
                 if (error) throw error;
 
-                // 2. Update di Tabel Manual (Sinkronisasi)
                 const { data: { user } } = await sb.auth.getUser();
                 if(user) {
                     await sb.from('ngebelusers')
@@ -433,13 +518,15 @@
             }
         }
 
-        // --- 6. INIT ---
+        // --- 7. INIT ---
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('form-login').addEventListener('submit', handleLogin);
             document.getElementById('form-forgot').addEventListener('submit', handleForgot);
             document.getElementById('form-update').addEventListener('submit', handleUpdate);
 
-            // Cek mode reset password dari URL
+            // Cek apakah user baru saja kembali dari Google / Password Reset
+            checkGoogleSession();
+
             if (window.location.hash.includes('type=recovery')) {
                 switchView('update');
             }
