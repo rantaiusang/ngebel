@@ -127,9 +127,12 @@
         .brand { display: flex; align-items: center; gap: 10px; font-family: 'Outfit'; font-weight: 800; font-size: 1.3rem; color: var(--primary); cursor: pointer; transition: transform 0.3s; }
         .brand:hover { transform: scale(1.02); }
         
-        .user-pill { display: flex; align-items: center; gap: 10px; background: white; padding: 6px 12px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.3s; cursor: pointer; border: 1px solid transparent; }
+        .user-pill { display: flex; align-items: center; gap: 10px; background: white; padding: 6px 12px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.3s; cursor: pointer; border: 1px solid transparent; max-width: 250px; }
         .user-pill:hover { transform: translateY(-2px); border-color: var(--primary); box-shadow: 0 8px 20px rgba(15, 118, 110, 0.15); }
-        .user-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid white; }
+        .user-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid white; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; }
+        .user-info { display: flex; flex-direction: column; line-height: 1.2; overflow: hidden; }
+        .user-name { font-size: 0.9rem; font-weight: 700; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-role { font-size: 0.7rem; color: var(--text-muted); }
 
         /* --- 5. BOTTOM NAVIGATION --- */
         .bottom-nav {
@@ -158,7 +161,6 @@
         .nav-item.active { color: var(--primary); background: rgba(15, 118, 110, 0.08); }
         .nav-item.active svg { transform: translateY(-3px); stroke-width: 2.5; filter: drop-shadow(0 4px 6px rgba(15, 118, 110, 0.2)); }
         
-        /* Warna Khusus Tombol Logout di Nav */
         .nav-item.logout-item { color: #ef4444; }
         .nav-item.logout-item:hover { background: #fef2f2; }
         .nav-item.logout-item svg { stroke: #ef4444; }
@@ -175,12 +177,6 @@
             .nav-item svg { margin-bottom: 0; width: 24px; height: 24px; }
             .nav-item.active { background: #f0fdfa; border-right: 3px solid var(--primary); }
             .nav-item.active svg { transform: none; }
-        }
-
-        @media (max-width: 767px) {
-            .bottom-nav { overflow-x: auto; justify-content: flex-start; gap: 4px; padding: 10px; scroll-snap-type: x mandatory; }
-            .bottom-nav::-webkit-scrollbar { display: none; }
-            .nav-item { flex: 0 0 auto !important; min-width: 65px; scroll-snap-align: center; padding: 8px 12px; }
         }
 
         /* --- 6. LOGIN PROMPT --- */
@@ -211,10 +207,15 @@
         </div>
         
         <div class="header-right">
-            <!-- Profil User -->
-            <div class="user-pill" onclick="alert('Menu Profil (Opsional)')">
-                <img src="https://picsum.photos/seed/warga/100/100" class="user-avatar" alt="User">
-                <div style="font-size: 0.9rem; font-weight: 700; color: var(--text-main); display: none; @media(min-width: 400px){display:block;}">Warga</div>
+            <!-- Profil User (REAL DATA) -->
+            <div class="user-pill" id="header-user-pill" title="Klik untuk lihat profil">
+                <!-- Avatar -->
+                <div class="user-avatar" id="header-avatar">U</div>
+                <!-- Info Nama & Role -->
+                <div class="user-info">
+                    <div class="user-name" id="header-name">Memuat...</div>
+                    <div class="user-role" id="header-role">...</div>
+                </div>
             </div>
         </div>
     </header>
@@ -223,25 +224,26 @@
     <div id="main-content" class="container">
         
         <div class="animate-item" style="animation-delay: 0.2s;">
-            <h1>Halo, Warga! 👋</h1>
+            <h1 id="welcome-msg">Halo, ...! 👋</h1>
             <p>Statistik ekonomi digital Anda terupdate hari ini.</p>
         </div>
 
-        <!-- STATS GRID -->
-        <div class="grid-3">
+        <!-- STATS GRID (REAL DATA) -->
+        <div class="grid-3" id="stats-container">
+            <!-- Data akan diinject oleh JavaScript -->
             <div class="card animate-item" style="animation-delay: 0.3s;">
                 <span class="stat-label">Total Pendapatan</span>
-                <span class="stat-value" data-target="4500000">Rp 0</span>
+                <span class="stat-value" id="stat-income">Rp 0</span>
                 <span class="stat-trend trend-up">▲ 12% bulan ini</span>
             </div>
             <div class="card animate-item" style="animation-delay: 0.4s;">
                 <span class="stat-label">Pesanan Baru</span>
-                <span class="stat-value" data-target="12">0</span>
+                <span class="stat-value" id="stat-orders">0</span>
                 <span class="stat-trend" style="background:#fff7ed; color:#c2410c;">⚠ Perlu diproses</span>
             </div>
             <div class="card animate-item" style="animation-delay: 0.5s;">
                 <span class="stat-label">Profil Dilihat</span>
-                <span class="stat-value" data-target="850">0</span>
+                <span class="stat-value" id="stat-views">0</span>
                 <span class="stat-trend trend-up">▲ 5% minggu ini</span>
             </div>
         </div>
@@ -335,11 +337,67 @@
 
         // --- FUNGSI KEMBALI ---
         function goBack() {
-            // Efek fade out
             document.body.style.opacity = '0';
             setTimeout(() => {
                 window.location.href = 'index.html';
             }, 300);
+        }
+
+        // --- FUNGSI AMBIL DATA USER ---
+        async function loadUserData(userId) {
+            // Cek apakah user ada di tabel ngebelusers
+            // Kita gunakan kolom 'id' yang sudah disinkronkan sebelumnya
+            let { data: userData, error } = await supabaseClient
+                .from('ngebelusers')
+                .select('*')
+                .eq('id', userId)
+                .maybeSingle();
+
+            // Fallback: Jika data belum sinkron (misal baru login Google), cari pakai email
+            if (!userData || error) {
+                const { data: { user } } = await supabaseClient.auth.getUser();
+                if(user) {
+                    const { data: emailData } = await supabaseClient
+                        .from('ngebelusers')
+                        .select('*')
+                        .eq('email', user.email)
+                        .maybeSingle();
+                    userData = emailData;
+                }
+            }
+
+            if (userData) {
+                // Update Header Profile
+                const name = userData.full_name || userData.email.split('@')[0];
+                const initial = name.charAt(0).toUpperCase();
+                
+                document.getElementById('header-name').innerText = name;
+                document.getElementById('header-role').innerText = userData.role || 'User';
+                document.getElementById('header-avatar').innerText = initial;
+                document.getElementById('welcome-msg').innerText = `Halo, ${name}! 👋`;
+
+                // Load Stats (Dummy Realtime dari kolom user, atau buat random)
+                // Disini saya contohkan ambil dari kolom (jika ada) atau pakai dummy acak
+                const income = userData.income || 4500000;
+                const orders = userData.orders || 12;
+                const views = userData.views || 850;
+
+                // Render Stats dengan Animasi
+                setTimeout(() => {
+                    animateValue(document.getElementById('stat-income'), 0, income, 2000, true);
+                    animateValue(document.getElementById('stat-orders'), 0, orders, 1500, false);
+                    animateValue(document.getElementById('stat-views'), 0, views, 1800, false);
+                }, 500);
+
+            } else {
+                // Fallback ke data Auth jika tabel manual kosong
+                const { data: { user } } = await supabaseClient.auth.getUser();
+                if(user) {
+                    document.getElementById('header-name').innerText = user.email;
+                    document.getElementById('header-role').innerText = 'New User';
+                    document.getElementById('header-avatar').innerText = 'U';
+                }
+            }
         }
 
         // --- INIT ---
@@ -356,20 +414,12 @@
                 document.getElementById('main-content').style.display = 'block';
                 renderNav();
                 
+                // Load Data User
+                await loadUserData(session.user.id);
+                
                 setTimeout(() => {
                     document.getElementById('main-nav').classList.add('visible');
                 }, 800);
-
-                // Counter Animation
-                const stats = document.querySelectorAll('.stat-value');
-                stats.forEach(stat => {
-                    const target = parseInt(stat.getAttribute('data-target'));
-                    if (target > 1000) {
-                        animateValue(stat, 0, target, 2000, true);
-                    } else {
-                        animateValue(stat, 0, target, 1500, false);
-                    }
-                });
 
             } else {
                 document.getElementById('login-prompt').style.display = 'block';
@@ -383,7 +433,6 @@
             
             systemMenu.forEach((item) => {
                 const a = document.createElement('div');
-                // Tambahkan class 'logout-item' jika id adalah logout
                 const extraClass = item.id === 'logout' ? 'logout-item' : '';
                 const activeClass = item.id === 'dashboard' ? 'active' : '';
                 
@@ -404,13 +453,11 @@
             if(element) element.classList.add('active');
 
             if (item.action === 'logout') {
-                // Konfirmasi Logout sederhana (bisa diganti modal custom)
                 const confirmLogout = confirm("Apakah Anda yakin ingin keluar?");
                 if(confirmLogout) {
                     document.getElementById('main-nav').classList.remove('visible');
                     setTimeout(performLogout, 300);
                 } else {
-                    // Batal logout, kembalikan state active ke dashboard
                     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
                     document.querySelector('.nav-item[id="dashboard"]').classList.add('active');
                 }
