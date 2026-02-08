@@ -239,10 +239,11 @@
 
             try {
                 // Minta Supabase buka popup Google
+                // Redirect back to THIS page so checkSession can handle the routing
                 const { data, error } = await sb.auth.signInWithOAuth({
                     provider: 'google',
                     options: {
-                        redirectTo: window.location.href // Redirect balik ke login.html setelah sukses
+                        redirectTo: window.location.href 
                     }
                 });
 
@@ -259,20 +260,38 @@
             }
         }
 
-        // --- 3. CEK SESSION & REDIRECT OTOMATIS ---
-        // Fungsi ini berjalan saat halaman dimuat (setelah redirect dari Google)
+        // --- 3. CEK SESSION & REDIRECT BERDASARKAN ROLE ---
         async function checkSession() {
+            // Cek apakah user SUDAH login (session aktif)
             const { data: { session } } = await sb.auth.getSession();
             
             if (session) {
-                // User SUDAH login. Kita arahkan langsung ke Dashboard.
-                // Kita tidak perlu cek role di sini untuk login, 
-                // karena dashboard.html sudah menangani role user.
-                
-                // Sedikit delay agar animasi loading terlihat
-                setTimeout(() => {
-                    window.location.href = 'dashboard.html';
-                }, 1000);
+                // Tampilkan Loading kecil (opsional, agar user sadar sedang dicek)
+                const btn = document.getElementById('btn-google');
+                if(btn) {
+                    btn.innerHTML = `<svg class="spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 12a9 9 0 1 1-6 2.3l-4-4"></path></svg> Mengecek Role...`;
+                }
+
+                // 1. Ambil data user dari tabel 'ngebelusers' untuk melihat role-nya
+                const { data: userData, error } = await sb
+                    .from('ngebelusers')
+                    .select('role') 
+                    .eq('id', session.user.id)
+                    .maybeSingle();
+
+                // 2. Logika Redirect
+                if (userData && userData.role === 'admin') {
+                    console.log("Login sebagai Admin, menuju admin.html");
+                    setTimeout(() => {
+                        window.location.href = 'admin.html';
+                    }, 500); // Delay sedikit biar loading terlihat
+                    
+                } else {
+                    console.log("Login sebagai User Biasa, menuju dashboard.html");
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 500);
+                }
             }
         }
 
