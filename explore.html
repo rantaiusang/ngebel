@@ -212,6 +212,7 @@
         .btn-card {
             display: block; width: 100%; padding: 12px; background: #f1f5f9; color: #334155; text-align: center;
             border-radius: 12px; font-weight: 600; font-size: 0.9rem; transition: background 0.2s;
+            cursor: pointer; border: none;
         }
         .btn-card:hover { background: var(--primary); color: white; }
 
@@ -432,7 +433,7 @@
                 </div>
             </article>
 
-            <!-- Card 3: Culinary -->
+            <!-- Card 3: Mloko Sewu -->
             <article class="spot-card">
                 <div class="card-img-wrapper">
                     <img src="https://dikapquhusbwjccbqcsb.supabase.co/storage/v1/object/public/images/mloko-sewu.webp">
@@ -443,11 +444,12 @@
                         <span class="meta-item">Parkir Luas</span>
                         <span class="meta-item">🌲 View Gunung</span>
                     </div>
-                    <button class="btn-card">Lihat Lokasi</button>
+                    <!-- ID DITAMBAHKAN DI SINI -->
+                    <button class="btn-card" id="btn-mloko-sewu">Lihat Lokasi</button>
                 </div>
             </article>
 
-            <!-- Card 4: Sunrise -->
+            <!-- Card 4: Pemandian Air Panas -->
             <article class="spot-card">
                 <div class="card-img-wrapper">
                     <span class="card-badge">Sedang Viral</span>
@@ -459,7 +461,8 @@
                         <span class="meta-item">🌅 Buka 07:00WIB</span>
                         <span class="meta-item">🥾 Trekking Mudah</span>
                     </div>
-                    <button class="btn-card">Lihat Lokasi</button>
+                    <!-- ID DITAMBAHKAN DI SINI -->
+                    <button class="btn-card" id="btn-tirta-husada">Lihat Lokasi</button>
                 </div>
             </article>
 
@@ -498,7 +501,26 @@
     </div>
 
     <script>
-        // --- 1. Real-time Clock Logic ---
+        // --- 1. LOGIKA NAVIGASI KHUSUS (PERMINTAAN USER) ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Logika untuk Tombol Mloko Sewu
+            const btnMloko = document.getElementById('btn-mloko-sewu');
+            if(btnMloko) {
+                btnMloko.addEventListener('click', () => {
+                    window.location.href = 'mlokosewu.html';
+                });
+            }
+
+            // Logika untuk Tombol Tirta Husada
+            const btnTirta = document.getElementById('btn-tirta-husada');
+            if(btnTirta) {
+                btnTirta.addEventListener('click', () => {
+                    window.location.href = 'tirtahusada.html';
+                });
+            }
+        });
+
+        // --- 2. Real-time Clock Logic ---
         function updateClock() {
             const now = new Date();
             const timeString = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
@@ -507,7 +529,7 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // --- 2. REAL-TIME WEATHER LOGIC (FIXED) ---
+        // --- 3. REAL-TIME WEATHER LOGIC (FIXED) ---
         const weatherIconEl = document.getElementById('weather-icon');
         const weatherTempEl = document.getElementById('weather-temp');
         
@@ -554,7 +576,7 @@
         setInterval(fetchWeather, 600000);
 
 
-        // --- 3. ALGORITMA VISITOR CERDAS (FIXED & INTEGRATED) ---
+        // --- 4. ALGORITMA VISITOR CERDAS (FIXED & INTEGRATED) ---
         
         const visitorElement = document.getElementById('visitor-count');
         
@@ -625,7 +647,7 @@
         updateSmartVisitors();
 
 
-        // --- 4. INTERACTION & ANIMATION ---
+        // --- 5. INTERACTION & ANIMATION ---
         const pins = document.querySelectorAll('.map-pin');
         pins.forEach(pin => {
             pin.addEventListener('click', function() {
@@ -650,7 +672,7 @@
             observer.observe(el);
         });
 
-        // --- 5. REALTIME EVENT & MODAL LOGIC ---
+        // --- 6. REALTIME EVENT & MODAL LOGIC ---
         
         // KONFIGURASI SUPABASE
         const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
@@ -762,11 +784,10 @@
                 .subscribe();
         }
 
-        // INIT
-        document.addEventListener('DOMContentLoaded', () => {
-            loadEvents();
-            subscribeToEvents();
-        });
+        // INIT UNTUK EVENT
+        // Kita panggil loadEvents & subscribe di sini agar tidak bentrok dengan DOMContentLoaded sebelumnya
+        loadEvents();
+        subscribeToEvents();
 
     </script>
 </body>
