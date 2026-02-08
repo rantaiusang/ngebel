@@ -9,22 +9,16 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* --- 1. VARIABLES & RESET (SAMA PERSIS DENGAN KONTAK) --- */
+        /* --- 1. VARIABLES & RESET --- */
         :root {
             --primary: #0f766e; --primary-light: #14b8a6; --primary-dark: #0d5f58;
-            --accent: #f59e0b; 
             --bg-body: #f8fafc;
-            --glass: rgba(255, 255, 255, 0.7);
             --text-main: #1e293b; --text-muted: #64748b;
-            
             --radius-xl: 32px; --radius-lg: 24px; --radius-md: 12px;
             --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.05);
-            --shadow-hover: 0 20px 50px -12px rgba(15, 118, 110, 0.3);
-            --nav-height: 0px;
-            --font-mono: 'JetBrains Mono', monospace;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -35,17 +29,24 @@
             color: var(--text-main);
             line-height: 1.6;
             padding-bottom: 40px;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         h1, h2, h3 { font-family: 'Outfit', sans-serif; letter-spacing: -0.02em; }
         p { color: var(--text-muted); margin-bottom: 1rem; }
         a { text-decoration: none; color: inherit; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 2; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 2; width: 100%; }
 
         /* --- 2. ANIMATIONS --- */
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .animate-item {
+            opacity: 0;
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
 
         /* --- 3. HEADER STYLE --- */
         header {
@@ -71,70 +72,39 @@
             display: inline-flex; align-items: center; justify-content: center;
             padding: 16px 32px; font-weight: 700; border-radius: 50px;
             text-decoration: none; transition: all 0.3s ease; cursor: pointer; border: none; font-size: 1rem; gap: 10px;
+            width: 100%;
         }
-        .btn-primary { background: var(--primary); color: white; box-shadow: 0 10px 20px rgba(15, 118, 110, 0.3); width: 100%; }
-        .btn-primary:hover { transform: translateY(-2px); background: var(--primary-light); }
-        .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
 
-        .btn-link {
-            background: none; border: none; color: var(--primary); font-weight: 600; cursor: pointer; margin-top: 10px; font-size: 0.9rem;
-        }
-        .btn-link:hover { text-decoration: underline; }
-
-        /* Tombol Google Baru */
         .btn-google {
             background: white; color: var(--text-main); border: 2px solid #e2e8f0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05); width: 100%; margin-top: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
-        .btn-google:hover { background: #f8fafc; border-color: #cbd5e1; transform: translateY(-1px); }
-        .btn-google svg { width: 20px; height: 20px; }
-
-        /* Divider */
-        .divider {
-            display: flex; align-items: center; text-align: center; margin: 20px 0; color: var(--text-muted); font-size: 0.85rem;
-        }
-        .divider::before, .divider::after {
-            content: ''; flex: 1; border-bottom: 1px solid #e2e8f0;
-        }
-        .divider span { padding: 0 10px; }
+        .btn-google:hover { background: #f8fafc; border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
+        .btn-google svg { width: 22px; height: 22px; }
 
         /* --- 5. CONTENT --- */
-        .page-section { display: block; animation: fadeInUp 0.6s ease-out; margin-bottom: 40px; }
+        .page-section { display: block; margin-bottom: 40px; }
 
         .hero-login {
             text-align: center; padding: 40px 20px; margin-bottom: 20px;
         }
-        .hero-login h1 { font-size: clamp(2rem, 5vw, 3rem); margin-bottom: 16px; color: var(--primary-dark); }
-        .hero-login p { max-width: 600px; margin: 0 auto; }
+        .hero-login h1 { font-size: clamp(2rem, 5vw, 2.8rem); margin-bottom: 16px; color: var(--primary-dark); }
+        .hero-login p { max-width: 500px; margin: 0 auto; }
 
         /* Grid Layout */
         .login-grid {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px;
-            margin-bottom: 60px;
+            margin-bottom: 60px; align-items: center;
         }
 
         /* Form Card */
         .login-form-card {
-            background: white; border-radius: var(--radius-lg); padding: 30px;
+            background: white; border-radius: var(--radius-lg); padding: 40px;
             box-shadow: var(--shadow-soft); border: 1px solid rgba(0,0,0,0.05);
+            text-align: center;
         }
 
-        .form-group { margin-bottom: 20px; position: relative; }
-        .form-label {
-            display: block; font-weight: 600; margin-bottom: 8px; color: var(--text-main); font-size: 0.9rem;
-        }
-        .form-input {
-            width: 100%; padding: 14px 16px; border-radius: 12px;
-            border: 2px solid #e2e8f0; background: #f8fafc;
-            font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1rem;
-            transition: all 0.3s ease; outline: none;
-        }
-        .form-input:focus {
-            border-color: var(--primary); background: white;
-            box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
-        }
-
-        /* Info Card (Visual Sisi Kanan) */
+        /* Info Card (Visual) */
         .info-card {
             background: var(--primary); color: white; border-radius: var(--radius-lg);
             padding: 40px 30px; display: flex; flex-direction: column; justify-content: center;
@@ -142,7 +112,7 @@
             text-align: center;
         }
         .info-visual {
-            font-size: 4rem; margin-bottom: 20px; animation: float 3s ease-in-out infinite;
+            font-size: 5rem; margin-bottom: 20px; animation: float 3s ease-in-out infinite;
         }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         
@@ -152,33 +122,23 @@
         /* Fitur List */
         .feature-list { list-style: none; text-align: left; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 16px; }
         .feature-item { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; color: white; font-weight: 500; }
-        .feature-item svg { width: 20px; height: 20px; stroke-width: 3; color: var(--accent); }
-
-        /* Pesan Error/Success */
-        .msg-box { font-size: 0.9rem; padding: 12px; border-radius: 12px; margin-top: 15px; display: none; text-align: center; }
-        .msg-error { background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; }
-        .msg-success { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+        .feature-item svg { width: 20px; height: 20px; stroke-width: 3; color: #f59e0b; }
 
         /* Spinner */
-        @keyframes spin { to { transform: rotate(360deg); } }
         .spin { animation: spin 1s linear infinite; }
-
-        /* Mode Forgot Password (Hidden by default) */
-        .hidden { display: none; }
 
         @media (max-width: 767px) {
             .login-grid { grid-template-columns: 1fr; }
-            .hero-login { padding: 20px 20px; }
-            .info-card { padding: 30px 20px; }
+            .hero-login { padding: 30px 20px; }
+            .info-card { display: none; } /* Sembunyikan visual di HP agar fokus ke tombol login */
         }
     </style>
 </head>
 <body>
 
     <!-- HEADER -->
-    <header>
+    <header class="animate-item" style="animation-delay: 0.1s;">
         <div class="nav-content">
-            <!-- Tombol Kembali Pintar -->
             <div class="back-btn" onclick="goBack()">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                 Kembali
@@ -190,127 +150,56 @@
     <main class="container">
         
         <!-- HERO SECTION -->
-        <section class="page-section hero-login">
-            <h1 style="animation-delay: 0.1s;">Selamat Datang</h1>
-            <p style="animation-delay: 0.2s;">Masuk untuk mengelola destinasi wisata dan analisa data pengunjung.</p>
+        <section class="page-section hero-login animate-item" style="animation-delay: 0.2s;">
+            <h1>Selamat Datang Kembali</h1>
+            <p>Masuk untuk mengelola destinasi wisata Telaga Ngebel dengan akun Google Anda.</p>
         </section>
 
         <!-- GRID CONTENT -->
-        <div class="login-grid page-section" style="animation-delay: 0.3s;">
+        <div class="login-grid page-section animate-item" style="animation-delay: 0.3s;">
             
-            <!-- KIRI: FORM LOGIN -->
+            <!-- KIRI: FORM LOGIN (SIMPLIFIED) -->
             <div class="login-form-card">
+                <h3 style="margin-bottom: 30px; color: var(--primary-dark); font-size: 1.5rem;">Login Akun</h3>
                 
-                <!-- MODE 1: LOGIN FORM -->
-                <div id="view-login">
-                    <h3 style="margin-bottom: 24px; color: var(--primary-dark);">Login Akun</h3>
-                    
-                    <!-- TOMBOL GOOGLE (BARU) -->
-                    <button type="button" class="btn btn-google" id="btn-google" onclick="handleGoogleLogin()">
-                        <svg viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
-                            <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
-                                <path fill="#4285F4" d="M -3.264 51.509 C -3.264 50.719 -3.334 49.969 -3.454 49.239 L -14.754 49.239 L -14.754 53.749 L -8.284 53.749 C -8.574 55.229 -9.424 56.479 -10.684 57.329 L -10.684 60.329 L -6.824 60.329 C -4.564 58.239 -3.264 55.159 -3.264 51.509 Z"/>
-                                <path fill="#34A853" d="M -14.754 63.239 C -11.514 63.239 -8.804 62.159 -6.824 60.329 L -10.684 57.329 C -11.764 58.049 -13.134 58.489 -14.754 58.489 C -17.884 58.489 -20.534 56.379 -21.484 53.529 L -25.464 53.529 L -25.464 56.619 C -23.494 60.539 -19.444 63.239 -14.754 63.239 Z"/>
-                                <path fill="#FBBC05" d="M -21.484 53.529 C -21.734 52.809 -21.864 52.039 -21.864 51.239 C -21.864 50.439 -21.734 49.669 -21.484 48.949 L -21.484 45.859 L -25.464 45.859 C -26.284 47.479 -26.754 49.299 -26.754 51.239 C -26.754 53.179 -26.284 54.999 -25.464 56.619 L -21.484 53.529 Z"/>
-                                <path fill="#EA4335" d="M -14.754 43.989 C -12.984 43.989 -11.404 44.599 -10.154 45.789 L -6.734 42.369 C -8.804 40.429 -11.514 39.239 -14.754 39.239 C -19.444 39.239 -23.494 41.939 -25.464 45.859 L -21.484 48.949 C -20.534 46.099 -17.884 43.989 -14.754 43.989 Z"/>
-                            </g>
-                        </svg>
-                        Masuk dengan Google
-                    </button>
-
-                    <div class="divider"><span>ATAU</span></div>
-
-                    <form id="form-login">
-                        <div class="form-group">
-                            <label class="form-label">Email Address</label>
-                            <input type="email" id="login-email" class="form-input" placeholder="nama@email.com" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Password</label>
-                            <input type="password" id="login-password" class="form-input" placeholder="••••••••" required>
-                            <button type="button" class="btn-link" onclick="switchView('forgot')">Lupa Password?</button>
-                        </div>
-
-                        <div id="msg-login" class="msg-box"></div>
-                        
-                        <button type="submit" class="btn btn-primary" id="btn-login">
-                            Masuk Sekarang
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
-                        </button>
-                    </form>
-                    
-                    <div style="text-align: center; margin-top: 20px; font-size: 0.9rem; color: var(--text-muted);">
-                        Belum punya akun? <a href="register.html" style="color: var(--primary); font-weight: 600;">Daftar disini</a>
-                    </div>
-                </div>
-
-                <!-- MODE 2: FORGOT PASSWORD -->
-                <div id="view-forgot" class="hidden">
-                    <h3 style="margin-bottom: 24px; color: var(--primary-dark);">Reset Password</h3>
-                    
-                    <form id="form-forgot">
-                        <div class="form-group">
-                            <label class="form-label">Email Terdaftar</label>
-                            <input type="email" id="forgot-email" class="form-input" placeholder="nama@email.com" required>
-                        </div>
-
-                        <div id="msg-forgot" class="msg-box"></div>
-                        
-                        <button type="submit" class="btn btn-primary" id="btn-forgot">
-                            Kirim Link Reset
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 11 22 2 15 22 2 11 13 11 22"></polygon></svg>
-                        </button>
-                    </form>
-                    
-                    <button type="button" class="btn-link" onclick="switchView('login')">Kembali ke Login</button>
-                </div>
-
-                <!-- MODE 3: UPDATE PASSWORD (LINK EMAIL) -->
-                <div id="view-update" class="hidden">
-                    <h3 style="margin-bottom: 24px; color: var(--primary-dark);">Password Baru</h3>
-                    
-                    <form id="form-update">
-                        <div class="form-group">
-                            <label class="form-label">Password Baru</label>
-                            <input type="password" id="new-pass" class="form-input" placeholder="Minimal 6 karakter" required minlength="6">
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Ulangi Password</label>
-                            <input type="password" id="confirm-pass" class="form-input" placeholder="Ketik ulang password" required>
-                        </div>
-
-                        <div id="msg-update" class="msg-box"></div>
-                        
-                        <button type="submit" class="btn btn-primary" id="btn-update">
-                            Simpan Password
-                        </button>
-                    </form>
-                </div>
-
+                <!-- TOMBOL GOOGLE SAJA -->
+                <button type="button" class="btn btn-google" id="btn-google" onclick="handleGoogleLogin()">
+                    <svg viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+                        <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
+                            <path fill="#4285F4" d="M -3.264 51.509 C -3.264 50.719 -3.334 49.969 -3.454 49.239 L -14.754 49.239 L -14.754 53.749 L -8.284 53.749 C -8.574 55.229 -9.424 56.479 -10.684 57.329 L -10.684 60.329 L -6.824 60.329 C -4.564 58.239 -3.264 55.159 -3.264 51.509 Z"/>
+                            <path fill="#34A853" d="M -14.754 63.239 C -11.514 63.239 -8.804 62.159 -6.824 60.329 L -10.684 57.329 C -11.764 58.049 -13.134 58.489 -14.754 58.489 C -17.884 58.489 -20.534 56.379 -21.484 53.529 L -25.464 53.529 L -25.464 56.619 C -23.494 60.539 -19.444 63.239 -14.754 63.239 Z"/>
+                            <path fill="#FBBC05" d="M -21.484 53.529 C -21.734 52.809 -21.864 52.039 -21.864 51.239 C -21.864 50.439 -21.734 49.669 -21.484 48.949 L -21.484 45.859 L -25.464 45.859 C -26.284 47.479 -26.754 49.299 -26.754 51.239 C -26.754 53.179 -26.284 54.999 -25.464 56.619 L -21.484 53.529 Z"/>
+                            <path fill="#EA4335" d="M -14.754 43.989 C -12.984 43.989 -11.404 44.599 -10.154 45.789 L -6.734 42.369 C -8.804 40.429 -11.514 39.239 -14.754 39.239 C -19.444 39.239 -23.494 41.939 -25.464 45.859 L -21.484 48.949 C -20.534 46.099 -17.884 43.989 -14.754 43.989 Z"/>
+                        </g>
+                    </svg>
+                    Masuk dengan Google
+                </button>
+                
+                <p style="margin-top: 20px; font-size: 0.85rem; color: var(--text-muted);">
+                    Dengan melanjutkan, Anda menyetujui Syarat & Ketentuan kami.
+                </p>
             </div>
 
             <!-- KANAN: INFO CARD (VISUAL) -->
             <div class="info-card">
                 <div class="info-visual">🏔️</div>
                 <div class="info-text">
-                    <h3>Sistem Manajemen<br>Telaga Ngebel</h3>
-                    <p>Platform terintegrasi untuk monitoring pengunjung dan manajemen destinasi wisata secara realtime.</p>
+                    <h3>Sistem Terintegrasi</h3>
+                    <p>Akses data pengunjung, monitoring cuaca, dan manajemen lokasi dalam satu platform yang aman.</p>
                 </div>
 
                 <ul class="feature-list">
                     <li class="feature-item">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                        Monitoring Data Realtime
-                    </li>
-                    <li class="feature-item">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                        Keamanan Data Terjamin
+                        Keamanan Terjamin
                     </li>
                     <li class="feature-item">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-                        Dukungan Cepat
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                        Akses Realtime
+                    </li>
+                    <li class="feature-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                        Multi Platform
                     </li>
                 </ul>
             </div>
@@ -319,14 +208,11 @@
 
     </main>
 
-    <!-- NAVIGATION (Hidden) -->
-    <nav class="bottom-nav" style="display:none;"></nav>
-
     <!-- SCRIPT SUPABASE & LOGIC -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
-        // --- 0. FUNGSI KEMBALI PINTAR ---
+        // --- 0. FUNGSI KEMBALI ---
         function goBack() {
             if (window.history.length > 1) {
                 window.history.back();
@@ -341,195 +227,59 @@
         const { createClient } = supabase;
         const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- 2. MANAJEMEN TAMPILAN ---
-        function switchView(viewName) {
-            document.getElementById('view-login').classList.add('hidden');
-            document.getElementById('view-forgot').classList.add('hidden');
-            document.getElementById('view-update').classList.add('hidden');
-            
-            document.querySelectorAll('.msg-box').forEach(el => el.style.display = 'none');
-            document.getElementById('view-' + viewName).classList.remove('hidden');
-        }
-
-        function showMsg(type, text, isError = false) {
-            const el = document.getElementById('msg-' + type);
-            el.innerText = text;
-            el.style.display = 'block';
-            el.className = 'msg-box ' + (isError ? 'msg-error' : 'msg-success');
-        }
-
-        function setLoading(btnId, isLoading, textNormal) {
-            const btn = document.getElementById(btnId);
-            if (isLoading) {
-                btn.disabled = true;
-                btn.innerHTML = `<svg class="spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 12a9 9 0 1 1-6 2.3l-4-4"></path></svg> ${textNormal}...`;
-            } else {
-                btn.disabled = false;
-                btn.innerText = textNormal;
-            }
-        }
-
-        // --- 3. LOGIKA LOGIN GOOGLE (BARU) ---
+        // --- 2. FUNGSI LOGIN GOOGLE ---
         async function handleGoogleLogin() {
             const btn = document.getElementById('btn-google');
-            const originalText = btn.innerHTML;
+            const originalContent = btn.innerHTML;
             
-            setLoading('btn-google', true, 'Menghubungkan');
+            // Ubah tombol jadi loading
+            btn.disabled = true;
+            btn.innerHTML = `<svg class="spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 12a9 9 0 1 1-6 2.3l-4-4"></path></svg> Menghubungkan...`;
+            btn.style.opacity = '0.7';
 
             try {
-                // 1. Minta Supabase buka popup Google
+                // Minta Supabase buka popup Google
                 const { data, error } = await sb.auth.signInWithOAuth({
                     provider: 'google',
                     options: {
-                        redirectTo: window.location.href // Redirect balik ke sini setelah sukses
+                        redirectTo: window.location.href // Redirect balik ke login.html setelah sukses
                     }
                 });
 
                 if (error) throw error;
-
-                // Supabase akan membuka popup Google. 
-                // Setelah user memilih akun, Google akan redirect ke halaman ini.
-                // Kita perlu listener untuk mendeteksi login sukses.
+                // Browser akan membuka popup Google. 
+                // Setelah sukses, halaman ini akan reload dan masuk ke checkSession()
 
             } catch (err) {
-                showMsg('login', 'Gagal login Google: ' + err.message, true);
-                setLoading('btn-google', false, 'Masuk dengan Google');
+                console.error("Login Error:", err);
+                alert("Gagal menghubungkan ke Google. Silakan coba lagi.");
+                btn.disabled = false;
+                btn.innerHTML = originalContent;
+                btn.style.opacity = '1';
             }
         }
 
-        // --- 3.5 DETEKSI LOGIN BERHASIL (SETELAH REDIRECT DARI GOOGLE) ---
-        // Fungsi ini jalan saat halaman dimuat ulang setelah login Google
-        async function checkGoogleSession() {
+        // --- 3. CEK SESSION & REDIRECT OTOMATIS ---
+        // Fungsi ini berjalan saat halaman dimuat (setelah redirect dari Google)
+        async function checkSession() {
             const { data: { session } } = await sb.auth.getSession();
             
             if (session) {
-                // User sudah login via Google. 
-                // Sekarang cek data di tabel manual ngebelusers
-                const { data: userManual, error } = await sb
-                    .from('ngebelusers')
-                    .select('*')
-                    .eq('id', session.user.id) // Cek berdasarkan ID Auth
-                    .maybeSingle();
-
-                if (userManual) {
-                    // Jika data ada, arahkan sesuai role
-                    if(userManual.role === 'admin') {
-                        window.location.href = 'admin.html';
-                    } else {
-                        window.location.href = 'dashboard.html';
-                    }
-                } else {
-                    // Jika data belum ada di ngebelusers (Trigger mungkin lambat), 
-                    // coba refresh sebentar atau biarkan user di halaman ini
-                    // Namun karena kita pakai Trigger, seharusnya langsung ada.
-                    // Jika error, kita arahkan ke dashboard default
+                // User SUDAH login. Kita arahkan langsung ke Dashboard.
+                // Kita tidak perlu cek role di sini untuk login, 
+                // karena dashboard.html sudah menangani role user.
+                
+                // Sedikit delay agar animasi loading terlihat
+                setTimeout(() => {
                     window.location.href = 'dashboard.html';
-                }
+                }, 1000);
             }
         }
 
-        // --- 4. LOGIKA LOGIN MANUAL (EMAIL/PASSWORD) ---
-        async function handleLogin(e) {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-
-            setLoading('btn-login', true, 'Memproses');
-            showMsg('login', '', false);
-
-            try {
-                const { data, error } = await sb
-                    .from('ngebelusers')
-                    .select('*')
-                    .eq('email', email)
-                    .eq('password', password)
-                    .maybeSingle();
-
-                if (error) throw error;
-
-                if (!data) {
-                    showMsg('login', 'Email atau Password salah!', true);
-                } else {
-                    if(data.role === 'admin') {
-                        window.location.href = 'admin.html';
-                    } else {
-                        window.location.href = 'dashboard.html';
-                    }
-                }
-            } catch (err) {
-                showMsg('login', 'Terjadi kesalahan koneksi.', true);
-            } finally {
-                setLoading('btn-login', false, 'Masuk Sekarang');
-            }
-        }
-
-        // --- 5. LOGIKA LUPA PASSWORD (OTOMATIS) ---
-        async function handleForgot(e) {
-            e.preventDefault();
-            const email = document.getElementById('forgot-email').value;
-
-            setLoading('btn-forgot', true, 'Mengirim');
-            showMsg('forgot', '', false);
-
-            try {
-                const { error } = await sb.auth.resetPasswordForEmail(email, {
-                    redirectTo: window.location.href
-                });
-
-                if (error) throw error;
-                showMsg('forgot', 'Link reset telah dikirim ke email Anda.', false);
-            } catch (err) {
-                showMsg('forgot', 'Gagal mengirim email.', true);
-            } finally {
-                setLoading('btn-forgot', false, 'Kirim Link Reset');
-            }
-        }
-
-        // --- 6. LOGIKA UPDATE PASSWORD ---
-        async function handleUpdate(e) {
-            e.preventDefault();
-            const p1 = document.getElementById('new-pass').value;
-            const p2 = document.getElementById('confirm-pass').value;
-
-            if (p1 !== p2) {
-                showMsg('update', 'Password tidak sama!', true);
-                return;
-            }
-
-            setLoading('btn-update', true, 'Menyimpan');
-
-            try {
-                const { error } = await sb.auth.updateUser({ password: p1 });
-                if (error) throw error;
-
-                const { data: { user } } = await sb.auth.getUser();
-                if(user) {
-                    await sb.from('ngebelusers')
-                        .update({ password: p1 })
-                        .eq('email', user.email);
-                }
-
-                alert('Password berhasil diubah!');
-                window.location.href = 'login.html';
-
-            } catch (err) {
-                showMsg('update', 'Gagal: ' + err.message, true);
-                setLoading('btn-update', false, 'Simpan Password');
-            }
-        }
-
-        // --- 7. INIT ---
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('form-login').addEventListener('submit', handleLogin);
-            document.getElementById('form-forgot').addEventListener('submit', handleForgot);
-            document.getElementById('form-update').addEventListener('submit', handleUpdate);
-
-            // Cek apakah user baru saja kembali dari Google / Password Reset
-            checkGoogleSession();
-
-            if (window.location.hash.includes('type=recovery')) {
-                switchView('update');
-            }
+        // --- 4. INIT ---
+        window.addEventListener('load', () => {
+            // Cek apakah user baru saja login via Google
+            checkSession();
         });
     </script>
 </body>
