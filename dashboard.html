@@ -47,7 +47,16 @@
             padding-left: 0; /* Default mobile */
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
-            transition: opacity 0.3s ease;
+            /* Transisi halus saat pindah halaman */
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            opacity: 1; 
+            transform: scale(1);
+        }
+
+        /* Kelas saat halaman akan ditinggalkan (untuk animasi keluar) */
+        body.page-exit {
+            opacity: 0;
+            transform: scale(0.98);
         }
 
         h1, h2, h3 { font-family: 'Outfit', sans-serif; letter-spacing: -0.02em; }
@@ -65,13 +74,17 @@
         /* --- 2. ANIMATIONS --- */
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeInUp { 
-            from { opacity: 0; transform: translateY(30px); } 
+            from { opacity: 0; transform: translateY(20px); } 
             to { opacity: 1; transform: translateY(0); } 
         }
 
         .animate-item {
-            opacity: 0;
-            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0; /* Mulai tersembunyi */
+            /* Animasi akan dipicu oleh JavaScript */
+        }
+        
+        .animate-up {
+            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
         /* --- 3. COMPONENTS --- */
@@ -82,7 +95,6 @@
             position: relative; 
             z-index: 2; 
             padding-top: 100px; 
-            /* Container akan bergeser di Desktop karena sidebar fixed */
             transition: padding-left 0.3s ease;
         }
 
@@ -227,31 +239,34 @@
         #login-prompt { text-align: center; margin-top: 100px; display: none; }
         #main-content { display: none; }
         
-        #preloader { position: fixed; inset: 0; background: white; z-index: 9999; display: flex; justify-content: center; align-items: center; transition: opacity 0.6s ease; }
+        /* Preloader Style */
+        #preloader { position: fixed; inset: 0; background: white; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.5s ease; }
         .spinner { width: 45px; height: 45px; border: 4px solid #e2e8f0; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        .loading-text { margin-top: 15px; font-weight: 600; color: var(--primary); font-size: 0.9rem; letter-spacing: 1px; }
 
     </style>
 </head>
 <body>
 
     <!-- PRELOADER -->
-    <div id="preloader"><div class="spinner"></div></div>
+    <div id="preloader">
+        <div class="spinner"></div>
+        <div class="loading-text">MEMUAT DATA...</div>
+    </div>
 
     <!-- HEADER (FIXED) -->
-    <header class="animate-item" style="animation-delay: 0.1s;">
+    <header class="animate-item" data-delay="100">
         <div class="header-left">
-            <!-- TOMBOL KEMBALI -->
-            <button class="btn btn-icon-only" onclick="goBack()" title="Kembali ke Beranda">
+            <button class="btn btn-icon-only" onclick="navigateTo('index.html')" title="Kembali ke Beranda">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
             </button>
-            <div class="brand" onclick="window.location.href='index.html'">
+            <div class="brand" onclick="navigateTo('index.html')">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.74 5.88-5.74 5.88-5.74-5.88L12 2.69M12 22a9.97 9.97 0 0 1-7.07-2.93l-1.41 1.41A11.97 11.97 0 0 0 12 24a11.97 11.97 0 0 0 8.49-3.52l-1.41-1.41A9.97 9.97 0 0 1 12 22z"/></svg>
                 <span style="display: none; @media(min-width: 768px){display:block;}">Ngebel</span>
             </div>
         </div>
         
         <div class="header-right">
-            <!-- Profil User (REAL DATA) -->
             <div class="user-pill" id="header-user-pill" title="Klik untuk lihat profil">
                 <div class="user-avatar" id="header-avatar">U</div>
                 <div class="user-info">
@@ -262,37 +277,33 @@
         </div>
     </header>
 
-    <!-- DESKTOP SIDEBAR (FIXED LEFT) -->
-    <nav class="desktop-sidebar" id="desktop-nav">
-        <!-- Item akan dirender via JS -->
-    </nav>
+    <!-- DESKTOP SIDEBAR -->
+    <nav class="desktop-sidebar" id="desktop-nav"></nav>
 
-    <!-- MOBILE BOTTOM NAV (FIXED BOTTOM) -->
-    <nav class="mobile-nav" id="mobile-nav">
-        <!-- Item akan dirender via JS -->
-    </nav>
+    <!-- MOBILE BOTTOM NAV -->
+    <nav class="mobile-nav" id="mobile-nav"></nav>
 
     <!-- MAIN CONTENT -->
     <div id="main-content" class="container">
         
-        <div class="animate-item" style="animation-delay: 0.2s;">
+        <div class="animate-item" data-delay="200">
             <h1 id="welcome-msg">Halo, ...! 👋</h1>
             <p>Statistik ekonomi digital Anda terupdate hari ini.</p>
         </div>
 
-        <!-- STATS GRID (REAL DATA) -->
+        <!-- STATS GRID -->
         <div class="grid-3" id="stats-container">
-            <div class="card animate-item" style="animation-delay: 0.3s;">
+            <div class="card animate-item" data-delay="300">
                 <span class="stat-label">Total Pendapatan</span>
                 <span class="stat-value" id="stat-income">Rp 0</span>
                 <span class="stat-trend trend-up">▲ 12% bulan ini</span>
             </div>
-            <div class="card animate-item" style="animation-delay: 0.4s;">
+            <div class="card animate-item" data-delay="400">
                 <span class="stat-label">Pesanan Baru</span>
                 <span class="stat-value" id="stat-orders">0</span>
                 <span class="stat-trend" style="background:#fff7ed; color:#c2410c;">⚠ Perlu diproses</span>
             </div>
-            <div class="card animate-item" style="animation-delay: 0.5s;">
+            <div class="card animate-item" data-delay="500">
                 <span class="stat-label">Profil Dilihat</span>
                 <span class="stat-value" id="stat-views">0</span>
                 <span class="stat-trend trend-up">▲ 5% minggu ini</span>
@@ -300,7 +311,7 @@
         </div>
 
         <!-- QUICK ACTIONS -->
-        <div class="animate-item" style="margin-bottom: 40px; animation-delay: 0.6s;">
+        <div class="animate-item" style="margin-bottom: 40px;" data-delay="600">
             <h2 style="margin-bottom: 20px; font-size: 1.3rem;">Aksi Cepat</h2>
             <div style="display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none;">
                 <button class="btn btn-primary">+ Tambah Produk</button>
@@ -310,7 +321,7 @@
         </div>
 
         <!-- RECENT ACTIVITY -->
-        <div class="animate-item" style="animation-delay: 0.7s;">
+        <div class="animate-item" data-delay="700">
             <h2 style="margin-bottom: 20px; font-size: 1.3rem;">Aktivitas Terbaru</h2>
             <div class="card">
                 <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 20px;">
@@ -348,7 +359,6 @@
         const { createClient } = supabase;
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- MENU MEMBER ---
         const systemMenu = [
             { id: 'dashboard', icon: '<rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>', label: 'Dashboard', link: 'dashboard.html' },
             { id: 'analytics', icon: '<line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line>', label: 'Analitik', link: 'analytics.html' },
@@ -361,7 +371,15 @@
             { id: 'logout', icon: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line>', label: 'Keluar', action: 'logout' }
         ];
 
-        // --- ANIMATED COUNTER FUNCTION ---
+        // --- NAVIGASI HALUS ---
+        function navigateTo(url) {
+            // Tambahkan class exit untuk memicu animasi keluar
+            document.body.classList.add('page-exit');
+            setTimeout(() => {
+                window.location.href = url;
+            }, 400); // Tunggu animasi selesai (0.4s)
+        }
+
         function animateValue(obj, start, end, duration, isCurrency = false) {
             let startTimestamp = null;
             const step = (timestamp) => {
@@ -383,15 +401,6 @@
             window.requestAnimationFrame(step);
         }
 
-        // --- FUNGSI KEMBALI ---
-        function goBack() {
-            document.body.style.opacity = '0';
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 300);
-        }
-
-        // --- FUNGSI AMBIL DATA USER ---
         async function loadUserData(userId) {
             let { data: userData, error } = await supabaseClient
                 .from('ngebelusers')
@@ -428,7 +437,7 @@
                     animateValue(document.getElementById('stat-income'), 0, income, 2000, true);
                     animateValue(document.getElementById('stat-orders'), 0, orders, 1500, false);
                     animateValue(document.getElementById('stat-views'), 0, views, 1800, false);
-                }, 500);
+                }, 800);
 
             } else {
                 const { data: { user } } = await supabaseClient.auth.getUser();
@@ -440,34 +449,48 @@
             }
         }
 
-        // --- INIT & RENDER NAV ---
+        // --- TRIGGER ANIMASI STAGGERED ---
+        function triggerAnimations() {
+            const items = document.querySelectorAll('.animate-item');
+            items.forEach(item => {
+                const delay = item.getAttribute('data-delay') || 0;
+                item.style.animationDelay = `${delay}ms`;
+                item.classList.add('animate-up');
+            });
+        }
+
+        // --- INIT ---
         window.addEventListener('load', async () => {
             const { data: { session } } = await supabaseClient.auth.getSession();
 
-            const preloader = document.getElementById('preloader');
-            if(preloader) {
+            // Simulasi Loading minimal agar preloader terlihat sebentar
+            // ini memberikan efek "Reload" yang jelas
+            setTimeout(async () => {
+                const preloader = document.getElementById('preloader');
                 preloader.style.opacity = '0';
-                setTimeout(() => preloader.remove(), 600);
-            }
+                setTimeout(() => preloader.remove(), 500);
 
-            if (session) {
-                document.getElementById('main-content').style.display = 'block';
-                
-                // Render Navigasi ke kedua container (Desktop & Mobile)
-                renderNav('desktop-nav');
-                renderNav('mobile-nav');
-                
-                // Load Data User
-                await loadUserData(session.user.id);
-                
-                // Tampilkan Nav Mobile
-                setTimeout(() => {
-                    document.getElementById('mobile-nav').classList.add('visible');
-                }, 800);
+                if (session) {
+                    document.getElementById('main-content').style.display = 'block';
+                    
+                    renderNav('desktop-nav');
+                    renderNav('mobile-nav');
+                    
+                    await loadUserData(session.user.id);
+                    
+                    // Jalankan animasi konten
+                    triggerAnimations();
+                    
+                    setTimeout(() => {
+                        document.getElementById('mobile-nav').classList.add('visible');
+                    }, 800);
 
-            } else {
-                document.getElementById('login-prompt').style.display = 'block';
-            }
+                } else {
+                    document.getElementById('login-prompt').style.display = 'block';
+                    // Jika belum login, tetap jalankan animasi untuk prompt
+                    triggerAnimations();
+                }
+            }, 800); // Delay 800ms untuk efek loading
         });
 
         function renderNav(containerId) {
@@ -492,9 +515,7 @@
         }
 
         function handleNavClick(item, element, containerId) {
-            // Update active state di SEMUA nav items (desktop & mobile)
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            // Set active pada elemen yang diklik
             const allItems = document.querySelectorAll('.nav-item');
             allItems.forEach(el => {
                 if(el.innerHTML === element.innerHTML) el.classList.add('active');
@@ -506,7 +527,6 @@
                     document.getElementById('mobile-nav').classList.remove('visible');
                     setTimeout(performLogout, 300);
                 } else {
-                    // Reset active ke dashboard
                     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
                     document.querySelectorAll('.nav-item').forEach(el => {
                         if(el.innerText.includes('Dashboard')) el.classList.add('active');
@@ -516,8 +536,7 @@
             }
 
             if (item.link) {
-                document.body.style.opacity = '0';
-                setTimeout(() => window.location.href = item.link, 300);
+                navigateTo(item.link);
             }
         }
 
