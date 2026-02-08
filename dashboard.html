@@ -29,6 +29,7 @@
             --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.05);
             --shadow-hover: 0 20px 50px -12px rgba(15, 118, 110, 0.3);
             --nav-height: 80px;
+            --sidebar-width: 280px; /* Lebar sidebar di PC */
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -38,7 +39,9 @@
             background-color: var(--bg-body);
             color: var(--text-main);
             line-height: 1.6;
+            /* Default Mobile: Padding bawah untuk nav bawah */
             padding-bottom: calc(var(--nav-height) + 40px);
+            padding-left: 0; 
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
             transition: opacity 0.4s ease, transform 0.4s ease;
@@ -126,7 +129,7 @@
         
         .header-left, .header-right { display: flex; align-items: center; gap: 12px; }
         
-        /* Logo Container - Tidak ada fungsi kembali ke index */
+        /* Logo Container */
         .brand { display: flex; align-items: center; gap: 10px; font-family: 'Outfit'; font-weight: 800; font-size: 1.3rem; color: var(--primary); cursor: default; }
         
         .user-pill { display: flex; align-items: center; gap: 10px; background: white; padding: 6px 12px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.3s; cursor: pointer; border: 1px solid transparent; max-width: 250px; }
@@ -136,10 +139,27 @@
         .user-name { font-size: 0.9rem; font-weight: 700; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .user-role { font-size: 0.7rem; color: var(--text-muted); }
 
-        /* --- 5. BOTTOM NAVIGATION (SAMA PERSIS DENGAN INDEX) --- */
-        .bottom-nav {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px);
-            width: 92%; max-width: 450px; height: auto; min-height: var(--nav-height);
+        /* --- 5. NAVIGATION SYSTEM --- */
+        
+        /* Desktop Sidebar (Default terlihat) */
+        .desktop-sidebar {
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            width: var(--sidebar-width);
+            background: white;
+            border-right: 1px solid #eee;
+            z-index: 90;
+            padding: 100px 20px 20px 20px;
+            display: none; /* Hidden default di mobile */
+            flex-direction: column;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.02);
+            transition: transform 0.3s ease;
+        }
+
+        /* Mobile Bottom Nav */
+        .mobile-nav {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            width: 94%; max-width: 480px; height: auto; min-height: var(--nav-height);
             background: rgba(255,255,255,0.9); backdrop-filter: blur(20px);
             border-radius: 40px;
             display: flex; justify-content: space-around; align-items: center;
@@ -148,41 +168,49 @@
             border: 1px solid rgba(255,255,255,0.6); flex-wrap: nowrap;
             transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        .bottom-nav.visible { transform: translateX(-50%) translateY(0); }
+        /* Default hidden di atas, akan jadi visible saat load */
+        .mobile-nav { transform: translateX(-50%) translateY(150%); opacity: 0; }
+        .mobile-nav.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
 
+        /* Nav Items Common */
         .nav-item {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             color: #94a3b8; font-size: 0.7rem; font-weight: 600;
             padding: 8px; border-radius: 20px; transition: all 0.3s;
-            min-width: 60px; position: relative; cursor: pointer;
-            flex: 1 1 auto;
+            cursor: pointer; position: relative;
         }
-        .nav-item svg { width: 22px; height: 22px; stroke-width: 2; stroke: currentColor; fill: none; margin-bottom: 4px; transition: all 0.3s; }
         
-        .nav-item.active { color: var(--primary); }
+        .nav-item svg { width: 22px; height: 22px; stroke-width: 2; stroke: currentColor; fill: none; transition: all 0.3s; }
+        
+        .nav-item.active { color: var(--primary); background: rgba(15, 118, 110, 0.08); }
         .nav-item.active svg { transform: scale(1.1); stroke-width: 2.5; filter: drop-shadow(0 4px 6px rgba(15, 118, 110, 0.2)); }
         
         .nav-item.logout-item { color: #ef4444; }
         .nav-item.logout-item:hover { background: #fef2f2; }
 
-        /* Desktop Nav Styles (Sama dengan Index) */
-        @media (min-width: 768px) {
-            body { padding-bottom: 0; padding-left: 280px; }
-            .bottom-nav {
-                top: 0; bottom: 0; left: 0; transform: none; width: 280px; height: 100vh;
-                flex-direction: column; justify-content: flex-start; gap: 5px; padding-top: 100px;
-                border-radius: 0; box-shadow: 10px 0 30px rgba(0,0,0,0.05); border-right: 1px solid #eee;
-                align-items: stretch;
-            }
-            .nav-item { width: 100%; flex-direction: row; height: 50px; padding: 0 20px; justify-content: flex-start; gap: 15px; font-size: 1rem; flex: none; }
-            .nav-item svg { margin-bottom: 0; }
+        /* Mobile Specifics */
+        @media (max-width: 767px) {
+            .mobile-nav { display: flex; overflow-x: auto; justify-content: flex-start; gap: 6px; padding: 12px 10px; }
+            .mobile-nav::-webkit-scrollbar { display: none; }
+            .nav-item { flex-direction: column; min-width: 70px; white-space: nowrap; flex: 0 0 auto !important; }
+            .nav-item svg { margin-bottom: 4px; }
         }
 
-        /* SCROLLABLE MOBILE NAV (Sama dengan Index) */
-        @media (max-width: 767px) {
-            .bottom-nav { overflow-x: auto; justify-content: flex-start; gap: 6px; padding: 12px 10px; }
-            .bottom-nav::-webkit-scrollbar { display: none; }
-            .nav-item { flex: 0 0 auto !important; min-width: 70px; white-space: nowrap; }
+        /* Desktop Specifics */
+        @media (min-width: 768px) {
+            body { 
+                padding-bottom: 0;
+                padding-left: var(--sidebar-width); /* Geser konten ke kanan */
+            }
+            .mobile-nav { display: none; }
+            .desktop-sidebar { display: flex; }
+
+            .nav-item {
+                width: 100%; flex-direction: row; height: 50px; 
+                padding: 0 20px; justify-content: flex-start; gap: 15px; 
+                font-size: 1rem; border-radius: 12px; margin-bottom: 8px;
+            }
+            .nav-item svg { width: 24px; height: 24px; margin-bottom: 0; }
         }
 
         /* --- 6. LOGIN PROMPT --- */
@@ -190,7 +218,7 @@
         #main-content { display: none; }
 
         /* =========================================
-           UPDATE: CLEAN WHITE PRELOADER STYLE (SAMA DENGAN INDEX)
+           UPDATE: CLEAN WHITE PRELOADER STYLE
            ========================================= */
         #preloader {
             position: fixed; inset: 0; 
@@ -271,8 +299,11 @@
         </div>
     </header>
 
-    <!-- NAVIGATION CONTAINER -->
-    <nav class="bottom-nav" id="main-nav"></nav>
+    <!-- DESKTOP SIDEBAR (Selalu terlihat di PC) -->
+    <nav class="desktop-sidebar" id="desktop-nav"></nav>
+
+    <!-- MOBILE BOTTOM NAV (Slide up saat load) -->
+    <nav class="mobile-nav" id="mobile-nav"></nav>
 
     <!-- MAIN CONTENT -->
     <div id="main-content" class="container">
@@ -449,10 +480,11 @@
             });
         }
 
-        // --- INIT ---
+        // --- INIT (Menu Terbuka Saat Load) ---
         window.addEventListener('load', async () => {
             // Render Navigasi dulu (agar sidebar siap)
-            renderNav();
+            renderNav('desktop-nav');
+            renderNav('mobile-nav');
 
             // Cek Session
             const { data: { session } } = await supabaseClient.auth.getSession();
@@ -473,20 +505,21 @@
                     // Jalankan animasi konten
                     triggerAnimations();
                     
+                    // PERBAIKAN: Menu langsung terlihat setelah loading selesai
                     setTimeout(() => {
-                        document.getElementById('main-nav').classList.add('visible');
-                    }, 800);
+                        document.getElementById('mobile-nav').classList.add('visible');
+                    }, 100);
 
                 } else {
                     document.getElementById('login-prompt').style.display = 'block';
                     // Jika belum login, tetap jalankan animasi untuk prompt
                     triggerAnimations();
                 }
-            }, 1000); // Delay 1000ms (Sama dengan index) agar terlihat loadingnya
+            }, 1000);
         });
 
-        function renderNav() {
-            const navContainer = document.getElementById('main-nav');
+        function renderNav(containerId) {
+            const navContainer = document.getElementById(containerId);
             navContainer.innerHTML = '';
             
             systemMenu.forEach((item) => {
@@ -501,19 +534,22 @@
                     <span>${item.label}</span>
                 `;
 
-                div.onclick = (e) => handleNavClick(item, div);
+                div.onclick = (e) => handleNavClick(item, div, containerId);
                 navContainer.appendChild(div);
             });
         }
 
-        function handleNavClick(item, element) {
+        function handleNavClick(item, element, containerId) {
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            element.classList.add('active');
+            const allItems = document.querySelectorAll('.nav-item');
+            allItems.forEach(el => {
+                if(el.innerHTML === element.innerHTML) el.classList.add('active');
+            });
 
             if (item.action === 'logout') {
                 const confirmLogout = confirm("Apakah Anda yakin ingin keluar?");
                 if(confirmLogout) {
-                    document.getElementById('main-nav').classList.remove('visible');
+                    document.getElementById('mobile-nav').classList.remove('visible');
                     setTimeout(performLogout, 300);
                 } else {
                     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
