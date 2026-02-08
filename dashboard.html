@@ -20,16 +20,15 @@
         :root {
             --primary: #0f766e; --primary-light: #14b8a6;
             --accent: #f59e0b; 
-            --bg-body: #f0f9f8;
+            --gold-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            --bg-body: #f8fafc;
             --glass: rgba(255, 255, 255, 0.85);
-            --glass-border: rgba(255, 255, 255, 0.6);
             --text-main: #1e293b; --text-muted: #64748b;
             
             --radius-xl: 32px; --radius-lg: 24px;
             --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.05);
-            --shadow-hover: 0 20px 50px -12px rgba(15, 118, 110, 0.25);
+            --shadow-hover: 0 20px 50px -12px rgba(15, 118, 110, 0.3);
             --nav-height: 80px;
-            --sidebar-width: 280px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -40,7 +39,6 @@
             color: var(--text-main);
             line-height: 1.6;
             padding-bottom: calc(var(--nav-height) + 40px); /* Padding untuk mobile nav */
-            padding-left: 0; /* Default mobile */
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
             transition: opacity 0.4s ease, transform 0.4s ease;
@@ -93,20 +91,14 @@
         }
 
         .card {
-            background: white; border: 1px solid rgba(255,255,255,0.8);
-            border-radius: var(--radius-lg); padding: 24px;
-            box-shadow: var(--shadow-soft); margin-bottom: 20px;
+            background: white; border: 1px solid rgba(0,0,0,0.05);
+            border-radius: var(--radius-lg); padding: 28px;
+            box-shadow: var(--shadow-soft); margin-bottom: 24px;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative; overflow: hidden;
         }
-        .card::before {
-            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px;
-            background: var(--primary); transform: scaleX(0); transform-origin: left;
-            transition: transform 0.4s ease;
-        }
         .card:hover { transform: translateY(-8px); box-shadow: var(--shadow-hover); }
-        .card:hover::before { transform: scaleX(1); }
-
+        
         .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 30px; }
 
         .stat-value { font-size: 2.5rem; color: var(--primary); font-weight: 800; display: block; margin-bottom: 5px; line-height: 1.2; }
@@ -117,23 +109,17 @@
 
         /* BUTTONS */
         .btn { display: inline-flex; align-items: center; justify-content: center; padding: 10px 20px; font-weight: 600; border-radius: 50px; text-decoration: none; border: none; cursor: pointer; font-size: 0.9rem; gap: 8px; transition: all 0.3s ease; }
-        .btn-icon-only { padding: 10px; border-radius: 50%; width: 40px; height: 40px; background: white; color: var(--text-main); box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
-        .btn-icon-only:hover { background: #f8fafc; transform: translateX(-3px); color: var(--primary); border-color: var(--primary); }
         
         .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(15, 118, 110, 0.3); }
         .btn-primary:hover { background: var(--primary-light); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(15, 118, 110, 0.4); }
         
-        .btn-danger { background: white; color: #ef4444; border: 1px solid #fee2e2; }
-        .btn-danger:hover { background: #fef2f2; border-color: #ef4444; }
-
         .btn-secondary { background: white; border: 1px solid #e2e8f0; color: var(--text-main); }
         .btn-secondary:hover { border-color: var(--primary); color: var(--primary); background: #f0fdfa; }
 
         /* --- 4. HEADER (FIXED TOP) --- */
         header {
             position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-            background: rgba(255,255,255,0.85); backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            background: rgba(255,255,255,0.8); backdrop-filter: blur(12px);
             border-bottom: 1px solid rgba(255,255,255,0.5);
             height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px;
             transition: all 0.3s;
@@ -141,8 +127,8 @@
         
         .header-left, .header-right { display: flex; align-items: center; gap: 12px; }
         
-        .brand { display: flex; align-items: center; gap: 10px; font-family: 'Outfit'; font-weight: 800; font-size: 1.3rem; color: var(--primary); cursor: pointer; transition: transform 0.3s; }
-        .brand:hover { transform: scale(1.02); }
+        /* Logo Container - Tidak ada fungsi kembali ke index */
+        .brand { display: flex; align-items: center; gap: 10px; font-family: 'Outfit'; font-weight: 800; font-size: 1.3rem; color: var(--primary); cursor: default; }
         
         .user-pill { display: flex; align-items: center; gap: 10px; background: white; padding: 6px 12px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.3s; cursor: pointer; border: 1px solid transparent; max-width: 250px; }
         .user-pill:hover { transform: translateY(-2px); border-color: var(--primary); box-shadow: 0 8px 20px rgba(15, 118, 110, 0.15); }
@@ -151,82 +137,73 @@
         .user-name { font-size: 0.9rem; font-weight: 700; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .user-role { font-size: 0.7rem; color: var(--text-muted); }
 
-        /* --- 5. NAVIGATION SYSTEM --- */
+        /* --- 5. NAVIGATION SYSTEM (SAMA DENGAN INDEX) --- */
         
-        /* Desktop Sidebar */
-        .desktop-sidebar {
-            position: fixed;
-            top: 0; left: 0; bottom: 0;
-            width: var(--sidebar-width);
-            background: white;
-            border-right: 1px solid #eee;
-            z-index: 90;
-            padding: 100px 20px 20px 20px;
-            display: none; /* Hidden default di mobile */
-            flex-direction: column;
-            box-shadow: 5px 0 15px rgba(0,0,0,0.02);
-        }
-
         /* Mobile Bottom Nav */
-        .mobile-nav {
+        .bottom-nav {
             position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px);
-            width: 94%; max-width: 480px; height: auto; min-height: 70px;
-            background: var(--glass); backdrop-filter: blur(20px);
+            width: 94%; max-width: 480px; height: auto; min-height: 80px;
+            background: rgba(255,255,255,0.9); backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border-radius: 24px;
+            border-radius: 40px;
             display: flex; justify-content: space-around; align-items: center;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            z-index: 1000; padding: 10px; border: 1px solid var(--glass-border);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            z-index: 1000; padding: 10px; border: 1px solid rgba(255,255,255,0.6);
             flex-wrap: nowrap;
             transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        .mobile-nav.visible { transform: translateX(-50%) translateY(0); }
+        .bottom-nav.visible { transform: translateX(-50%) translateY(0); }
 
         /* Nav Items Common */
         .nav-item {
             display: flex; align-items: center; justify-content: center;
             color: #94a3b8; font-size: 0.7rem; font-weight: 600;
-            padding: 8px; border-radius: 16px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 8px; border-radius: 20px; transition: all 0.3s;
             cursor: pointer; position: relative;
+            flex: 0 0 auto !important; /* Perbaikan: Agar bisa digeser/scroll tanpa gepeng */
+            min-width: 70px; /* Lebar minimum tiap item */
+            white-space: nowrap; /* Teks tidak turun baris */
         }
         
-        .nav-item svg { width: 22px; height: 22px; stroke-width: 2; stroke: currentColor; fill: none; transition: all 0.3s; }
+        .nav-item svg { width: 22px; height: 22px; stroke-width: 2; stroke: currentColor; fill: none; margin-bottom: 4px; transition: all 0.3s; }
         
-        .nav-item.active { color: var(--primary); background: rgba(15, 118, 110, 0.08); }
+        .nav-item.active { color: var(--primary); }
+        .nav-item.active svg { transform: scale(1.1); stroke-width: 2.5; filter: drop-shadow(0 4px 6px rgba(15, 118, 110, 0.2)); }
+        
         .nav-item.logout-item { color: #ef4444; }
         .nav-item.logout-item:hover { background: #fef2f2; }
 
         /* Mobile Specifics */
         @media (max-width: 767px) {
-            .mobile-nav { display: flex; }
-            .desktop-sidebar { display: none; }
-            .nav-item { flex-direction: column; min-width: 60px; gap: 4px; }
-            .nav-item svg { margin-bottom: 2px; }
-            .nav-item.active svg { transform: translateY(-3px); }
+            /* Ini kuncinya: Enable scrolling pada nav di mobile */
+            .bottom-nav { 
+                overflow-x: auto; 
+                justify-content: flex-start; 
+                gap: 6px; 
+                padding: 12px 15px; 
+                scroll-behavior: smooth;
+                -ms-overflow-style: none;  /* IE and Edge */
+                scrollbar-width: none;  /* Firefox */
+            }
+            /* Sembunyikan scrollbar */
+            .bottom-nav::-webkit-scrollbar { display: none; }
         }
 
         /* Desktop Specifics */
         @media (min-width: 768px) {
             body { 
-                padding-left: var(--sidebar-width); 
                 padding-bottom: 0;
+                padding-left: 280px; /* Lebar sidebar desktop */
             }
-            .mobile-nav { display: none; }
-            .desktop-sidebar { display: flex; }
-
-            .nav-item {
-                width: 100%; flex-direction: row; height: 56px; 
-                padding: 0 20px; justify-content: flex-start; gap: 16px; 
-                font-size: 1rem; border-radius: 12px; margin-bottom: 8px;
+            .bottom-nav {
+                position: fixed; top: 0; bottom: 0; left: 0; transform: none;
+                width: 280px; height: 100vh;
+                flex-direction: column; justify-content: flex-start; gap: 5px; padding-top: 100px;
+                border-radius: 0; box-shadow: 10px 0 30px rgba(0,0,0,0.05); border-right: 1px solid #eee;
+                align-items: stretch;
             }
-            .nav-item svg { width: 24px; height: 24px; margin-bottom: 0; }
-            .nav-item.active { 
-                background: #f0fdfa; 
-                color: var(--primary); 
-                font-weight: 700;
-                box-shadow: 0 4px 12px rgba(15, 118, 110, 0.1);
-            }
-            .nav-item.active svg { stroke-width: 2.5; }
+            .nav-item { width: 100%; flex-direction: row; height: 50px; padding: 0 20px; justify-content: flex-start; gap: 15px; font-size: 1rem; }
+            .nav-item svg { margin-bottom: 0; }
         }
 
         /* --- 6. LOGIN PROMPT --- */
@@ -282,17 +259,11 @@
             border-radius: 50%;
             animation: spin 0.8s linear infinite reverse; /* Berputar berlawanan arah */
         }
-
-        @media (max-width: 767px) {
-            .bottom-nav { overflow-x: auto; justify-content: flex-start; gap: 6px; padding: 12px 10px; }
-            .bottom-nav::-webkit-scrollbar { display: none; }
-            .nav-item { flex: 0 0 auto !important; min-width: 70px; white-space: nowrap; }
-        }
     </style>
 </head>
 <body>
 
-    <!-- CLEAN WHITE PRELOADER (SAMA DENGAN INDEX) -->
+    <!-- CLEAN WHITE PRELOADER -->
     <div id="preloader">
         <div class="loader-content">
             <div class="brand-logo-loader">Ngebel</div>
@@ -303,12 +274,10 @@
     <!-- HEADER (FIXED) -->
     <header class="animate-item" data-delay="100">
         <div class="header-left">
-            
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-            </button>
-            <div class="brand" onclick="navigateTo('index.html')">
+            <!-- Logo tanpa fungsi navigateTo -->
+            <div class="brand">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.74 5.88-5.74 5.88-5.74-5.88L12 2.69M12 22a9.97 9.97 0 0 1-7.07-2.93l-1.41 1.41A11.97 11.97 0 0 0 12 24a11.97 11.97 0 0 0 8.49-3.52l-1.41-1.41A9.97 9.97 0 0 1 12 22z"/></svg>
-                <span style="display: none; @media(min-width: 768px){display:block;}">Ngebel</span>
+                <span>Ngebel</span>
             </div>
         </div>
         
@@ -323,11 +292,8 @@
         </div>
     </header>
 
-    <!-- DESKTOP SIDEBAR -->
-    <nav class="desktop-sidebar" id="desktop-nav"></nav>
-
-    <!-- MOBILE BOTTOM NAV -->
-    <nav class="mobile-nav" id="mobile-nav"></nav>
+    <!-- NAVIGATION CONTAINER -->
+    <nav class="bottom-nav" id="main-nav"></nav>
 
     <!-- MAIN CONTENT -->
     <div id="main-content" class="container">
@@ -504,17 +470,15 @@
             });
         }
 
-        // --- INIT (SAMA DENGAN INDEX) ---
+        // --- INIT ---
         window.addEventListener('load', async () => {
             // Render Navigasi dulu (agar sidebar siap)
-            renderNav('desktop-nav');
-            renderNav('mobile-nav');
+            renderNav();
 
             // Cek Session
             const { data: { session } } = await supabaseClient.auth.getSession();
 
             // Delay sedikit lebih lama agar animasi putaran spinner terlihat jelas
-            // ini memberikan efek "Reload" yang jelas sesuai request
             setTimeout(async () => {
                 const preloader = document.getElementById('preloader');
                 if(preloader) {
@@ -531,7 +495,7 @@
                     triggerAnimations();
                     
                     setTimeout(() => {
-                        document.getElementById('mobile-nav').classList.add('visible');
+                        document.getElementById('main-nav').classList.add('visible');
                     }, 800);
 
                 } else {
@@ -542,8 +506,8 @@
             }, 1000); // Delay 1000ms (Sama dengan index) agar terlihat loadingnya
         });
 
-        function renderNav(containerId) {
-            const navContainer = document.getElementById(containerId);
+        function renderNav() {
+            const navContainer = document.getElementById('main-nav');
             navContainer.innerHTML = '';
             
             systemMenu.forEach((item) => {
@@ -558,22 +522,19 @@
                     <span>${item.label}</span>
                 `;
 
-                div.onclick = () => handleNavClick(item, div, containerId);
+                div.onclick = (e) => handleNavClick(item, div);
                 navContainer.appendChild(div);
             });
         }
 
-        function handleNavClick(item, element, containerId) {
+        function handleNavClick(item, element) {
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            const allItems = document.querySelectorAll('.nav-item');
-            allItems.forEach(el => {
-                if(el.innerHTML === element.innerHTML) el.classList.add('active');
-            });
+            element.classList.add('active');
 
             if (item.action === 'logout') {
                 const confirmLogout = confirm("Apakah Anda yakin ingin keluar?");
                 if(confirmLogout) {
-                    document.getElementById('mobile-nav').classList.remove('visible');
+                    document.getElementById('main-nav').classList.remove('visible');
                     setTimeout(performLogout, 300);
                 } else {
                     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
