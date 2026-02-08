@@ -258,8 +258,55 @@
         }
         .toast.show { transform: translateX(0); }
 
-        #preloader { position: fixed; inset: 0; background: var(--primary); z-index: 9999; display: flex; justify-content: center; align-items: center; transition: opacity 0.5s; }
-        .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 1s linear infinite; }
+        /* =========================================
+           UPDATE: CLEAN WHITE PRELOADER STYLE
+           ========================================= */
+        #preloader {
+            position: fixed; inset: 0; 
+            background: #ffffff; /* Putih Bersih */
+            z-index: 9999; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            flex-direction: column;
+            transition: opacity 0.6s ease-in-out, visibility 0.6s;
+        }
+        
+        .loader-content {
+            text-align: center;
+        }
+
+        .brand-logo-loader {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 2rem;
+            color: var(--primary); /* Warna Brand */
+            margin-bottom: 20px;
+            letter-spacing: -1px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        /* Modern Double Ring Spinner */
+        .modern-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(15, 118, 110, 0.1); /* Ring luar tipis transparan */
+            border-left-color: var(--primary); /* Warna Utama */
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            position: relative;
+        }
+        
+        /* Ring dalam (Inner Ring) untuk efek kompleks */
+        .modern-spinner::after {
+            content: "";
+            position: absolute;
+            top: 6px; left: 6px; right: 6px; bottom: 6px;
+            border: 3px solid transparent;
+            border-top-color: var(--accent); /* Warna Aksen (Emas/Oranye) */
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite reverse; /* Berputar berlawanan arah */
+        }
 
         @media (max-width: 767px) {
             .bottom-nav { overflow-x: auto; justify-content: flex-start; gap: 6px; padding: 12px 10px; }
@@ -270,8 +317,13 @@
 </head>
 <body>
 
-    <!-- PRELOADER -->
-    <div id="preloader"><div class="spinner"></div></div>
+    <!-- CLEAN WHITE PRELOADER -->
+    <div id="preloader">
+        <div class="loader-content">
+            <div class="brand-logo-loader">Ngebel</div>
+            <div class="modern-spinner"></div>
+        </div>
+    </div>
 
     <!-- HEADER -->
     <header>
@@ -438,13 +490,14 @@
         // --- INIT ---
         window.addEventListener('load', async () => {
             renderNav();
+            // Delay sedikit lebih lama agar animasi putaran spinner terlihat jelas
             setTimeout(() => {
                 const preloader = document.getElementById('preloader');
                 if(preloader) {
                     preloader.style.opacity = '0';
-                    setTimeout(() => preloader.remove(), 500);
+                    setTimeout(() => preloader.remove(), 600);
                 }
-            }, 800);
+            }, 1000); // Waktu tampil 1 detik
         });
 
         // --- NAVIGATION LOGIC ---
