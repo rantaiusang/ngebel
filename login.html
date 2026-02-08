@@ -2,244 +2,253 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Masuk | Ngebel Platform</title>
-    <meta name="theme-color" content="#ffffff">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Ngebel Platform</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600&display=swap" rel="stylesheet">
     
-    <!-- Import Supabase & Google Fonts -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;600&display=swap" rel="stylesheet">
-
     <style>
-        :root {
-            --primary: #0d9488; /* Teal */
-            --primary-light: #ccfbf1;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --bg-body: #ffffff;
-            --radius: 16px;
-            --shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.08);
-            --danger: #ef4444;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            min-height: 100vh;
-            display: flex; align-items: center; justify-content: center;
-            padding: 20px;
-            background-color: var(--bg-body);
-            position: relative;
-            color: var(--text-main);
+            background: #f0f9ff;
+            display: flex; justify-content: center; align-items: center; height: 100vh;
+            margin: 0;
         }
-
-        /* Background Dekorasi */
-        .deco-circle {
-            position: absolute; border-radius: 50%; z-index: 0; pointer-events: none;
-        }
-        .circle-1 {
-            top: -100px; right: -100px; width: 400px; height: 400px;
-            background: var(--primary-light); opacity: 0.5; filter: blur(80px);
-        }
-        .circle-2 {
-            bottom: -50px; left: -50px; width: 300px; height: 300px;
-            background: #e0f2fe; opacity: 0.6; filter: blur(60px);
-        }
-
-        .home-btn {
-            position: fixed; top: 25px; left: 25px;
-            display: flex; align-items: center; gap: 8px;
-            padding: 10px 18px; border-radius: 12px;
-            background: white; border: 1px solid #e2e8f0;
-            color: var(--text-main); font-weight: 600; font-size: 14px;
-            text-decoration: none; box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-            transition: all 0.2s ease; z-index: 100;
-        }
-        .home-btn:hover { border-color: var(--primary); color: var(--primary); }
-
-        .login-card {
-            background: white; border: 1px solid #f1f5f9;
-            border-radius: var(--radius); padding: 40px 30px;
-            width: 100%; max-width: 400px;
-            box-shadow: var(--shadow);
-            position: relative; z-index: 10;
+        .card {
+            background: white; padding: 40px; border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 380px;
             text-align: center;
         }
-
-        .icon-wrapper {
-            width: 64px; height: 64px; margin: 0 auto 24px;
-            background: var(--primary-light);
-            color: var(--primary);
-            border-radius: 16px; display: flex; align-items: center; justify-content: center;
-            font-size: 32px;
-        }
-
-        h2 {
-            font-family: 'Outfit', sans-serif; font-size: 1.75rem;
-            color: var(--text-main); margin-bottom: 8px; font-weight: 700;
-        }
-        p.subtitle { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 30px; }
-
-        .form-group { margin-bottom: 20px; text-align: left; }
-        label {
-            font-size: 0.85rem; font-weight: 600; color: var(--text-main);
-            margin-bottom: 8px; display: block;
-        }
+        h2 { color: #0f172a; margin-bottom: 5px; }
+        p.subtitle { color: #64748b; font-size: 0.9rem; margin-bottom: 25px; }
+        
         input {
-            width: 100%; padding: 12px 16px; background: #f8fafc;
-            border: 1px solid #e2e8f0; border-radius: 12px;
-            font-size: 1rem; transition: all 0.2s;
+            width: 100%; padding: 12px; margin-bottom: 15px;
+            border: 1px solid #cbd5e1; border-radius: 8px;
+            box-sizing: border-box; font-size: 14px;
         }
-        input:focus {
-            background: white; border-color: var(--primary);
-            outline: none; box-shadow: 0 0 0 3px var(--primary-light);
+        input:focus { outline: 2px solid #0d9488; border-color: transparent; }
+        
+        button {
+            width: 100%; padding: 12px; background: #0d9488; color: white;
+            border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+            transition: 0.2s;
         }
-
-        .btn {
-            width: 100%; padding: 14px; border: none; border-radius: 12px;
-            background: var(--primary); color: white;
-            font-weight: 600; font-size: 1rem; cursor: pointer;
-            transition: 0.2s; margin-top: 10px;
-            box-shadow: 0 4px 6px rgba(13, 148, 136, 0.2);
+        button:hover { background: #0f766e; }
+        button:disabled { background: #cbd5e1; cursor: not-allowed; }
+        
+        .link-btn {
+            background: none; border: none; color: #0d9488; 
+            font-size: 0.85rem; padding: 0; margin-top: 5px; 
+            text-decoration: underline; cursor: pointer; width: auto;
         }
-        .btn:hover { background-color: #0f766e; }
-        .btn:disabled { background: #cbd5e1; cursor: not-allowed; }
-
-        .btn-outline {
-            background: white; border: 1px solid #e2e8f0;
-            color: var(--text-main); margin-top: 16px;
-            text-decoration: none; border-radius: 12px; padding: 12px;
-            font-weight: 600; display: block; transition: 0.2s;
-        }
-        .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
-
-        .msg-box {
-            font-size: 0.85rem; padding: 12px; border-radius: 8px;
-            margin-bottom: 20px; display: none; text-align: left;
-        }
-        .error-msg { background: #fef2f2; color: var(--danger); border: 1px solid #fecaca; }
-
-        /* Spinner */
-        .spinner {
-            width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3);
-            border-radius: 50%; border-top-color: white;
-            animation: spin 0.8s linear infinite; display: inline-block;
-            margin-left: 10px; vertical-align: middle;
-        }
+        
+        .msg { font-size: 0.85rem; margin-top: 15px; padding: 10px; border-radius: 6px; display: none; }
+        .error { background: #fef2f2; color: #ef4444; }
+        .success { background: #f0fdf4; color: #15803d; }
+        
+        /* Animasi fade */
         .hidden { display: none; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <div class="deco-circle circle-1"></div>
-    <div class="deco-circle circle-2"></div>
-
-    <a href="index.html" class="home-btn">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-        Beranda
-    </a>
-
-    <div class="login-card">
-        <div class="icon-wrapper">🌿</div>
+<div class="card">
+    <!-- LOGO / HEADER -->
+    <div style="font-size: 40px; margin-bottom: 10px;">🌿</div>
+    
+    <!-- MODE 1: LOGIN NORMAL -->
+    <div id="view-login" class="fade-in">
         <h2>Selamat Datang</h2>
-        <p class="subtitle">Masuk ke akun Ngebel Anda.</p>
+        <p class="subtitle">Masuk ke dashboard Ngebel</p>
         
-        <form id="login-form" onsubmit="handleLogin(event)">
-            <div class="form-group">
-                <label>Email</label>
-                <input type="email" id="email" placeholder="nama@email.com" required>
+        <form id="form-login" onsubmit="handleLogin(event)">
+            <input type="email" id="login-email" placeholder="Email" required>
+            <input type="password" id="login-password" placeholder="Password" required>
+            
+            <div style="text-align: right;">
+                <button type="button" class="link-btn" onclick="switchView('forgot')">Lupa password?</button>
             </div>
             
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" id="password" placeholder="••••••••" required>
-            </div>
-            
-            <div id="login-error" class="msg-box error-msg"></div>
-            
-            <button type="submit" class="btn" id="submit-btn">
-                <span id="btn-text">Masuk Sekarang</span>
-                <div id="btn-spinner" class="spinner hidden"></div>
-            </button>
-        </form>        
+            <button type="submit" id="btn-login">Masuk</button>
+        </form>
         
-        <a href="register.html" class="btn btn-outline">
-            Belum punya akun? Daftar
-        </a>
+        <div id="msg-login" class="msg"></div>
+        <br>
+        <a href="register.html" style="font-size: 0.85rem; color: #64748b; text-decoration: none;">Belum punya akun? Daftar</a>
     </div>
 
-    <script>
-        // --- 1. KONFIGURASI SUPABASE ---
-        const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
+    <!-- MODE 2: REQUEST RESET PASSWORD -->
+    <div id="view-forgot" class="hidden fade-in">
+        <h2>Lupa Password?</h2>
+        <p class="subtitle">Masukkan email untuk menerima link reset.</p>
         
-        const { createClient } = supabase;
-        const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+        <form id="form-forgot" onsubmit="handleForgot(event)">
+            <input type="email" id="forgot-email" placeholder="Email terdaftar" required>
+            <button type="submit" id="btn-forgot">Kirim Link Reset</button>
+        </form>
+        
+        <div id="msg-forgot" class="msg"></div>
+        <br>
+        <button type="button" class="link-btn" onclick="switchView('login')">Kembali ke Login</button>
+    </div>
 
-        // --- 2. FUNGSI LOGIN UTAMA (LOGIKA MANUAL) ---
-        async function handleLogin(e) {
-            e.preventDefault(); // Mencegah reload halaman
+    <!-- MODE 3: UPDATE PASSWORD (Muncul jika buka link dari email) -->
+    <div id="view-update" class="hidden fade-in">
+        <h2>Reset Password</h2>
+        <p class="subtitle">Masukkan password baru Anda.</p>
+        
+        <form id="form-update" onsubmit="handleUpdate(event)">
+            <input type="password" id="new-pass" placeholder="Password Baru" required minlength="6">
+            <input type="password" id="confirm-pass" placeholder="Ulangi Password Baru" required minlength="6">
+            <button type="submit" id="btn-update">Simpan Password Baru</button>
+        </form>
+        
+        <div id="msg-update" class="msg"></div>
+    </div>
 
-            // Ambil nilai input
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const errorBox = document.getElementById('login-error');
-            const btnText = document.getElementById('btn-text');
-            const btnSpinner = document.getElementById('btn-spinner');
-            const submitBtn = document.getElementById('submit-btn');
+</div>
 
-            // Reset Error
-            errorBox.style.display = 'none';
-            
-            // Tampilkan Loading
-            btnText.innerText = 'Memproses...';
-            btnSpinner.classList.remove('hidden');
-            submitBtn.disabled = true;
+<script>
+    // --- KONFIGURASI ---
+    const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-            try {
-                // QUERY MANUAL KE TABEL ngebelusers
-                // Kita cari baris yang EMAIL dan PASSWORD cocok
-                const { data, error } = await sb
-                    .from('ngebelusers')
-                    .select('*')
-                    .eq('email', email)
-                    .eq('password', password) // Cek Password (Plain Text untuk demo)
-                    .maybeSingle(); // maybeSingle agar tidak error jika data tidak ketemu
+    // --- MANAJEMEN TAMPILAN ---
+    function switchView(viewName) {
+        document.getElementById('view-login').classList.add('hidden');
+        document.getElementById('view-forgot').classList.add('hidden');
+        document.getElementById('view-update').classList.add('hidden');
+        document.getElementById('msg-login').style.display = 'none';
+        document.getElementById('msg-forgot').style.display = 'none';
+        document.getElementById('msg-update').style.display = 'none';
 
-                if (error) {
-                    throw error;
-                }
+        document.getElementById('view-' + viewName).classList.remove('hidden');
+    }
 
-                // CEK: Jika data tidak ditemukan
-                if (!data) {
-                    errorBox.innerText = "Email atau Password salah.";
-                    errorBox.style.display = 'block';
-                    return; // Stop di sini
-                }
+    function showMsg(type, text) {
+        const id = 'msg-' + type;
+        const el = document.getElementById(id);
+        el.innerText = text;
+        el.style.display = 'block';
+        el.className = 'msg ' + (text.includes('Gagal') || text.includes('Salah') ? 'error' : 'success');
+    }
 
-                // CEK: Jika data ditemukan, cek Role
-                if (data.role === 'admin') {
-                    alert('Login Berhasil sebagai ADMIN!');
+    // --- 1. FUNGSI LOGIN MANUAL (Cek Tabel ngebelusers) ---
+    async function handleLogin(e) {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        const btn = document.getElementById('btn-login');
+
+        btn.disabled = true; btn.innerText = 'Memproses...';
+        showMsg('login', ''); // reset
+
+        try {
+            const { data, error } = await sb
+                .from('ngebelusers')
+                .select('*')
+                .eq('email', email)
+                .eq('password', password)
+                .maybeSingle();
+
+            if (error) throw error;
+
+            if (!data) {
+                showMsg('login', 'Email atau Password salah!');
+            } else {
+                // Cek Role
+                if(data.role === 'admin') {
                     window.location.href = 'admin.html';
                 } else {
-                    alert('Login Berhasil sebagai USER!');
-                    window.location.href = 'dashboard.html'; // Pastikan file ini ada
+                    window.location.href = 'dashboard.html';
                 }
-
-            } catch (err) {
-                console.error("Login Error:", err);
-                errorBox.innerText = "Terjadi kesalahan koneksi: " + err.message;
-                errorBox.style.display = 'block';
-            } finally {
-                // Kembalikan tombol ke kondisi semula
-                btnText.innerText = 'Masuk Sekarang';
-                btnSpinner.classList.add('hidden');
-                submitBtn.disabled = false;
             }
+        } catch (err) {
+            showMsg('login', 'Terjadi kesalahan: ' + err.message);
+        } finally {
+            btn.disabled = false; btn.innerText = 'Masuk';
         }
-    </script>
+    }
+
+    // --- 2. FUNGSI LUPA PASSWORD (Kirim Email via Supabase Auth) ---
+    async function handleForgot(e) {
+        e.preventDefault();
+        const email = document.getElementById('forgot-email').value;
+        const btn = document.getElementById('btn-forgot');
+
+        btn.disabled = true; btn.innerText = 'Mengirim...';
+        showMsg('forgot', '');
+
+        try {
+            // Kirim email reset
+            const { error } = await sb.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.href // Redirect balik ke halaman ini
+            });
+
+            if (error) throw error;
+
+            showMsg('forgot', 'Link reset password telah dikirim ke email Anda. Silakan cek Inbox/Spam.');
+        } catch (err) {
+            showMsg('forgot', 'Gagal mengirim email: ' + err.message);
+        } finally {
+            btn.disabled = false; btn.innerText = 'Kirim Link Reset';
+        }
+    }
+
+    // --- 3. FUNGSI UPDATE PASSWORD (Dari Link Email) ---
+    async function handleUpdate(e) {
+        e.preventDefault();
+        const p1 = document.getElementById('new-pass').value;
+        const p2 = document.getElementById('confirm-pass').value;
+        const btn = document.getElementById('btn-update');
+
+        if (p1 !== p2) {
+            showMsg('update', 'Password tidak sama!');
+            return;
+        }
+
+        btn.disabled = true; btn.innerText = 'Menyimpan...';
+        showMsg('update', '');
+
+        try {
+            // Update password di Supabase Auth
+            const { error } = await sb.auth.updateUser({ password: p1 });
+            
+            if (error) throw error;
+
+            // TAMBAHAN: Update juga password di tabel manual ngebelusers
+            // Kita perlu ambil email user yang sedang login di session auth
+            const { data: { user } } = await sb.auth.getUser();
+            if(user) {
+                await sb.from('ngebelusers')
+                    .update({ password: p1 })
+                    .eq('email', user.email);
+            }
+
+            alert('Password berhasil diubah! Silakan login dengan password baru.');
+            window.location.href = 'login.html'; // Reload bersih
+
+        } catch (err) {
+            showMsg('update', 'Gagal mengubah password: ' + err.message);
+            btn.disabled = false; btn.innerText = 'Simpan Password Baru';
+        }
+    }
+
+    // --- CEK URL SAAT LOAD (Apakah ini mode reset dari email?) ---
+    window.addEventListener('load', async () => {
+        const hash = window.location.hash;
+        // Cek apakah URL mengandung token reset
+        if (hash.includes('type=recovery') || hash.includes('access_token')) {
+            switchView('update');
+        } else {
+            switchView('login');
+        }
+    });
+
+</script>
 </body>
 </html>
