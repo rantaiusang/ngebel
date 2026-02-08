@@ -38,6 +38,8 @@
             color: var(--text-main);
             line-height: 1.5;
             padding-bottom: 40px;
+            /* Sembunyikan body default agar user tidak melihat isi admin sebelum dicek */
+            display: none; 
             background-image: 
                 radial-gradient(circle at 10% 20%, rgba(56, 189, 248, 0.1) 0%, transparent 20%),
                 radial-gradient(circle at 90% 80%, rgba(244, 114, 182, 0.05) 0%, transparent 20%);
@@ -374,15 +376,81 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- 2. FUNGSI LOGGER (SAMA SEPERTI SEBELUMNYA) ---
+        // --- 2. SECURITY GUARD (PENJAGA ADMIN) ---
+        async function protectAdminPage() {
+            // Body disembunyikan via CSS (display: none) di atas
+            
+            try {
+                // A. Cek Session Login
+                const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+                if (authError || !user) {
+                    alert("⛔ Akses Ditolak: Anda belum login.");
+                    window.location.href = "index.html"; // Redirect ke home
+                    return;
+                }
+
+                // B. Cek Role di tabel 'ngebelusers'
+                const { data: userData, error: roleError } = await supabase
+                    .from('ngebelusers')
+                    .select('role')
+                    .eq('id', user.id)
+                    .single();
+
+                if (roleError) {
+                    console.error("Gagal cek role:", roleError);
+                    alert("Terjadi kesalahan sistem saat memverifikasi akses.");
+                    window.location.href = "index.html";
+                    return;
+                }
+
+                // C. Validasi: Harus Admin
+                if (userData.role !== 'admin') {
+                    alert(`⛔ Akses Ditolak: Akun Anda memiliki role '${userData.role}', bukan Admin.`);
+                    window.location.href = "index.html";
+                    return;
+                }
+
+                // D. Jika Lolos, Tampilkan Halaman
+                document.body.style.display = 'block';
+                console.log("✅ Akses Admin Diterima.");
+
+                // Lanjutkan inisialisasi dashboard
+                initDashboard();
+
+            } catch (err) {
+                console.error(err);
+                alert("Sistem Error.");
+                window.location.href = "index.html";
+            }
+        }
+
+        // --- 3. FUNGSI DASHBOARD (DIPANGGIL SETELAH LOLOS KEAMANAN) ---
+        function initDashboard() {
+            addLog('info', 'Sistem Admin Siap.');
+            refreshRealData(); // Load data awal
+
+            // Generate Dummy Users
+            const users = ['Budi', 'Siti', 'Rudi', 'Dewi', 'Agus', 'Yuli', 'Joko', 'Rina'];
+            const userGrid = document.getElementById('user-grid');
+            users.forEach(u => {
+                const div = document.createElement('div');
+                div.className = `user-node ${Math.random() > 0.3 ? 'active' : ''}`;
+                div.innerHTML = `<div class="user-avatar" style="background: ${u === 'Budi' ? 'var(--primary)' : '#334155'}"></div><div class="user-name">${u}</div>`;
+                userGrid.appendChild(div);
+            });
+        }
+
+        // --- 4. FUNGSI LOGGER ---
         function addLog(type, msg) {
             const logContainer = document.getElementById('log-container');
+            if (!logContainer) return; // Mencegah error jika elemen belum muncul
+
             const time = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute:'2-digit', second:'2-digit' });
             
             const div = document.createElement('div');
             div.className = 'log-item';
             
-            // Tentukan class badge warna
             let badgeClass = 'type-info';
             if(type === 'warn') badgeClass = 'type-warn';
             if(type === 'success') badgeClass = 'type-success';
@@ -400,23 +468,28 @@
             }
         }
 
-        // --- 3. AMBIL DATA NYATA DARI DB ---
+        // --- 5. AMBIL DATA NYATA DARI DB ---
         async function refreshRealData() {
+            // Pastikan fungsi hanya jalan jika body sudah visible (opsional, untuk keamanan)
+            if (document.body.style.display === 'none') return;
+
             addLog('info', 'Menghubungkan ke Database...');
             
             try {
                 // A. Hitung Transaksi
-                const { count: transCount } = await supabase
+                const { count: transCount, error: errTrans } = await supabase
                     .from('transactions')
                     .select('*', { count: 'exact', head: true });
                 
+                if (errTrans) throw errTrans;
                 document.getElementById('trans-count').innerText = transCount || 0;
 
-                // B. Hitung Total Page Views dari Logs
-                const { count: viewCount } = await supabase
+                // B. Hitung Total Page Views
+                const { count: viewCount, error: errView } = await supabase
                     .from('user_analytics_logs')
                     .select('*', { count: 'exact', head: true });
 
+                if (errView) throw errView;
                 document.getElementById('view-count').innerText = viewCount || 0;
 
                 addLog('success', `Data diperbarui: ${transCount} Transaksi, ${viewCount} Views`);
@@ -427,25 +500,22 @@
             }
         }
 
-        // --- 4. LOGIKA AI ANALISIS (DARI JAWABAN SEBELUMNYA) ---
+        // --- 6. LOGIKA AI ANALISIS ---
         async function runAIAnalysis() {
             const resultsContainer = document.getElementById('ai-results-container');
             const loadingEl = document.getElementById('ai-loading');
 
-            // Tampilkan loading
             resultsContainer.style.display = 'none';
             loadingEl.style.display = 'block';
             addLog('info', 'AI memulai analisa pola trafik...');
 
             try {
-                // 1. Ambil semua logs
                 const { data: logs, error } = await supabase
                     .from('user_analytics_logs')
                     .select('*');
                 
                 if (error) throw error;
 
-                // 2. Proses Data (Grouping Manual)
                 const trafficData = {};
                 logs.forEach(log => {
                     const url = log.page_url;
@@ -460,19 +530,16 @@
                     }
                 });
 
-                // 3. Generate Insight
                 let html = '';
                 let insightsFound = 0;
 
                 for (const [url, data] of Object.entries(trafficData)) {
-                    // Cari elemen paling populer
                     let topEl = null;
                     let maxCount = 0;
                     for (const [el, count] of Object.entries(data.elements)) {
                         if (count > maxCount) { maxCount = count; topEl = el; }
                     }
 
-                    // Logika Sederhana
                     let msg = "";
                     if (data.views > 5 && data.clicks === 0) {
                         msg = "Halaman ini banyak dilihat tapi tidak ada interaksi. Pertimbangkan untuk menambah tombol CTA.";
@@ -506,7 +573,7 @@
                             </div>
                         </div>
                     `;
-                    addLog('warn', 'Data trafik belum cukup untuk analisa mendalam.');
+                    addLog('warn', 'Data trafik belum cukup.');
                 } else {
                     addLog('ai', `Analisa Selesai. Ditemukan ${insightsFound} Insight.`);
                 }
@@ -518,27 +585,14 @@
                 addLog('warn', 'Error AI: ' + err.message);
                 resultsContainer.innerHTML = `<div style="color:var(--accent)">Terjadi kesalahan saat menganalisa.</div>`;
             } finally {
-                // Sembunyikan loading, tampilkan hasil
                 loadingEl.style.display = 'none';
                 resultsContainer.style.display = 'flex';
             }
         }
 
-        // --- 5. INISIALISASI ---
+        // --- 7. JALANKAN PENGAMANAN SAAT HALAMAN DIMUAT ---
         document.addEventListener('DOMContentLoaded', () => {
-            // Generate Dummy Users (Visual Only)
-            const users = ['Budi', 'Siti', 'Rudi', 'Dewi', 'Agus', 'Yuli', 'Joko', 'Rina'];
-            const userGrid = document.getElementById('user-grid');
-            users.forEach(u => {
-                const div = document.createElement('div');
-                div.className = `user-node ${Math.random() > 0.3 ? 'active' : ''}`;
-                div.innerHTML = `<div class="user-avatar" style="background: ${u === 'Budi' ? 'var(--primary)' : '#334155'}"></div><div class="user-name">${u}</div>`;
-                userGrid.appendChild(div);
-            });
-
-            // Load data awal
-            refreshRealData();
-            addLog('info', 'Sistem Admin Siap.');
+            protectAdminPage(); // Fungsi ini akan memanggil initDashboard() jika sukses
         });
 
     </script>
