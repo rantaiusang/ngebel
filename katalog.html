@@ -112,14 +112,66 @@
         }
         .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
 
-        /* --- Filter Chips --- */
-        .filter-container { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; -webkit-overflow-scrolling: touch; justify-content: center; }
-        .filter-chip {
-            padding: 8px 20px; border-radius: 50px; font-size: 0.9rem; font-weight: 600;
-            cursor: pointer; transition: all 0.3s; border: 1px solid #e2e8f0; white-space: nowrap;
-            background: white; color: var(--text-muted);
+        /* --- BUBBLE SEARCH UI (NEW) --- */
+        .search-wrapper {
+            position: relative;
+            max-width: 500px;
+            margin: 30px auto 0; /* Margin atas, auto tengah, bawah 0 */
+            width: 100%;
+            padding: 0 10px;
+            z-index: 10;
         }
-        .filter-chip.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 10px rgba(15, 118, 110, 0.3); }
+
+        .bubble-search {
+            width: 100%;
+            padding: 16px 24px 16px 56px; /* Kiri lebih lebar untuk icon */
+            font-size: 1rem;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            
+            /* Bubble Styling */
+            border-radius: 50px; /* Sangat bulat */
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 
+                0 10px 40px -10px rgba(0, 0, 0, 0.1), /* Soft deep shadow */
+                0 4px 10px rgba(0, 0, 0, 0.02), /* Subtle lift */
+                inset 0 1px 0 rgba(255, 255, 255, 0.8); /* Top highlight */
+            
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            outline: none;
+        }
+
+        .bubble-search::placeholder {
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .bubble-search:focus {
+            background: white;
+            transform: translateY(-2px) scale(1.01);
+            box-shadow: 
+                0 20px 50px -12px rgba(15, 118, 110, 0.25), /* Colored shadow on focus */
+                0 4px 12px rgba(0, 0, 0, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 1);
+            border-color: rgba(15, 118, 110, 0.2);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 22px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary);
+            pointer-events: none;
+            transition: color 0.3s ease;
+        }
+
+        .bubble-search:focus + .search-icon {
+            color: var(--accent);
+        }
 
         /* --- Product Card Style --- */
         .product-card {
@@ -255,7 +307,9 @@
             const [loading, setLoading] = useState(true);
             const [products, setProducts] = useState([]);
             const [selectedProduct, setSelectedProduct] = useState(null);
-            const [filterCategory, setFilterCategory] = useState('SEMUA');
+            
+            // --- STATE SEARCH BARU ---
+            const [searchQuery, setSearchQuery] = useState('');
 
             // --- HOOK UNTUK SCROLL ANIMATION ---
             const useOnScreen = (ref, rootMargin = "0px") => {
@@ -302,11 +356,18 @@
                 return () => { supabaseClient.removeChannel(channel); };
             }, []);
 
-            const filteredProducts = filterCategory === 'SEMUA' 
-                ? products 
-                : products.filter(p => p.category === filterCategory);
+            // --- LOGIKA PENCARIAN ---
+            const filteredProducts = products.filter(product => {
+                const query = searchQuery.toLowerCase();
+                // Cari di Nama Produk
+                const matchName = product.name && product.name.toLowerCase().includes(query);
+                // Cari di Estimasi Panen (misal: "juni", "oktober")
+                const matchHarvest = product.harvest_date && product.harvest_date.toLowerCase().includes(query);
+                // Cari di Kategori (opsional, jika user ingin search kategori juga)
+                const matchCategory = product.category && product.category.toLowerCase().includes(query);
 
-            const categories = ['SEMUA', ...new Set(products.map(p => p.category))];
+                return matchName || matchHarvest || matchCategory;
+            });
 
             const handleOrderClick = (product) => {
                 const isPreOrder = !product.is_available || product.stock === 0;
@@ -354,25 +415,27 @@
                             Pilih produk pertanian terbaik dari petani mitra Ngebel. Segar, organik, dan transparan.
                         </p>
                         
-                        {/* Filter (Animate) */}
-                        <div className="filter-container reveal-on-scroll" style={{marginTop:'30px', justifyContent:'center'}}>
-                            {categories.map((cat, index) => (
-                                <button
-                                    key={cat}
-                                    onClick={() => setFilterCategory(cat)}
-                                    className={`filter-chip ${filterCategory === cat ? 'active' : ''}`}
-                                    style={{ transitionDelay: `${index * 50}ms` }}
-                                >
-                                    {cat}
-                                </button>
-                            ))}
+                        {/* --- SEARCH BUBBLE UI (PENGGANTI KATEGORI) --- */}
+                        <div className="search-wrapper reveal-on-scroll">
+                            <input 
+                                type="text" 
+                                className="bubble-search" 
+                                placeholder="Cari buah atau musim panen (mis: Durian, Oktober)..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                            <div className="search-icon">
+                                <Icon name="search" size={20} />
+                            </div>
                         </div>
                     </section>
 
                     {/* --- GRID (DENGAN SCROLL REVEAL) --- */}
                     <section className="container">
                         {filteredProducts.length === 0 ? (
-                            <div style={{textAlign:'center', padding:'60px 20px', color:'#94a3b8'}}>Belum ada produk di kategori ini.</div>
+                            <div style={{textAlign:'center', padding:'60px 20px', color:'#94a3b8'}}>
+                                {searchQuery ? 'Tidak ditemukan produk yang sesuai dengan pencarian.' : 'Belum ada produk.'}
+                            </div>
                         ) : (
                             <div className="grid-products">
                                 {filteredProducts.map((product, index) => {
@@ -420,7 +483,7 @@
 
                     {/* --- FOOTER (DENGAN SCROLL REVEAL) --- */}
                     <footer className="reveal-on-scroll" style={{marginTop:'80px', padding:'40px 20px', borderTop:'1px solid #e2e8f0', textAlign:'center'}}>
-                        <p style={{color:'#64748b', marginBottom:'16px'}}>Butuh bantuan memesan dalam jumlah besar?</p>
+                        <p style={{color:'#64748b', marginBottom:'16px'}}></p>
                         <a 
                             href={`https://wa.me/${ADMIN_WA}`} 
                             target="_blank"
