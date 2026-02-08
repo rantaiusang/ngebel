@@ -416,7 +416,7 @@
         </div>
     </div>
 
-    <script>
+         <script>
         // --- KONFIGURASI SUPABASE ---
         const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
@@ -432,7 +432,7 @@
             { id: 'community', icon: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>', label: 'Komunitas', link: 'community.html' },
             { id: 'market', icon: '<circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>', label: 'Market', link: 'katalog.html' },
             { id: 'about', icon: '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>', label: 'Tentang', link: 'about.html' },
-            { id: 'contact', icon: '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline>', label: 'Kontak', link: 'contact.html' }
+            { id: 'contact', icon: '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12 13 2,6"></polyline>', label: 'Kontak', link: 'contact.html' }
         ];
 
         // --- INIT ---
@@ -553,6 +553,116 @@
             });
         }
 
+        // ============================================================
+        // BAGIAN TAMBAHAN AI (LOGGER) - SUDAH DIPERBAIKI
+        // ============================================================
+
+        // --- 1. FUNGSI PELACAK AI (LOGGER) ---
+        async function logAIActivity(actionType, targetElement, extraData = {}) {
+            try {
+                // Cek apakah user login (dari Supabase Auth)
+                const { data: { user } } = await supabaseClient.auth.getUser();
+                
+                // Ambil ID Sesi (Session ID) untuk tamu yang belum login
+                let sessionId = localStorage.getItem('ngebel_session_id');
+                if (!sessionId) {
+                    sessionId = 'sess_' + Math.random().toString(36).substr(2, 9);
+                    localStorage.setItem('ngebel_session_id', sessionId);
+                }
+
+                // Siapkan data payload
+                const payload = {
+                    user_id: user ? user.id : null, 
+                    session_id: sessionId,         
+                    page_url: window.location.pathname, 
+                    action_type: actionType,       
+                    element_target: targetElement, 
+                    metadata: extraData            
+                };
+
+                // Kirim ke Supabase (Backend request, tidak memblokir tampilan user)
+                await supabaseClient
+                    .from('user_analytics_logs')
+                    .insert([payload]);
+
+                console.log('🤖 AI Log:', actionType, targetElement);
+
+            } catch (error) {
+                // Jangan tampilkan error ke user agar tidak mengganggu UX
+                console.warn('Gagal mencatat aktivitas AI:', error.message);
+            }
+        }
+
+        // --- 2. MENGHUBUNGKAN FUNGSI KE ELEMEN WEB ---
+        
+        // Jalankan saat halaman selesai dimuat
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // A. Catat saat halaman dibuka (Page View)
+            logAIActivity('view', 'page_load', { 
+                title: document.title, 
+                referrer: document.referrer 
+            });
+
+            // B. Catat saat Menu Navigasi diklik
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    // Ambil label menu (misal: 'Explore', 'Market')
+                    const label = item.querySelector('span') ? item.querySelector('span').innerText : 'Nav Item';
+                    logAIActivity('click', 'nav_menu', { menu_name: label });
+                });
+            });
+
+            // C. Catat saat tombol utama "Jelajahi Potensi" diklik
+            const mainBtn = document.querySelector('.btn-primary');
+            if(mainBtn) {
+                mainBtn.addEventListener('click', () => {
+                    logAIActivity('click', 'hero_cta_button', { button_text: 'Jelajahi Potensi' });
+                });
+            }
+
+            // D. Catat saat user mengklik Kartu Preview (Platform / IoT / Market)
+            const previewCards = document.querySelectorAll('.preview-card');
+            previewCards.forEach((card, index) => {
+                card.addEventListener('click', () => {
+                    // Ambil judul kartu (h3)
+                    const title = card.querySelector('h3') ? card.querySelector('h3').innerText : 'Unknown Card';
+                    logAIActivity('click', 'preview_card', { card_title: title, index: index });
+                });
+            });
+
+            // E. Catat saat tombol Like diklik
+            const likeBtns = document.querySelectorAll('.btn-like');
+            likeBtns.forEach((btn, index) => {
+                btn.addEventListener('click', (e) => {
+                    // Cari judul kartu terdekat
+                    const card = btn.closest('.preview-card');
+                    const title = card ? card.querySelector('h3').innerText : 'Unknown Item';
+                    
+                    logAIActivity('interaction', 'like_button', { 
+                        item_title: title,
+                        interaction_type: 'like'
+                    });
+                });
+            });
+
+            // F. Catat saat Modal Dibuka
+            const modalOverlay = document.getElementById('preview-modal');
+            if(modalOverlay) {
+                // Kita pakai MutationObserver untuk mendeteksi kapan class 'open' muncul
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach((mutation) => {
+                        if (mutation.target.classList.contains('open')) {
+                            const title = document.getElementById('modal-title-display').innerText;
+                            logAIActivity('view', 'modal_open', { modal_title: title });
+                        }
+                    });
+                });
+                observer.observe(modalOverlay, { attributes: true, attributeFilter: ['class'] });
+            }
+        });
     </script>
+    
 </body>
 </html>
