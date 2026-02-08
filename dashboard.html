@@ -33,6 +33,7 @@
             --shadow-soft: 0 10px 40px -10px rgba(15, 118, 110, 0.08);
             --shadow-hover: 0 20px 40px -12px rgba(15, 118, 110, 0.25);
             --nav-height: 80px;
+            --sidebar-width: 280px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -42,7 +43,8 @@
             background-color: var(--bg-body);
             color: var(--text-main);
             line-height: 1.6;
-            padding-bottom: calc(var(--nav-height) + 40px);
+            padding-bottom: calc(var(--nav-height) + 40px); /* Padding untuk mobile nav */
+            padding-left: 0; /* Default mobile */
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
             transition: opacity 0.3s ease;
@@ -73,7 +75,16 @@
         }
 
         /* --- 3. COMPONENTS --- */
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 2; padding-top: 100px; }
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 0 20px; 
+            position: relative; 
+            z-index: 2; 
+            padding-top: 100px; 
+            /* Container akan bergeser di Desktop karena sidebar fixed */
+            transition: padding-left 0.3s ease;
+        }
 
         .card {
             background: white; border: 1px solid rgba(255,255,255,0.8);
@@ -112,7 +123,7 @@
         .btn-secondary { background: white; border: 1px solid #e2e8f0; color: var(--text-main); }
         .btn-secondary:hover { border-color: var(--primary); color: var(--primary); background: #f0fdfa; }
 
-        /* --- 4. HEADER --- */
+        /* --- 4. HEADER (FIXED TOP) --- */
         header {
             position: fixed; top: 0; left: 0; right: 0; z-index: 100;
             background: rgba(255,255,255,0.85); backdrop-filter: blur(16px);
@@ -134,8 +145,24 @@
         .user-name { font-size: 0.9rem; font-weight: 700; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .user-role { font-size: 0.7rem; color: var(--text-muted); }
 
-        /* --- 5. BOTTOM NAVIGATION --- */
-        .bottom-nav {
+        /* --- 5. NAVIGATION SYSTEM (FIXED STYLE) --- */
+        
+        /* Desktop Sidebar (Seperti Index) */
+        .desktop-sidebar {
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            width: var(--sidebar-width);
+            background: white;
+            border-right: 1px solid #eee;
+            z-index: 90; /* Di bawah header (100) */
+            padding: 100px 20px 20px 20px; /* Padding top untuk menghindari header */
+            display: none; /* Hidden default di mobile */
+            flex-direction: column;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.02);
+        }
+
+        /* Mobile Bottom Nav */
+        .mobile-nav {
             position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px);
             width: 94%; max-width: 480px; height: auto; min-height: 70px;
             background: var(--glass); backdrop-filter: blur(20px);
@@ -147,36 +174,53 @@
             flex-wrap: nowrap;
             transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        .bottom-nav.visible { transform: translateX(-50%) translateY(0); }
+        .mobile-nav.visible { transform: translateX(-50%) translateY(0); }
 
+        /* Nav Items Common */
         .nav-item {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             color: #94a3b8; font-size: 0.7rem; font-weight: 600;
             padding: 8px; border-radius: 16px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            min-width: 60px; cursor: pointer; flex: 1 1 auto; position: relative;
+            cursor: pointer; position: relative;
         }
         
-        .nav-item svg { width: 22px; height: 22px; stroke-width: 2; stroke: currentColor; fill: none; margin-bottom: 4px; transition: all 0.3s; }
+        .nav-item svg { width: 22px; height: 22px; stroke-width: 2; stroke: currentColor; fill: none; transition: all 0.3s; }
         
         .nav-item.active { color: var(--primary); background: rgba(15, 118, 110, 0.08); }
-        .nav-item.active svg { transform: translateY(-3px); stroke-width: 2.5; filter: drop-shadow(0 4px 6px rgba(15, 118, 110, 0.2)); }
-        
         .nav-item.logout-item { color: #ef4444; }
         .nav-item.logout-item:hover { background: #fef2f2; }
-        .nav-item.logout-item svg { stroke: #ef4444; }
 
+        /* Mobile Specifics */
+        @media (max-width: 767px) {
+            .mobile-nav { display: flex; }
+            .desktop-sidebar { display: none; }
+            .nav-item { flex-direction: column; min-width: 60px; gap: 4px; }
+            .nav-item svg { margin-bottom: 2px; }
+            .nav-item.active svg { transform: translateY(-3px); }
+        }
+
+        /* Desktop Specifics (INDEX STYLE) */
         @media (min-width: 768px) {
-            body { padding-bottom: 0; padding-left: 280px; }
-            .bottom-nav {
-                top: 0; bottom: 0; left: 0; transform: none; width: 280px; height: 100vh;
-                flex-direction: column; justify-content: flex-start; gap: 8px; padding-top: 100px;
-                border-radius: 0; box-shadow: 10px 0 30px rgba(0,0,0,0.05); border-right: 1px solid #eee;
-                align-items: stretch; background: white;
+            body { 
+                padding-left: var(--sidebar-width); /* Geser body agar tidak tertutup sidebar */
+                padding-bottom: 0;
             }
-            .nav-item { width: 100%; flex-direction: row; height: 56px; padding: 0 24px; justify-content: flex-start; gap: 16px; font-size: 1rem; flex: none; border-radius: 12px; margin: 0 10px; }
-            .nav-item svg { margin-bottom: 0; width: 24px; height: 24px; }
-            .nav-item.active { background: #f0fdfa; border-right: 3px solid var(--primary); }
-            .nav-item.active svg { transform: none; }
+            .mobile-nav { display: none; }
+            .desktop-sidebar { display: flex; }
+
+            .nav-item {
+                width: 100%; flex-direction: row; height: 56px; 
+                padding: 0 20px; justify-content: flex-start; gap: 16px; 
+                font-size: 1rem; border-radius: 12px; margin-bottom: 8px;
+            }
+            .nav-item svg { width: 24px; height: 24px; margin-bottom: 0; }
+            .nav-item.active { 
+                background: #f0fdfa; /* Hijau muda */
+                color: var(--primary); 
+                font-weight: 700;
+                box-shadow: 0 4px 12px rgba(15, 118, 110, 0.1);
+            }
+            .nav-item.active svg { stroke-width: 2.5; }
         }
 
         /* --- 6. LOGIN PROMPT --- */
@@ -193,7 +237,7 @@
     <!-- PRELOADER -->
     <div id="preloader"><div class="spinner"></div></div>
 
-    <!-- HEADER -->
+    <!-- HEADER (FIXED) -->
     <header class="animate-item" style="animation-delay: 0.1s;">
         <div class="header-left">
             <!-- TOMBOL KEMBALI -->
@@ -209,9 +253,7 @@
         <div class="header-right">
             <!-- Profil User (REAL DATA) -->
             <div class="user-pill" id="header-user-pill" title="Klik untuk lihat profil">
-                <!-- Avatar -->
                 <div class="user-avatar" id="header-avatar">U</div>
-                <!-- Info Nama & Role -->
                 <div class="user-info">
                     <div class="user-name" id="header-name">Memuat...</div>
                     <div class="user-role" id="header-role">...</div>
@@ -219,6 +261,16 @@
             </div>
         </div>
     </header>
+
+    <!-- DESKTOP SIDEBAR (FIXED LEFT) -->
+    <nav class="desktop-sidebar" id="desktop-nav">
+        <!-- Item akan dirender via JS -->
+    </nav>
+
+    <!-- MOBILE BOTTOM NAV (FIXED BOTTOM) -->
+    <nav class="mobile-nav" id="mobile-nav">
+        <!-- Item akan dirender via JS -->
+    </nav>
 
     <!-- MAIN CONTENT -->
     <div id="main-content" class="container">
@@ -230,7 +282,6 @@
 
         <!-- STATS GRID (REAL DATA) -->
         <div class="grid-3" id="stats-container">
-            <!-- Data akan diinject oleh JavaScript -->
             <div class="card animate-item" style="animation-delay: 0.3s;">
                 <span class="stat-label">Total Pendapatan</span>
                 <span class="stat-value" id="stat-income">Rp 0</span>
@@ -290,9 +341,6 @@
         <a href="index.html" class="btn btn-primary">Kembali ke Beranda</a>
     </div>
 
-    <!-- NAVIGATION CONTAINER -->
-    <nav class="bottom-nav" id="main-nav"></nav>
-
     <script>
         // --- KONFIGURASI SUPABASE ---
         const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
@@ -345,15 +393,12 @@
 
         // --- FUNGSI AMBIL DATA USER ---
         async function loadUserData(userId) {
-            // Cek apakah user ada di tabel ngebelusers
-            // Kita gunakan kolom 'id' yang sudah disinkronkan sebelumnya
             let { data: userData, error } = await supabaseClient
                 .from('ngebelusers')
                 .select('*')
                 .eq('id', userId)
                 .maybeSingle();
 
-            // Fallback: Jika data belum sinkron (misal baru login Google), cari pakai email
             if (!userData || error) {
                 const { data: { user } } = await supabaseClient.auth.getUser();
                 if(user) {
@@ -367,7 +412,6 @@
             }
 
             if (userData) {
-                // Update Header Profile
                 const name = userData.full_name || userData.email.split('@')[0];
                 const initial = name.charAt(0).toUpperCase();
                 
@@ -376,13 +420,10 @@
                 document.getElementById('header-avatar').innerText = initial;
                 document.getElementById('welcome-msg').innerText = `Halo, ${name}! 👋`;
 
-                // Load Stats (Dummy Realtime dari kolom user, atau buat random)
-                // Disini saya contohkan ambil dari kolom (jika ada) atau pakai dummy acak
                 const income = userData.income || 4500000;
                 const orders = userData.orders || 12;
                 const views = userData.views || 850;
 
-                // Render Stats dengan Animasi
                 setTimeout(() => {
                     animateValue(document.getElementById('stat-income'), 0, income, 2000, true);
                     animateValue(document.getElementById('stat-orders'), 0, orders, 1500, false);
@@ -390,7 +431,6 @@
                 }, 500);
 
             } else {
-                // Fallback ke data Auth jika tabel manual kosong
                 const { data: { user } } = await supabaseClient.auth.getUser();
                 if(user) {
                     document.getElementById('header-name').innerText = user.email;
@@ -400,7 +440,7 @@
             }
         }
 
-        // --- INIT ---
+        // --- INIT & RENDER NAV ---
         window.addEventListener('load', async () => {
             const { data: { session } } = await supabaseClient.auth.getSession();
 
@@ -412,13 +452,17 @@
 
             if (session) {
                 document.getElementById('main-content').style.display = 'block';
-                renderNav();
+                
+                // Render Navigasi ke kedua container (Desktop & Mobile)
+                renderNav('desktop-nav');
+                renderNav('mobile-nav');
                 
                 // Load Data User
                 await loadUserData(session.user.id);
                 
+                // Tampilkan Nav Mobile
                 setTimeout(() => {
-                    document.getElementById('main-nav').classList.add('visible');
+                    document.getElementById('mobile-nav').classList.add('visible');
                 }, 800);
 
             } else {
@@ -426,40 +470,47 @@
             }
         });
 
-        // --- NAVIGATION LOGIC ---
-        function renderNav() {
-            const navContainer = document.getElementById('main-nav');
+        function renderNav(containerId) {
+            const navContainer = document.getElementById(containerId);
             navContainer.innerHTML = '';
             
             systemMenu.forEach((item) => {
-                const a = document.createElement('div');
+                const div = document.createElement('div');
                 const extraClass = item.id === 'logout' ? 'logout-item' : '';
                 const activeClass = item.id === 'dashboard' ? 'active' : '';
                 
-                a.className = `nav-item ${activeClass} ${extraClass}`;
+                div.className = `nav-item ${activeClass} ${extraClass}`;
                 
-                a.innerHTML = `
+                div.innerHTML = `
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">${item.icon}</svg>
                     <span>${item.label}</span>
                 `;
 
-                a.onclick = () => handleNavClick(item, a);
-                navContainer.appendChild(a);
+                div.onclick = () => handleNavClick(item, div, containerId);
+                navContainer.appendChild(div);
             });
         }
 
-        function handleNavClick(item, element) {
+        function handleNavClick(item, element, containerId) {
+            // Update active state di SEMUA nav items (desktop & mobile)
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            if(element) element.classList.add('active');
+            // Set active pada elemen yang diklik
+            const allItems = document.querySelectorAll('.nav-item');
+            allItems.forEach(el => {
+                if(el.innerHTML === element.innerHTML) el.classList.add('active');
+            });
 
             if (item.action === 'logout') {
                 const confirmLogout = confirm("Apakah Anda yakin ingin keluar?");
                 if(confirmLogout) {
-                    document.getElementById('main-nav').classList.remove('visible');
+                    document.getElementById('mobile-nav').classList.remove('visible');
                     setTimeout(performLogout, 300);
                 } else {
+                    // Reset active ke dashboard
                     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-                    document.querySelector('.nav-item[id="dashboard"]').classList.add('active');
+                    document.querySelectorAll('.nav-item').forEach(el => {
+                        if(el.innerText.includes('Dashboard')) el.classList.add('active');
+                    });
                 }
                 return;
             }
