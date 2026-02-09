@@ -207,7 +207,7 @@
             
             <div style="text-align: right;">
                 <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 600;">ADMIN ACCESS</div>
-                <div style="font-size: 0.85rem; color: white;">Super User</div>
+                <div style="font-size: 0.85rem; color: white;" id="admin-name-display">Loading...</div>
             </div>
         </div>
     </header>
@@ -381,39 +381,45 @@
             // Body disembunyikan via CSS (display: none) di atas
             
             try {
-                // A. Cek Session Login
+                // A. Cek Session Login yang lebih akurat
                 const { data: { user }, error: authError } = await supabase.auth.getUser();
 
                 if (authError || !user) {
                     alert("⛔ Akses Ditolak: Anda belum login.");
-                    window.location.href = "index.html"; // Redirect ke home
+                    window.location.href = "login.html"; // Redirect ke login
                     return;
                 }
 
-                // B. Cek Role di tabel 'ngebelusers'
+                // B. Cek Role di tabel 'ngebelusers' BERDASARKAN ID USER (PENTING)
                 const { data: userData, error: roleError } = await supabase
                     .from('ngebelusers')
-                    .select('role')
-                    .eq('id', user.id)
-                    .single();
+                    .select('role, full_name') 
+                    .eq('id', user.id) // Pakai ID, bukan email, agar aman
+                    .maybeSingle();
 
                 if (roleError) {
                     console.error("Gagal cek role:", roleError);
-                    alert("Terjadi kesalahan sistem saat memverifikasi akses.");
-                    window.location.href = "index.html";
+                    alert("Terjadi kesalahan sistem saat memverifikasi akses (RLS Policy).");
+                    window.location.href = "dashboard.html"; // Lempar ke dashboard user
                     return;
                 }
 
                 // C. Validasi: Harus Admin
-                if (userData.role !== 'admin') {
-                    alert(`⛔ Akses Ditolak: Akun Anda memiliki role '${userData.role}', bukan Admin.`);
-                    window.location.href = "index.html";
+                if (!userData || userData.role !== 'admin') {
+                    const roleName = userData ? userData.role : 'tidak ditemukan';
+                    alert(`⛔ Akses Ditolak: Akun Anda role adalah '${roleName}', bukan Admin.`);
+                    window.location.href = "dashboard.html";
                     return;
                 }
 
                 // D. Jika Lolos, Tampilkan Halaman
                 document.body.style.display = 'block';
-                console.log("✅ Akses Admin Diterima.");
+                console.log("✅ Akses Admin Diterima. User:", userData.full_name || user.email);
+                
+                // Tampilkan nama admin di header
+                if(document.getElementById('admin-name-display')) {
+                    document.getElementById('admin-name-display').innerText = userData.full_name || "Super Admin";
+                }
 
                 // Lanjutkan inisialisasi dashboard
                 initDashboard();
@@ -476,15 +482,25 @@
             addLog('info', 'Menghubungkan ke Database...');
             
             try {
-                // A. Hitung Transaksi
-                const { count: transCount, error: errTrans } = await supabase
+                // A. Hitung Transaksi (Cek apakah tabel ada, jika null = 0)
+                let transCount = 0;
+                let errTrans = null;
+                
+                // Kita coba query tabel transactions
+                const { count, error: countError } = await supabase
                     .from('transactions')
                     .select('*', { count: 'exact', head: true });
                 
-                if (errTrans) throw errTrans;
+                if (countError) {
+                    console.warn("Tabel transactions mungkin belum ada atau error:", countError);
+                    addLog('warn', 'Tabel Transaksi tidak ditemukan/error.');
+                } else {
+                    transCount = count;
+                }
+                
                 document.getElementById('trans-count').innerText = transCount || 0;
 
-                // B. Hitung Total Page Views
+                // B. Hitung Total Page Views dari tabel 'user_analytics_logs'
                 const { count: viewCount, error: errView } = await supabase
                     .from('user_analytics_logs')
                     .select('*', { count: 'exact', head: true });
@@ -512,17 +528,36 @@
             try {
                 const { data: logs, error } = await supabase
                     .from('user_analytics_logs')
-                    .select('*');
+                    .select('*'); // Ambil semua kolom
                 
                 if (error) throw error;
 
+                // Cek jika data kosong
+                if (!logs || logs.length === 0) {
+                     resultsContainer.innerHTML = `
+                        <div class="ai-box">
+                            <div class="ai-icon">😴</div>
+                            <div class="ai-content">
+                                <h4>Belum ada data</h4>
+                                <p>Tabel log masih kosong. AI butuh data interaksi user untuk memberikan analisa.</p>
+                            </div>
+                        </div>
+                    `;
+                    addLog('warn', 'Tabel log kosong.');
+                    loadingEl.style.display = 'none';
+                    resultsContainer.style.display = 'flex';
+                    return;
+                }
+
                 const trafficData = {};
                 logs.forEach(log => {
-                    const url = log.page_url;
+                    // Cek apakah kolom page_url ada
+                    const url = log.page_url || 'unknown';
                     if (!trafficData[url]) {
                         trafficData[url] = { views: 0, clicks: 0, elements: {} };
                     }
                     trafficData[url].views++;
+                    
                     if (log.action_type === 'click') {
                         trafficData[url].clicks++;
                         const el = log.element_target || 'unknown';
@@ -583,7 +618,7 @@
             } catch (err) {
                 console.error(err);
                 addLog('warn', 'Error AI: ' + err.message);
-                resultsContainer.innerHTML = `<div style="color:var(--accent)">Terjadi kesalahan saat menganalisa.</div>`;
+                resultsContainer.innerHTML = `<div style="color:var(--accent)">Terjadi kesalahan saat menganalisa: ${err.message}</div>`;
             } finally {
                 loadingEl.style.display = 'none';
                 resultsContainer.style.display = 'flex';
