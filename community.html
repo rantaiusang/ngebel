@@ -25,6 +25,7 @@
             --radius-xl: 24px; --radius-lg: 20px; --radius-md: 12px;
             --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
             --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -35,6 +36,7 @@
             color: var(--text-main);
             line-height: 1.6;
             padding-bottom: 80px;
+            overflow-x: hidden;
         }
 
         h1, h2, h3 { font-family: 'Outfit', sans-serif; letter-spacing: -0.02em; }
@@ -161,9 +163,72 @@
         }
         .cta-btn:hover { transform: translateY(-2px); }
 
+        /* ==========================================
+           3. STYLE BARU: POP UP MODAL (PROFIL)
+           ========================================== */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px);
+            z-index: 9999; display: none; /* Default Hidden */
+            align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active { opacity: 1; }
+
+        .modal-content {
+            background: white; width: 90%; max-width: 500px;
+            border-radius: var(--radius-xl); overflow: hidden;
+            transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
+        .modal-overlay.active .modal-content { transform: scale(1); }
+
+        /* Modal Header (Cover Image) */
+        .modal-header {
+            height: 120px; background: linear-gradient(to right, var(--primary-dark), var(--primary));
+            position: relative;
+        }
+        .close-modal-btn {
+            position: absolute; top: 15px; right: 15px;
+            background: rgba(255,255,255,0.2); color: white;
+            border: none; width: 32px; height: 32px; border-radius: 50%;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; transition: 0.2s;
+        }
+        .close-modal-btn:hover { background: rgba(255,255,255,0.4); transform: rotate(90deg); }
+
+        /* Modal Body */
+        .modal-body { text-align: center; padding: 0 30px 40px; margin-top: -50px; }
+        .modal-avatar {
+            width: 100px; height: 100px; border-radius: 50%;
+            border: 4px solid white; object-fit: cover;
+            background: #f1f5f9; box-shadow: var(--shadow-md);
+        }
+        .modal-name { margin-top: 10px; font-size: 1.5rem; font-weight: 700; color: var(--text-main); }
+        .modal-role { font-size: 0.9rem; color: var(--text-muted); font-weight: 500; }
+        
+        .modal-tags { margin: 15px 0; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+        .modal-tag { font-size: 0.75rem; padding: 4px 12px; border-radius: 20px; background: #f1f5f9; color: #64748b; }
+
+        .modal-quote {
+            font-size: 0.95rem; color: #475569; font-style: italic;
+            background: #f8fafc; padding: 15px; border-radius: 12px; margin: 20px 0;
+            border-left: 4px solid var(--accent);
+        }
+        
+        .modal-contact { margin-top: 25px; }
+        .btn-wa-full {
+            width: 100%; padding: 14px; background: #25D366; color: white;
+            border: none; border-radius: 12px; font-weight: 700; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            transition: 0.2s;
+        }
+        .btn-wa-full:hover { background: #20bd5a; transform: translateY(-2px); }
+
         @media (max-width: 600px) {
             .hero { padding: 30px 20px; }
             .card { padding: 20px; }
+            .modal-content { width: 95%; margin: 10px; }
         }
     </style>
 </head>
@@ -172,7 +237,6 @@
     <!-- Header -->
     <header>
         <div class="container nav-content">
-            <!-- PERBAIKAN: Tombol kembali sekarang mengarah ke index.html (Home) -->
             <div class="back-btn" onclick="window.location.href='index.html'">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                 Kembali
@@ -240,19 +304,50 @@
         </div>
     </main>
 
+    <!-- ==========================
+         KOMPONEN MODAL (POP UP)
+         ========================== -->
+    <div id="profile-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="close-modal-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <img id="modal-img" src="" alt="Avatar" class="modal-avatar">
+                <h2 id="modal-name" class="modal-name">Nama User</h2>
+                <p id="modal-role" class="modal-role">Role</p>
+                
+                <div class="modal-tags">
+                    <span class="modal-tag">Verified</span>
+                    <span class="modal-tag">Active</span>
+                </div>
+
+                <div id="modal-quote" class="modal-quote">
+                    "Quote akan muncul di sini..."
+                </div>
+
+                <div class="modal-contact">
+                    <button id="modal-wa-btn" class="btn-wa-full">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.484-.471-.904 0-.376.164-.804.405-1.017.277-.191.712-.754 1.007-1.347 1.644-2.39 1.75-2.755.11-.363.554-1.626.554-2.368 0-1.783-1.052-2.586-1.436l.004-.003c.295-.137.589-.283.873-.435 1.077-.636 1.375-1.796 1.375-3.063 0-1.28-.665-2.15-1.916-1.474-.526-.937-1.493-1.656-1.984-.267-.208-.922-.626-1.595-1.126-.673-.5-1.38-.873-1.966-1.112-1.396-.352-2.321-.083-3.033.895-.712.979-2.067.979-3.665 0-1.6-.676-2.722-1.65-1.974-.974-1.648-2.55-1.648-3.917 0-.649.194-1.273.55-1.76.897-1.09.262-1.688.726-1.98 1.367-.29.638-.455 1.364-.455 2.063 0 1.625.76 2.325 1.896.698 1.134.864 2.832.434 3.973-.43 1.14-1.25 1.92-2.188 2.696-.938.777-2.113 1.332-3.294 1.332-.682 0-1.344-.117-1.963-.347-.62-.229-1.167-.525-1.582-.907-.415-.382-.74-.879-.913-1.432-.173-.553-.25-1.167-.25-1.827 0-1.592.784-2.666 2.094-1.074 1.31-.905 3.089.835 4.783-.065 1.692-.905 3.473.835 4.783"/></svg>
+                        Hubungi di WhatsApp
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // --- 1. KONFIGURASI SUPABASE (BEST PRACTICE V2) ---
+        // --- 1. KONFIGURASI SUPABASE ---
         const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
 
-        // ✅ CARA LEBIH BERSIH (BEST PRACTICE)
-        // Menggunakan destructuring untuk mengambil function createClient dari library global 'supabase'
         const { createClient } = supabase;
-        
-        // Inisialisasi client dengan nama variabel unik 'supabaseClient'
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- 2. DATA DUMMY (FALLBACK) ---
+        // --- 2. DATA DUMMY & DATABASE GABUNGAN (Untuk Logika) ---
+        // Kita akan menyimpan data fetch DB & Dummy dalam satu variabel global agar mudah dicari ID-nya
+        let communityData = [];
+
         const dummyData = [
             {
                 id: 'dummy-001',
@@ -307,6 +402,7 @@
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
                             Chat
                         </button>
+                        <!-- Tombol ini memanggil fungsi showDetail(id) -->
                         <button class="btn-action btn-primary" onclick="showDetail('${member.id}')">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                             Profil
@@ -321,18 +417,59 @@
             window.open(`https://wa.me/${phone}`, '_blank');
         }
 
+        // --- 4. LOGIKA MODAL POP UP ---
         function showDetail(id) {
-            alert("Fitur Detail Profil akan segera hadir! ID: " + id);
+            // Cari data user berdasarkan ID dari array global communityData
+            const user = communityData.find(member => member.id === id);
+
+            if (!user) {
+                alert("Data profil tidak ditemukan.");
+                return;
+            }
+
+            // Isi data ke dalam elemen Modal
+            document.getElementById('modal-img').src = user.avatar_url || `https://picsum.photos/seed/${user.full_name}/200/200`;
+            document.getElementById('modal-name').innerText = user.full_name;
+            document.getElementById('modal-role').innerText = user.sub_title || user.role || 'Anggota';
+            document.getElementById('modal-quote').innerText = user.quote ? `"${user.quote}"` : "Tidak ada kutipan tersedia.";
+            
+            // Update link WA
+            const cleanPhone = user.whatsapp_number ? user.whatsapp_number.replace(/[^0-9]/g, '') : '';
+            const waBtn = document.getElementById('modal-wa-btn');
+            
+            if (cleanPhone) {
+                waBtn.style.display = 'flex';
+                waBtn.onclick = () => window.open(`https://wa.me/${cleanPhone}`, '_blank');
+            } else {
+                waBtn.style.display = 'none'; // Sembunyikan tombol jika no HP kosong
+            }
+
+            // Tampilkan Modal
+            const modal = document.getElementById('profile-modal');
+            modal.style.display = 'flex';
+            // Sedikit delay agar animasi opacity bisa berjalan
+            setTimeout(() => { modal.classList.add('active'); }, 10);
         }
 
-        // --- 4. FETCH DATA & RENDER DENGAN FALLBACK ---
+        function closeModal() {
+            const modal = document.getElementById('profile-modal');
+            modal.classList.remove('active');
+            // Tunggu animasi selesai baru hilangkan elemen
+            setTimeout(() => { modal.style.display = 'none'; }, 300);
+        }
+
+        // Klik di area gelap (overlay) untuk menutup
+        document.getElementById('profile-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        // --- 5. FETCH DATA & RENDER ---
         async function loadCommunity() {
             const container = document.getElementById('community-container');
             
             try {
                 console.log("Mengambil data dari Supabase...");
                 
-                // ✅ QUERY DIPERBAIKI: Menggunakan supabaseClient
                 const { data, error } = await supabaseClient
                     .from('ngebel_community')
                     .select('*')
@@ -343,27 +480,22 @@
                     throw error;
                 }
 
-                // Jika data dari DB ada, pakai itu. Jika kosong/null, pakai Dummy.
-                const dataToRender = (data && data.length > 0) ? data : dummyData;
+                // Gabungkan data: Jika DB kosong pakai Dummy
+                communityData = (data && data.length > 0) ? data : dummyData;
                 
-                console.log("Data dirender:", dataToRender.length, "anggota.");
-                container.innerHTML = dataToRender.map(member => createCommunityCard(member)).join('');
+                console.log("Data dirender:", communityData.length, "anggota.");
+                container.innerHTML = communityData.map(member => createCommunityCard(member)).join('');
 
             } catch (err) {
                 console.error("Gagal memuat data DB, menggunakan Data Dummy:", err);
-                
-                // Opsional: Tampilkan alert error untuk debugging
-                // alert("Gagal koneksi database: " + err.message + ". Menampilkan data dummy.");
-
-                // JIKA ERROR GAGAL KONEKSI, PAKAI DUMMY
-                container.innerHTML = dummyData.map(member => createCommunityCard(member)).join('');
+                communityData = dummyData; // Fallback
+                container.innerHTML = communityData.map(member => createCommunityCard(member)).join('');
             }
             
-            // Jalankan animasi
             observeAnimations();
         }
 
-        // --- 5. ANIMASI SCROLL ---
+        // --- 6. ANIMASI SCROLL ---
         function observeAnimations() {
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
