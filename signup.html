@@ -1,450 +1,242 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Lengkapi Profil | Ngebel Platform</title>
-    <meta name="theme-color" content="#0f766e">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Fonts (Sama dengan halaman lain) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>Daftar | Ngebel Platform</title>
 
-    <!-- Supabase Client -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <style>
-        /* --- 1. VARIABLES (SAMA dengan Design Lain) --- */
-        :root {
-            --primary: #0f766e; --primary-light: #14b8a6;
-            --bg-body: #f8fafc;
-            --glass: rgba(255, 255, 255, 0.95);
-            --text-main: #1e293b; --text-muted: #64748b;
-            
-            --radius-xl: 32px; --radius-lg: 24px;
-            --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.05);
-            --shadow-hover: 0 20px 50px -12px rgba(15, 118, 110, 0.3);
-        }
+<style>
 
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            line-height: 1.6;
-            padding-bottom: 40px;
-            display: flex; align-items: center; justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
+body{
+    font-family:system-ui;
+    background:#f5f7fb;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    height:100vh;
+}
 
-        h2 { font-family: 'Outfit', sans-serif; letter-spacing: -0.02em; }
-        
-        /* --- 2. COMPONENTS --- */
-        .container { 
-            max-width: 500px; margin: 0 auto; width: 100%; 
-            background: var(--glass);
-            padding: 40px; border-radius: var(--radius-xl);
-            box-shadow: var(--shadow-soft);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.5);
-            position: relative;
-            z-index: 2;
-        }
+.card{
+    width:420px;
+    background:white;
+    padding:35px;
+    border-radius:18px;
+    box-shadow:0 10px 40px rgba(0,0,0,.06);
+}
 
-        /* Header Style */
-        .header-title { text-align: center; margin-bottom: 30px; }
-        .header-icon { font-size: 3rem; margin-bottom: 10px; display: inline-block; animation: float 3s ease-in-out infinite; }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        
-        p { text-align: center; color: var(--text-muted); margin-bottom: 30px; font-size: 0.95rem; }
+h2{
+    margin-bottom:10px;
+}
 
-        /* Form Group */
-        .form-group { margin-bottom: 20px; }
-        label { display: block; font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-        
-        input, select {
-            width: 100%; padding: 14px; border: 2px solid #e2e8f0;
-            border-radius: 12px; font-size: 1rem; outline: none;
-            transition: all 0.3s ease; background: #fff;
-            color: var(--text-main);
-            appearance: none; /* Reset native style dropdown */
-        }
-        
-        /* Custom Dropdown Arrow */
-        .select-wrapper { position: relative; }
-        .select-wrapper::after {
-            content: "▼"; font-size: 0.8rem; color: var(--text-muted);
-            position: absolute; right: 15px; top: 50%; transform: translateY(-50%); pointer-events: none;
-        }
+p{
+    color:#64748b;
+    margin-bottom:25px;
+}
 
-        input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.1); }
-        input[readonly] { background: #f1f5f9; color: var(--text-muted); border-color: transparent; }
+input{
+    width:100%;
+    padding:14px;
+    margin-bottom:14px;
+    border-radius:10px;
+    border:1.5px solid #e2e8f0;
+    font-size:16px;
+}
 
-        /* Checkbox */
-        .checkbox-group { display: flex; align-items: flex-start; gap: 12px; margin-top: 20px; }
-        .checkbox-group input { margin-top: 4px; width: 18px; height: 18px; cursor: pointer; pointer-events: auto; }
-        .checkbox-group label { font-size: 0.85rem; font-weight: 500; text-transform: none; color: var(--text-main); margin: 0; }
+button{
+    width:100%;
+    padding:14px;
+    border:none;
+    background:#0f766e;
+    color:white;
+    border-radius:10px;
+    font-weight:600;
+    cursor:pointer;
+}
 
-        /* Buttons */
-        .btn {
-            width: 100%; padding: 16px; background: var(--primary); color: white;
-            font-weight: 700; border: none; border-radius: 12px;
-            cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 8px;
-            transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(15, 118, 110, 0.3);
-        }
-        .btn:hover { background: var(--primary-light); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(15, 118, 110, 0.4); }
-        .btn:disabled { background: #cbd5e1; cursor: not-allowed; transform: none; }
+button:disabled{
+    background:#94a3b8;
+}
 
-        /* Back Button */
-        .back-link {
-            position: absolute; top: 20px; left: 20px;
-            display: flex; align-items: center; gap: 8px;
-            font-size: 0.85rem; font-weight: 600; color: var(--text-muted);
-            cursor: pointer; padding: 8px 16px; background: white; border-radius: 50px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: 0.2s;
-        }
-        .back-link:hover { color: var(--primary); transform: translateX(-3px); }
+.feedback{
+    margin-top:15px;
+    padding:12px;
+    border-radius:8px;
+    display:none;
+}
 
-        /* Loader */
-        .spinner { width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+.error{
+    background:#fee2e2;
+    color:#b91c1c;
+}
 
-        /* Feedback Message */
-        .feedback { margin-top: 15px; padding: 12px; border-radius: 8px; font-size: 0.9rem; text-align: center; display: none; }
-        .feedback.error { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
-        .feedback.success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+.success{
+    background:#dcfce7;
+    color:#166534;
+}
 
-    </style>
+*{
+    touch-action:manipulation;
+}
+
+</style>
 </head>
+
 <body>
 
-    <!-- Tombol Kembali -->
-    <a href="login.html" class="back-link">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-        Kembali
-    </a>
+<div class="card">
 
-    <div class="container animate-up">
-        <!-- Icon Header -->
-        <div class="header-title">
-            <div class="header-icon">🏔️</div>
-            <h2>Lengkapi Profil</h2>
-            <p>Silakan isi data diri Anda untuk mengakses Dashboard.</p>
-        </div>
+<h2>Buat Akun 🚀</h2>
+<p>Daftar untuk mulai menggunakan platform Ngebel.</p>
 
-        <form id="completeForm">
-            
-            <!-- Nama & HP (Grid di Mobile) -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                <div class="form-group">
-                    <label>Nama Lengkap</label>
-                    <input type="text" id="full_name" required placeholder="Nama Anda">
-                </div>
-                <div class="form-group">
-                    <label>No. WhatsApp</label>
-                    <input type="tel" id="phone" required placeholder="0812..." pattern="[0-9]{10,14}">
-                </div>
-            </div>
+<form id="signupForm">
 
-            <!-- Dropdown Wilayah -->
-            <div class="form-group">
-                <label>Provinsi</label>
-                <div class="select-wrapper">
-                    <select id="province" required><option value="">Pilih Provinsi...</option></select>
-                </div>
-            </div>
+<input 
+type="text" 
+id="name"
+placeholder="Nama lengkap"
+required
+>
 
-            <div class="form-group">
-                <label>Kota / Kabupaten</label>
-                <div class="select-wrapper">
-                    <select id="city" required disabled><option value="">Pilih Kota...</option></select>
-                </div>
-            </div>
+<input 
+type="email" 
+id="email"
+placeholder="Email aktif"
+required
+>
 
-            <div class="form-group">
-                <label>Kecamatan</label>
-                <div class="select-wrapper">
-                    <select id="district" required disabled><option value="">Pilih Kecamatan...</option></select>
-                </div>
-            </div>
+<input 
+type="password" 
+id="password"
+placeholder="Minimal 6 karakter"
+required
+>
 
-            <div class="form-group">
-                <label>Desa / Kelurahan</label>
-                <div class="select-wrapper">
-                    <select id="village" required disabled><option value="">Pilih Desa...</option></select>
-                </div>
-            </div>
+<button id="btn">
+Buat Akun
+</button>
 
-            <!-- Syarat Ketentuan -->
-            <div class="checkbox-group">
-                <input type="checkbox" id="terms" required>
-                <label for="terms">Saya menyetujui <a href="#" style="color:var(--primary);">Syarat & Ketentuan</a> serta Kebijakan Privasi Ngebel.</label>
-            </div>
+<div id="msg" class="feedback"></div>
 
-            <!-- Feedback Area -->
-            <div id="feedback" class="feedback"></div>
+</form>
+</div>
 
-            <button type="submit" class="btn" id="submitBtn">
-                <span id="btnText">Simpan & Masuk</span>
-                <div id="loader" class="spinner" style="display:none;"></div>
-            </button>
-        </form>
-    </div>
 
-    <script>
+<script>
 
 //////////////////////////////
 // SUPABASE
 //////////////////////////////
 
-const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
+const SUPABASE_URL = "https://dikapquhusbwjccbqcsb.supabase.co";
+const SUPABASE_KEY = "YOUR_ANON_KEY";
 
 const { createClient } = window.supabase;
-const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 
 //////////////////////////////
-// ELEMENT DROPDOWN
+// VALIDASI
 //////////////////////////////
 
-const provinceEl = document.getElementById('province');
-const cityEl = document.getElementById('city');
-const districtEl = document.getElementById('district');
-const villageEl = document.getElementById('village');
+function showMessage(text,type){
 
+const msg=document.getElementById("msg");
 
-//////////////////////////////
-// API INDONESIA (GRATIS)
-//////////////////////////////
+msg.className=`feedback ${type}`;
+msg.innerText=text;
+msg.style.display="block";
 
-const API = "https://www.emsifa.com/api-wilayah-indonesia/api";
-
-
-//////////////////////////////
-// LOAD PROVINSI
-//////////////////////////////
-
-async function loadProvinces() {
-
-    const res = await fetch(`${API}/provinces.json`);
-    const provinces = await res.json();
-
-    provinces.forEach(p => {
-        provinceEl.innerHTML += `<option value="${p.name}" data-id="${p.id}">${p.name}</option>`;
-    });
 }
 
-loadProvinces();
+function validate(email,password,name){
 
+if(name.length < 3)
+return "Nama terlalu pendek";
 
-//////////////////////////////
-// RESET DROPDOWN
-//////////////////////////////
+if(!email.includes("@"))
+return "Email tidak valid";
 
-function resetSelect(select, placeholder){
+if(password.length < 6)
+return "Password minimal 6 karakter";
 
-    select.innerHTML = `<option value="">${placeholder}</option>`;
-    select.disabled = true;
+return null;
+
 }
 
 
-//////////////////////////////
-// PROVINSI CHANGE
-//////////////////////////////
-
-provinceEl.addEventListener('change', async function(){
-
-    resetSelect(cityEl, "Pilih Kota...");
-    resetSelect(districtEl, "Pilih Kecamatan...");
-    resetSelect(villageEl, "Pilih Desa...");
-
-    if(!this.value) return;
-
-    cityEl.disabled = false;
-
-    const id = this.selectedOptions[0].dataset.id;
-
-    const res = await fetch(`${API}/regencies/${id}.json`);
-    const cities = await res.json();
-
-    cities.forEach(c=>{
-        cityEl.innerHTML += `<option value="${c.name}" data-id="${c.id}">${c.name}</option>`;
-    });
-
-});
-
 
 //////////////////////////////
-// KOTA CHANGE
+// SIGNUP
 //////////////////////////////
 
-cityEl.addEventListener('change', async function(){
+document
+.getElementById("signupForm")
+.addEventListener("submit", async (e)=>{
 
-    resetSelect(districtEl, "Pilih Kecamatan...");
-    resetSelect(villageEl, "Pilih Desa...");
+e.preventDefault();
 
-    if(!this.value) return;
+const btn=document.getElementById("btn");
+btn.disabled=true;
 
-    districtEl.disabled = false;
+const name=document.getElementById("name").value.trim();
+const email=document.getElementById("email").value.trim();
+const password=document.getElementById("password").value;
 
-    const id = this.selectedOptions[0].dataset.id;
+const error=validate(email,password,name);
 
-    const res = await fetch(`${API}/districts/${id}.json`);
-    const districts = await res.json();
+if(error){
 
-    districts.forEach(d=>{
-        districtEl.innerHTML += `<option value="${d.name}" data-id="${d.id}">${d.name}</option>`;
-    });
+showMessage(error,"error");
+btn.disabled=false;
+return;
 
-});
-
-
-//////////////////////////////
-// KECAMATAN CHANGE
-//////////////////////////////
-
-districtEl.addEventListener('change', async function(){
-
-    resetSelect(villageEl, "Pilih Desa...");
-
-    if(!this.value) return;
-
-    villageEl.disabled = false;
-
-    const id = this.selectedOptions[0].dataset.id;
-
-    const res = await fetch(`${API}/villages/${id}.json`);
-    const villages = await res.json();
-
-    villages.forEach(v=>{
-        villageEl.innerHTML += `<option value="${v.name}" data-id="${v.id}">${v.name}</option>`;
-    });
-
-});
-
-
-//////////////////////////////
-// INIT FORM
-//////////////////////////////
-
-async function initForm(){
-
-    try{
-
-        const { data:{user}, error } = await supabaseClient.auth.getUser();
-
-        if(error) throw error;
-
-        if(!user){
-            window.location.href='login.html';
-            return;
-        }
-
-        const metadata = user.user_metadata || {};
-        const name = metadata.full_name || metadata.name || user.email.split('@')[0];
-
-        document.getElementById('full_name').value = name;
-
-        const { data } = await supabaseClient
-            .from('ngebelusers')
-            .select('*')
-            .eq('id', user.id)
-            .maybeSingle();
-
-        if(data){
-
-            document.getElementById('phone').value = data.phone || "";
-
-            // AUTO SELECT (opsional ringan)
-            setTimeout(()=>{
-                provinceEl.value = data.province || "";
-            },500);
-        }
-
-    }catch(err){
-
-        console.error("INIT ERROR:",err);
-        window.location.href='login.html';
-    }
 }
 
-window.addEventListener('DOMContentLoaded', initForm);
+try{
 
+const { error } = await supabase.auth.signUp({
 
+email,
+password,
 
-//////////////////////////////
-// SUBMIT
-//////////////////////////////
+options:{
+data:{
+full_name:name
+}
+}
 
-document.getElementById('completeForm')
-.addEventListener('submit', async function(e){
+});
 
-    e.preventDefault();
+if(error) throw error;
 
-    const btn = document.getElementById('submitBtn');
-    const btnText = document.getElementById('btnText');
-    const loader = document.getElementById('loader');
-    const feedback = document.getElementById('feedback');
+showMessage(
+"Signup berhasil! Cek email untuk verifikasi.",
+"success"
+);
 
-    if(!document.getElementById('terms').checked){
+setTimeout(()=>{
 
-        feedback.className='feedback error';
-        feedback.innerText='Mohon setujui Syarat & Ketentuan.';
-        feedback.style.display='block';
-        return;
-    }
+window.location.href="login.html";
 
-    btn.disabled=true;
-    btnText.style.display='none';
-    loader.style.display='block';
+},2000);
 
-    try{
+}catch(err){
 
-        const { data:{user} } = await supabaseClient.auth.getUser();
+if(err.message.includes("already registered"))
+showMessage("Email sudah terdaftar","error");
 
-        if(!user) throw new Error("Session habis.");
+else if(err.message.includes("rate limit"))
+showMessage("Terlalu banyak percobaan. Tunggu sebentar.","error");
 
-        const { error } = await supabaseClient
-        .from('ngebelusers')
-        .upsert({
+else
+showMessage(err.message,"error");
 
-            id:user.id,
-            email:user.email,
-            full_name:document.getElementById('full_name').value,
-            phone:document.getElementById('phone').value,
-            province:provinceEl.value,
-            city:cityEl.value,
-            district:districtEl.value,
-            village:villageEl.value,
-            role:'user',
-            updated_at:new Date()
+btn.disabled=false;
 
-        },{onConflict:'id'});
-
-        if(error) throw error;
-
-        feedback.className='feedback success';
-        feedback.innerText='Profil berhasil disimpan! Mengarahkan...';
-        feedback.style.display='block';
-
-        setTimeout(()=>{
-            window.location.href='dashboard.html';
-        },1500);
-
-    }catch(err){
-
-        btn.disabled=false;
-        btnText.style.display='block';
-        loader.style.display='none';
-
-        feedback.className='feedback error';
-        feedback.innerText='Gagal menyimpan: '+err.message;
-        feedback.style.display='block';
-    }
+}
 
 });
 
