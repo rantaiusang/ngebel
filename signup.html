@@ -196,211 +196,141 @@
 
     <script>
         // --- 1. KONFIGURASI SUPABASE ---
-        const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // --- 1. KONFIGURASI SUPABASE ---
+const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
+const SUPABASE_KEY = 'YOUR_ANON_KEY';
 
-        // --- 2. DATA WILAYAH (DUMMY / CONTOH) ---
-        // NOTE: Ganti data ini dengan data API wilayah sesungguhnya agar lengkap
-        const locations = {
-            "Jawa Timur": {
-                "Ponorogo": {
-                    "Ngebel": ["Tugu", "Bendungan", "Gandu", "Ngebel", "Wadung", "Lumbangrejo", "Gajah", "Ngampel"],
-                    "Pulung": ["Bentuk", "Pulung", "Sempu", "Dowo", "Wanu"]
-                },
-                "Madiun": {
-                    "Saradan": ["Kertosono", "Baleh", "Blimbing", "Klegen"],
-                    "Madiun": ["Nambangan Kidul", "Pilangbango", "Sogaten"]
-                }
-            },
-            "Jawa Tengah": {
-                "Semarang": {
-                    "Semarang Tengah": ["Pemuda", "Sekayu", "Peterongan"],
-                    "Semarang Selatan": ["Banyumanik", "Tawang Mas", "Mijen"]
-                }
+// FIX GLOBAL CDN
+const { createClient } = window.supabase;
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+
+// --- 4. LOAD DATA USER & INIT FORM ---
+async function initForm() {
+
+    try {
+
+        const { data: { user }, error } = await supabaseClient.auth.getUser();
+
+        if (error) throw error;
+
+        if (!user) {
+            window.location.href = 'login.html';
+            return;
+        }
+
+        const metadata = user.user_metadata || {};
+        const name = metadata.full_name || metadata.name || user.email.split('@')[0];
+
+        if (document.getElementById('full_name')) {
+            document.getElementById('full_name').value = name;
+        }
+
+        // Ambil data existing
+        const { data: existingData, error: dbError } = await supabaseClient
+            .from('ngebelusers')
+            .select('phone, province, city')
+            .eq('id', user.id)
+            .maybeSingle();
+
+        if (dbError) throw dbError;
+
+        if (existingData) {
+
+            if(existingData.phone) 
+                document.getElementById('phone').value = existingData.phone;
+
+            if(existingData.province) {
+
+                provinceEl.value = existingData.province;
+                provinceEl.dispatchEvent(new Event('change'));
+
+                setTimeout(() => {
+                    cityEl.value = existingData.city;
+                    cityEl.dispatchEvent(new Event('change'));
+                }, 200);
             }
+        }
+
+    } catch(err){
+        console.error("INIT ERROR:", err);
+        window.location.href = 'login.html';
+    }
+}
+
+
+// --- 5. HANDLE SUBMIT FORM ---
+document.getElementById('completeForm').addEventListener('submit', async function(e) {
+
+    e.preventDefault();
+            
+    const btn = document.getElementById('submitBtn');
+    const btnText = document.getElementById('btnText');
+    const feedback = document.getElementById('feedback');
+            
+    if (!document.getElementById('terms').checked) {
+        feedback.className = 'feedback error';
+        feedback.innerText = 'Mohon setujui Syarat & Ketentuan.';
+        feedback.style.display = 'block';
+        return;
+    }
+
+    btn.disabled = true;
+    btnText.style.display = 'none';
+    document.getElementById('loader').style.display = 'block';
+    feedback.style.display = 'none';
+
+    try {
+
+        const { data: { user }, error } = await supabaseClient.auth.getUser();
+
+        if (error) throw error;
+        if (!user) throw new Error("Sesi habis, silakan login ulang.");
+
+        const formData = {
+            full_name: document.getElementById('full_name').value,
+            phone: document.getElementById('phone').value,
+            province: provinceEl.value,
+            city: cityEl.value,
+            district: districtEl.value,
+            village: villageEl.value,
+            role: 'user',
+            updated_at: new Date()
         };
 
-        // --- 3. LOGIKA DROPDOWN WILAYAH ---
-        const provinceEl = document.getElementById('province');
-        const cityEl = document.getElementById('city');
-        const districtEl = document.getElementById('district');
-        const villageEl = document.getElementById('village');
+        const { error: upsertError } = await supabaseClient
+            .from('ngebelusers')
+            .upsert({
+                id: user.id,
+                email: user.email,
+                ...formData
+            }, { onConflict: 'id' });
 
-        function resetSelects(startIndex) {
-            const selects = [provinceEl, cityEl, districtEl, villageEl];
-            for (let i = startIndex; i < selects.length; i++) {
-                selects[i].innerHTML = `<option value="">Pilih ${['Provinsi', 'Kota/Kab', 'Kecamatan', 'Desa'][i]}...</option>`;
-                selects[i].disabled = true;
-            }
-        }
+        if (upsertError) throw upsertError;
 
-        // Isi Provinsi
-        Object.keys(locations).forEach(prov => {
-            const opt = document.createElement('option');
-            opt.value = prov; opt.textContent = prov;
-            provinceEl.appendChild(opt);
-        });
+        feedback.className = 'feedback success';
+        feedback.innerText = 'Profil berhasil disimpan! Mengarahkan ke Dashboard...';
+        feedback.style.display = 'block';
 
-        // Event Listener Provinsi
-        provinceEl.addEventListener('change', function() {
-            resetSelects(2); // Reset City sampai Village
-            const prov = this.value;
-            if (locations[prov]) {
-                cityEl.disabled = false;
-                Object.keys(locations[prov]).forEach(city => {
-                    const opt = document.createElement('option');
-                    opt.value = city; opt.textContent = city;
-                    cityEl.appendChild(opt);
-                });
-            }
-        });
+        setTimeout(() => {
+            window.location.href = 'dashboard.html';
+        }, 1500);
 
-        // Event Listener Kota
-        cityEl.addEventListener('change', function() {
-            resetSelects(3); // Reset Kecamatan & Desa
-            const prov = provinceEl.value;
-            const city = this.value;
-            if (locations[prov] && locations[prov][city]) {
-                districtEl.disabled = false;
-                Object.keys(locations[prov][city]).forEach(district => {
-                    const opt = document.createElement('option');
-                    opt.value = district; opt.textContent = district;
-                    districtEl.appendChild(opt);
-                });
-            }
-        });
+    } catch (err) {
 
-        // Event Listener Kecamatan
-        districtEl.addEventListener('change', function() {
-            resetSelects(4); // Reset Desa
-            const prov = provinceEl.value;
-            const city = cityEl.value;
-            const dist = this.value;
-            
-            if (locations[prov] && locations[prov][city] && locations[prov][city][dist]) {
-                villageEl.disabled = false;
-                locations[prov][city][dist].forEach(village => {
-                    const opt = document.createElement('option');
-                    opt.value = village; opt.textContent = village;
-                    villageEl.appendChild(opt);
-                });
-            }
-        });
+        console.error("UPSERT ERROR:", err);
 
-        // --- 4. LOAD DATA USER & INIT FORM ---
-        async function initForm() {
-            const { data: { user } } = await supabase.auth.getUser();
-
-            if (!user) {
-                window.location.href = 'login.html'; // Lempar ke login jika belum auth
-                return;
-            }
-
-            // Ambil metadata dari Google (Nama, Email)
-            const metadata = user.user_metadata || {};
-            const name = metadata.full_name || metadata.name || user.email.split('@')[0];
-
-            // Isi Form Otomatis
-            if (document.getElementById('full_name')) {
-                document.getElementById('full_name').value = name;
-            }
-            // Email tidak ditampilkan karena read-only, tapi kita simpan di JS nanti
-            
-            // Cek apakah data sudah ada di DB? (Opsional)
-            const { data: existingData } = await supabase
-                .from('ngebelusers')
-                .select('phone, province, city')
-                .eq('id', user.id)
-                .maybeSingle();
-
-            if (existingData) {
-                // Jika data sudah pernah disimpan sebelumnya, isi kembali formnya
-                if(existingData.phone) document.getElementById('phone').value = existingData.phone;
-                if(existingData.province) {
-                    provinceEl.value = existingData.province;
-                    // Trigger change event untuk load kota dst
-                    provinceEl.dispatchEvent(new Event('change'));
-                    setTimeout(() => {
-                        cityEl.value = existingData.city;
-                        cityEl.dispatchEvent(new Event('change'));
-                    }, 100);
-                }
-            }
-        }
-
-        // --- 5. HANDLE SUBMIT FORM ---
-        document.getElementById('completeForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const btn = document.getElementById('submitBtn');
-            const btnText = document.getElementById('btnText');
-            const feedback = document.getElementById('feedback');
-            
-            // Validasi Sederhana
-            if (!document.getElementById('terms').checked) {
-                feedback.className = 'feedback error';
-                feedback.innerText = 'Mohon setujui Syarat & Ketentuan.';
-                feedback.style.display = 'block';
-                return;
-            }
-
-            // UI Loading
-            btn.disabled = true;
-            btnText.style.display = 'none';
-            document.getElementById('loader').style.display = 'block';
-            feedback.style.display = 'none';
-
-            try {
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) throw new Error("Sesi habis, silakan login ulang.");
-
-                const formData = {
-                    full_name: document.getElementById('full_name').value,
-                    phone: document.getElementById('phone').value,
-                    province: provinceEl.value,
-                    city: cityEl.value,
-                    district: districtEl.value,
-                    village: villageEl.value,
-                    role: 'user', // Default role user baru
-                    updated_at: new Date()
-                };
-
-                // UPSERT: Insert jika belum ada, Update jika sudah ada (berdasarkan ID)
-                const { data, error } = await supabase
-                    .from('ngebelusers')
-                    .upsert({
-                        id: user.id, // Kunci utama ID User Auth
-                        email: user.email,
-                        ...formData
-                    }, { onConflict: 'id' });
-
-                if (error) throw error;
-
-                // Sukses
-                feedback.className = 'feedback success';
-                feedback.innerText = 'Profil berhasil disimpan! Mengarahkan ke Dashboard...';
-                feedback.style.display = 'block';
-
-                // Redirect ke Dashboard setelah 1.5 detik
-                setTimeout(() => {
-                    window.location.href = 'dashboard.html';
-                }, 1500);
-
-            } catch (err) {
-                console.error(err);
-                btn.disabled = false;
-                btnText.style.display = 'block';
-                document.getElementById('loader').style.display = 'none';
+        btn.disabled = false;
+        btnText.style.display = 'block';
+        document.getElementById('loader').style.display = 'none';
                 
-                feedback.className = 'feedback error';
-                feedback.innerText = 'Gagal menyimpan: ' + err.message;
-                feedback.style.display = 'block';
-            }
-        });
+        feedback.className = 'feedback error';
+        feedback.innerText = 'Gagal menyimpan: ' + err.message;
+        feedback.style.display = 'block';
+    }
+});
 
-        // Jalankan Init saat load
-        window.addEventListener('DOMContentLoaded', initForm);
+window.addEventListener('DOMContentLoaded', initForm);
 
     </script>
 </body>
