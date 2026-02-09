@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#0f766e">
     <meta name="description" content="Kenali para pelaku wisata, petani buah, dan penggerak ekonomi kreatif di Telaga Ngebel.">
 
-    <!-- Supabase Client (CDN Hanya Sekali) -->
+    <!-- Supabase Client (CDN) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <!-- Google Fonts -->
@@ -16,13 +16,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 
     <style>
+        /* --- 1. CORE VARIABLES & RESET --- */
         :root {
+            /* Palette Colors */
             --primary: #0f766e; --primary-dark: #0d5f58; --primary-light: #ccfbf1;
-            --accent: #f59e0b; 
-            --bg-body: #f8fafc; 
-            --glass: rgba(255, 255, 255, 0.9);
+            --accent: #f59e0b;
+            --bg-body: #f8fafc;
+            --glass: rgba(255, 255, 255, 0.95);
             --text-main: #1e293b; --text-muted: #64748b;
+            
+            /* Shapes */
             --radius-xl: 24px; --radius-lg: 20px; --radius-md: 12px;
+            
+            /* Shadows */
             --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
             --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
             --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
@@ -41,10 +47,11 @@
 
         h1, h2, h3 { font-family: 'Outfit', sans-serif; letter-spacing: -0.02em; }
         a { text-decoration: none; color: inherit; }
+        button { cursor: pointer; border: none; font-family: inherit; }
         
         .container { max-width: 1000px; margin: 0 auto; padding: 0 20px; }
 
-        /* --- Header --- */
+        /* --- 2. COMPONENTS: HEADER & HERO --- */
         header {
             position: sticky; top: 0; z-index: 100;
             background: rgba(255,255,255,0.85); backdrop-filter: blur(12px);
@@ -58,16 +65,15 @@
             color: var(--text-muted); font-weight: 600; font-size: 0.9rem;
             padding: 8px 16px; border-radius: 50px;
             background: rgba(255,255,255,0.6); border: 1px solid rgba(0,0,0,0.05);
-            transition: all 0.2s ease; flex-shrink: 0; cursor: pointer;
+            transition: all 0.2s ease; flex-shrink: 0;
         }
         .back-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
 
-        /* --- Hero Section --- */
         .hero { text-align: center; padding: 40px 20px; }
         .hero h1 { font-size: clamp(2rem, 4vw, 2.8rem); color: var(--primary-dark); margin-bottom: 12px; }
         .hero p { color: var(--text-muted); max-width: 600px; margin: 0 auto; }
 
-        /* --- Section: Community Grid --- */
+        /* --- 3. LAYOUT: GRID & SECTIONS --- */
         .section-title { 
             font-size: 1.25rem; font-weight: 700; color: var(--text-main); 
             margin: 40px 0 20px; display: flex; align-items: center; gap: 10px; 
@@ -78,7 +84,7 @@
             display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;
         }
 
-        /* --- Profile Card --- */
+        /* --- 4. COMPONENTS: CARD --- */
         .card {
             background: var(--glass); border: 1px solid rgba(255,255,255,0.6);
             border-radius: var(--radius-lg); padding: 24px;
@@ -93,8 +99,7 @@
             width: 100px; height: 100px; border-radius: 50%;
             object-fit: cover; border: 4px solid white;
             box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease;
-            background-color: #f1f5f9;
+            transition: transform 0.3s ease; background-color: #f1f5f9;
         }
         .card:hover .avatar { transform: scale(1.05) rotate(3deg); }
 
@@ -108,16 +113,17 @@
         .role-guide { background: #ccfbf1; color: #0f766e; border: 1px solid #99f6e4; }
         .role-umkm { background: #ede9fe; color: #6d28d9; border: 1px solid #ddd6fe; }
         .role-homestay { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+        .role-default { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
 
         .card h3 { font-size: 1.2rem; margin-bottom: 4px; color: var(--text-main); }
         .card-sub { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 12px; font-weight: 500; }
         
         .quote {
             font-style: italic; color: #475569; font-size: 0.9rem;
-            background: #f1f5f9; padding: 12px; border-radius: var(--radius-md);
+            background: #f8fafc; padding: 12px; border-radius: var(--radius-md);
             margin: 12px 0 20px; position: relative; width: 100%;
+            border-left: 3px solid var(--accent);
         }
-        .quote::before { content: '“'; position: absolute; top: -10px; left: 10px; font-size: 2rem; color: #cbd5e1; font-family: serif; }
 
         .card-actions { width: 100%; display: flex; gap: 10px; margin-top: auto; }
         .btn-action {
@@ -130,15 +136,16 @@
         .btn-primary:hover { background: var(--primary-dark); }
         .btn-outline { background: white; border: 1px solid #e2e8f0; color: var(--text-muted); }
         .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+        .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* --- Update/Activity Section --- */
+        /* --- 5. COMPONENTS: FEED --- */
         .activity-feed {
             background: white; border-radius: var(--radius-lg); padding: 24px;
             border: 1px solid #f1f5f9; margin-bottom: 40px; box-shadow: var(--shadow-sm);
         }
         .feed-item {
             display: flex; gap: 15px; padding-bottom: 15px; margin-bottom: 15px;
-            border-bottom: 1px solid #f1f5f9;
+            border-bottom: 1px solid #f1f5f9; align-items: flex-start;
         }
         .feed-item:last-child { border-bottom: none; margin: 0; padding: 0; }
         .feed-icon {
@@ -149,7 +156,7 @@
         .feed-content p { font-size: 0.85rem; color: var(--text-muted); margin: 0; }
         .time-ago { font-size: 0.75rem; color: #94a3b8; display: block; margin-top: 4px; }
 
-        /* --- CTA Section --- */
+        /* --- 6. COMPONENTS: CTA --- */
         .cta-section {
             background: linear-gradient(135deg, var(--primary-dark), var(--primary));
             color: white; padding: 40px; border-radius: var(--radius-xl);
@@ -163,18 +170,15 @@
         }
         .cta-btn:hover { transform: translateY(-2px); }
 
-        /* ==========================================
-           3. STYLE BARU: POP UP MODAL (PROFIL)
-           ========================================== */
+        /* --- 7. MODAL STYLES --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px);
-            z-index: 9999; display: none; /* Default Hidden */
+            z-index: 9999; display: none;
             align-items: center; justify-content: center;
             opacity: 0; transition: opacity 0.3s ease;
         }
         .modal-overlay.active { opacity: 1; }
-
         .modal-content {
             background: white; width: 90%; max-width: 500px;
             border-radius: var(--radius-xl); overflow: hidden;
@@ -182,12 +186,7 @@
             position: relative;
         }
         .modal-overlay.active .modal-content { transform: scale(1); }
-
-        /* Modal Header (Cover Image) */
-        .modal-header {
-            height: 120px; background: linear-gradient(to right, var(--primary-dark), var(--primary));
-            position: relative;
-        }
+        .modal-header { height: 120px; background: linear-gradient(to right, var(--primary-dark), var(--primary)); position: relative; }
         .close-modal-btn {
             position: absolute; top: 15px; right: 15px;
             background: rgba(255,255,255,0.2); color: white;
@@ -196,8 +195,6 @@
             font-size: 1.2rem; transition: 0.2s;
         }
         .close-modal-btn:hover { background: rgba(255,255,255,0.4); transform: rotate(90deg); }
-
-        /* Modal Body */
         .modal-body { text-align: center; padding: 0 30px 40px; margin-top: -50px; }
         .modal-avatar {
             width: 100px; height: 100px; border-radius: 50%;
@@ -206,16 +203,13 @@
         }
         .modal-name { margin-top: 10px; font-size: 1.5rem; font-weight: 700; color: var(--text-main); }
         .modal-role { font-size: 0.9rem; color: var(--text-muted); font-weight: 500; }
-        
         .modal-tags { margin: 15px 0; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
         .modal-tag { font-size: 0.75rem; padding: 4px 12px; border-radius: 20px; background: #f1f5f9; color: #64748b; }
-
         .modal-quote {
             font-size: 0.95rem; color: #475569; font-style: italic;
             background: #f8fafc; padding: 15px; border-radius: 12px; margin: 20px 0;
             border-left: 4px solid var(--accent);
         }
-        
         .modal-contact { margin-top: 25px; }
         .btn-wa-full {
             width: 100%; padding: 14px; background: #25D366; color: white;
@@ -225,6 +219,19 @@
         }
         .btn-wa-full:hover { background: #20bd5a; transform: translateY(-2px); }
 
+        /* --- 8. LOADING SPINNER --- */
+        .loading-container {
+            grid-column: 1 / -1; text-align: center; padding: 40px;
+            display: none; /* Hidden by default */
+        }
+        .spinner {
+            width: 40px; height: 40px; border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary); border-radius: 50%;
+            animation: spin 1s linear infinite; margin: 0 auto 15px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Responsive */
         @media (max-width: 600px) {
             .hero { padding: 30px 20px; }
             .card { padding: 20px; }
@@ -254,7 +261,7 @@
 
         <div class="container">
             
-            <!-- Activity Feed (Update Ngebel) -->
+            <!-- Activity Feed -->
             <section class="activity-feed fade-up">
                 <h3 style="font-size: 1.1rem; margin-bottom: 20px;">🔥 Aktivitas Terbaru</h3>
                 <div class="feed-item">
@@ -283,14 +290,16 @@
                 </div>
             </section>
 
-            <!-- Pelaku Wisata & Petani -->
+            <!-- Community Grid -->
             <h2 class="section-title fade-up">Pelaku Ekosistem</h2>
             
-            <!-- CONTAINER UNTUK DATA -->
             <div id="community-container" class="community-grid">
-                <p style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">
-                    Memuat data komunitas...
-                </p>
+                <!-- Loading State -->
+                <div id="loading-state" class="loading-container">
+                    <div class="spinner"></div>
+                    <p style="color: var(--text-muted);">Mengambil data komunitas...</p>
+                </div>
+                <!-- Cards will be injected here -->
             </div>
 
             <!-- Call to Action -->
@@ -304,9 +313,7 @@
         </div>
     </main>
 
-    <!-- ==========================
-         KOMPONEN MODAL (POP UP)
-         ========================== -->
+    <!-- Modal Component -->
     <div id="profile-modal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
@@ -337,17 +344,25 @@
     </div>
 
     <script>
-        // --- 1. KONFIGURASI SUPABASE ---
+        /**
+         * LOGIKA WEB APP KOMUNITAS NGBEL
+         * Developer: Professional AI Assistant
+         * - Keamanan: Menghindari innerHTML langsung untuk konten user.
+         * - Performa: Menggunakan DocumentFragment.
+         * - Fallback: Data dummy jika DB gagal.
+         */
+
+        // --- KONFIGURASI SUPABASE ---
         const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
 
         const { createClient } = supabase;
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- 2. DATA DUMMY & DATABASE GABUNGAN (Untuk Logika) ---
-        // Kita akan menyimpan data fetch DB & Dummy dalam satu variabel global agar mudah dicari ID-nya
+        // --- STATE DATA ---
         let communityData = [];
 
+        // --- DUMMY DATA ---
         const dummyData = [
             {
                 id: 'dummy-001',
@@ -367,49 +382,18 @@
                 avatar_url: 'https://images.unsplash.com/photo-1583394293214-28ded15ee548?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200&q=80',
                 whatsapp_number: '6281987654321'
             },
-           
         ];
 
-        // --- 3. FUNGSI LOGIKA ---
+        // --- FUNGSI UTILITY ---
+
         function getRoleBadgeClass(role) {
-            if (!role) return 'role-guide';
+            if (!role) return 'role-default';
             const r = role.toLowerCase();
             if (r.includes('petani') || r.includes('tani')) return 'role-farmer';
             if (r.includes('pemandu') || r.includes('guide')) return 'role-guide';
             if (r.includes('umkm') || r.includes('kuliner')) return 'role-umkm';
             if (r.includes('home') || r.includes('hotel')) return 'role-homestay';
-            return 'role-guide'; 
-        }
-
-        function createCommunityCard(member) {
-            const badgeClass = getRoleBadgeClass(member.role);
-            const avatarSrc = member.avatar_url 
-                ? member.avatar_url 
-                : `https://picsum.photos/seed/${member.full_name.replace(/ /g, '')}/200/200`;
-            const cleanPhone = member.whatsapp_number ? member.whatsapp_number.replace(/[^0-9]/g, '') : '';
-
-            return `
-                <article class="card fade-up">
-                    <div class="card-header">
-                        <img src="${avatarSrc}" alt="${member.full_name}" class="avatar" onerror="this.src='https://via.placeholder.com/200?text=No+Img'">
-                    </div>
-                    <span class="role-badge ${badgeClass}">${member.role || 'Anggota'}</span>
-                    <h3>${member.full_name}</h3>
-                    <div class="card-sub">${member.sub_title || 'Warga Ngebel'}</div>
-                    ${member.quote ? `<div class="quote">"${member.quote}"</div>` : ''}
-                    <div class="card-actions">
-                        <button class="btn-action btn-outline" onclick="openWhatsApp('${cleanPhone}')" ${!cleanPhone ? 'disabled style="opacity:0.5"' : ''}>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-                            Chat
-                        </button>
-                        <!-- Tombol ini memanggil fungsi showDetail(id) -->
-                        <button class="btn-action btn-primary" onclick="showDetail('${member.id}')">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                            Profil
-                        </button>
-                    </div>
-                </article>
-            `;
+            return 'role-default';
         }
 
         function openWhatsApp(phone) {
@@ -417,23 +401,78 @@
             window.open(`https://wa.me/${phone}`, '_blank');
         }
 
-        // --- 4. LOGIKA MODAL POP UP ---
+        // --- RENDER CARD (SECURE & OPTIMIZED) ---
+        function renderCommunityCards(data) {
+            const container = document.getElementById('community-container');
+            const fragment = document.createDocumentFragment();
+
+            data.forEach(member => {
+                const article = document.createElement('article');
+                article.className = 'card fade-up';
+
+                // 1. Badge Class
+                const badgeClass = getRoleBadgeClass(member.role);
+                
+                // 2. Avatar Source & Error Handling
+                const avatarSrc = member.avatar_url 
+                    ? member.avatar_url 
+                    : `https://picsum.photos/seed/${member.full_name.replace(/ /g, '')}/200/200`;
+
+                // 3. Clean Phone Number
+                const cleanPhone = member.whatsapp_number ? member.whatsapp_number.replace(/[^0-9]/g, '') : '';
+
+                // 4. Construct HTML Structure using DOM methods (Security)
+                article.innerHTML = `
+                    <div class="card-header">
+                        <img src="${avatarSrc}" alt="${member.full_name}" class="avatar">
+                    </div>
+                    <span class="role-badge ${badgeClass}">${member.role || 'Anggota'}</span>
+                    <h3>${member.full_name}</h3>
+                    <div class="card-sub">${member.sub_title || 'Warga Ngebel'}</div>
+                    ${member.quote ? `<div class="quote">"${member.quote}"</div>` : ''}
+                    <div class="card-actions">
+                        <button class="btn-action btn-outline" onclick="openWhatsApp('${cleanPhone}')" ${!cleanPhone ? 'disabled' : ''}>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                            Chat
+                        </button>
+                        <button class="btn-action btn-primary" data-id="${member.id}">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                            Profil
+                        </button>
+                    </div>
+                `;
+
+                // Add event listener to Profile button to prevent inline HTML JS logic clutter
+                const profileBtn = article.querySelector('[data-id]');
+                profileBtn.addEventListener('click', () => showDetail(member.id));
+
+                // Add Error Handling for Image
+                const img = article.querySelector('.avatar');
+                img.onerror = function() {
+                    this.src = 'https://via.placeholder.com/200?text=No+Img';
+                };
+
+                fragment.appendChild(article);
+            });
+
+            container.innerHTML = ''; // Clear previous content (including loader)
+            container.appendChild(fragment);
+        }
+
+        // --- MODAL LOGIC ---
         function showDetail(id) {
-            // Cari data user berdasarkan ID dari array global communityData
             const user = communityData.find(member => member.id === id);
+            if (!user) return;
 
-            if (!user) {
-                alert("Data profil tidak ditemukan.");
-                return;
-            }
-
-            // Isi data ke dalam elemen Modal
-            document.getElementById('modal-img').src = user.avatar_url || `https://picsum.photos/seed/${user.full_name}/200/200`;
-            document.getElementById('modal-name').innerText = user.full_name;
-            document.getElementById('modal-role').innerText = user.sub_title || user.role || 'Anggota';
-            document.getElementById('modal-quote').innerText = user.quote ? `"${user.quote}"` : "Tidak ada kutipan tersedia.";
+            const modal = document.getElementById('profile-modal');
             
-            // Update link WA
+            // Set Content (Safe)
+            document.getElementById('modal-img').src = user.avatar_url || `https://picsum.photos/seed/${user.full_name}/200/200`;
+            document.getElementById('modal-name').textContent = user.full_name;
+            document.getElementById('modal-role').textContent = user.sub_title || user.role || 'Anggota';
+            document.getElementById('modal-quote').textContent = user.quote ? `"${user.quote}"` : "Tidak ada kutipan tersedia.";
+            
+            // WA Button Logic
             const cleanPhone = user.whatsapp_number ? user.whatsapp_number.replace(/[^0-9]/g, '') : '';
             const waBtn = document.getElementById('modal-wa-btn');
             
@@ -441,83 +480,87 @@
                 waBtn.style.display = 'flex';
                 waBtn.onclick = () => window.open(`https://wa.me/${cleanPhone}`, '_blank');
             } else {
-                waBtn.style.display = 'none'; // Sembunyikan tombol jika no HP kosong
+                waBtn.style.display = 'none';
             }
 
-            // Tampilkan Modal
-            const modal = document.getElementById('profile-modal');
+            // Show Animation
             modal.style.display = 'flex';
-            // Sedikit delay agar animasi opacity bisa berjalan
             setTimeout(() => { modal.classList.add('active'); }, 10);
         }
 
         function closeModal() {
             const modal = document.getElementById('profile-modal');
             modal.classList.remove('active');
-            // Tunggu animasi selesai baru hilangkan elemen
             setTimeout(() => { modal.style.display = 'none'; }, 300);
         }
 
-        // Klik di area gelap (overlay) untuk menutup
+        // Close on background click
         document.getElementById('profile-modal').addEventListener('click', function(e) {
             if (e.target === this) closeModal();
         });
 
-        // --- 5. FETCH DATA & RENDER ---
+        // --- DATA FETCHING ---
         async function loadCommunity() {
             const container = document.getElementById('community-container');
+            const loadingState = document.getElementById('loading-state');
             
+            // Show Loading
+            loadingState.style.display = 'block';
+
             try {
-                console.log("Mengambil data dari Supabase...");
-                
+                console.log("Fetching data from Supabase...");
                 const { data, error } = await supabaseClient
                     .from('ngebel_community')
                     .select('*')
                     .order('created_at', { ascending: false });
 
-                if (error) {
-                    console.error("Error dari Supabase:", error);
-                    throw error;
-                }
+                if (error) throw error;
 
-                // Gabungkan data: Jika DB kosong pakai Dummy
+                // Use DB data if available, else use Dummy
                 communityData = (data && data.length > 0) ? data : dummyData;
                 
-                console.log("Data dirender:", communityData.length, "anggota.");
-                container.innerHTML = communityData.map(member => createCommunityCard(member)).join('');
+                renderCommunityCards(communityData);
+                console.log(`Rendered ${communityData.length} profiles.`);
 
             } catch (err) {
-                console.error("Gagal memuat data DB, menggunakan Data Dummy:", err);
-                communityData = dummyData; // Fallback
-                container.innerHTML = communityData.map(member => createCommunityCard(member)).join('');
+                console.error("Fetch error, switching to dummy data:", err);
+                communityData = dummyData;
+                renderCommunityCards(communityData);
+            } finally {
+                // Hide Loading (Handled inside renderCommunityCards via innerHTML '', but good practice)
+                loadingState.style.display = 'none';
             }
             
             observeAnimations();
         }
 
-        // --- 6. ANIMASI SCROLL ---
+        // --- SCROLL ANIMATION ---
         function observeAnimations() {
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         entry.target.style.opacity = '1';
                         entry.target.style.transform = 'translateY(0)';
+                        observer.unobserve(entry.target); // Stop observing once animated
                     }
                 });
             }, { threshold: 0.1 });
 
             document.querySelectorAll('.fade-up').forEach(el => {
-                el.style.opacity = '0';
-                el.style.transform = 'translateY(20px)';
-                el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-                observer.observe(el);
+                if (el.style.opacity !== '1') { // Only if not already visible
+                    el.style.opacity = '0';
+                    el.style.transform = 'translateY(20px)';
+                    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                    observer.observe(el);
+                }
             });
         }
 
+        // --- INIT ---
         document.addEventListener('DOMContentLoaded', () => {
             loadCommunity();
-            observeAnimations();
         });
+
     </script>
 </body>
 </html>
