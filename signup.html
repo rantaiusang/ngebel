@@ -8,7 +8,7 @@
     <!-- SUPABASE CLIENT -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <!-- Google Font (Inter) untuk tampilan profesional -->
+    <!-- Google Font (Inter) -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
@@ -215,24 +215,20 @@
 
         <form id="completeForm">
             
-            <!-- Kolom Nama (Diprefill jika ada dari Google) -->
+            <!-- Kolom Nama -->
             <div class="form-group">
                 <label for="fullName">Nama Lengkap</label>
                 <div class="input-wrapper">
-                    <!-- Icon User -->
                     <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                    
                     <input type="text" id="fullName" placeholder="Masukkan nama Anda" required>
                 </div>
             </div>
 
-            <!-- Kolom Nomor HP (Wajib diisi) -->
+            <!-- Kolom Nomor HP -->
             <div class="form-group">
                 <label for="phoneNumber">Nomor WhatsApp / HP</label>
                 <div class="input-wrapper">
-                    <!-- Icon Phone -->
                     <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                    
                     <input type="tel" id="phoneNumber" placeholder="0812xxxx" required>
                 </div>
             </div>
@@ -275,7 +271,7 @@
             }
         });
 
-        // --- 3. HANDLE FORM SUBMIT (LENGKAP PROFIL) ---
+        // --- 3. HANDLE FORM SUBMIT (LENGKAP PROFIL & ROUTING) ---
         document.getElementById('completeForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -301,21 +297,34 @@
             }
 
             try {
-                // Update Metadata User di Supabase
+                // Ambil data user saat ini untuk mengecek role yang sudah ada (jika ada)
+                const { data: { user: currentUser } } = await db.auth.getUser();
+                
+                // Tentukan role: Jika belum ada role, defaultkan sebagai 'user'
+                // Jika user sudah login dan di-set admin manual di dashboard, role ini akan terbaca disini.
+                const userRole = currentUser.user_metadata.role || 'user';
+
+                console.log("Saving profile for:", currentUser.email, "with role:", userRole);
+
+                // Update Metadata User (Nama, HP, dan Role)
                 const { error: updateError } = await db.auth.updateUser({
                     data: {
                         full_name: fullName,
-                        phone: phoneNumber
+                        phone: phoneNumber,
+                        role: userRole // Pastikan role tersimpan di metadata
                     }
                 });
 
                 if (updateError) throw updateError;
 
-                // (Opsional) Insert data tambahan ke tabel 'profiles' jika perlu
-                // await db.from('profiles').upsert({ id: user.id, full_name: fullName, phone: phoneNumber });
-
-                // Sukses -> Redirect ke Dashboard
-                window.location.href = 'dashboard.html';
+                // Logika Redirect
+                // Admin -> admin.html
+                // User Biasa -> dashboard.html
+                if (userRole === 'admin') {
+                    window.location.href = 'admin.html';
+                } else {
+                    window.location.href = 'dashboard.html';
+                }
 
             } catch (err) {
                 console.error(err);
