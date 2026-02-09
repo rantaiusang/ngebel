@@ -195,143 +195,260 @@
     </div>
 
     <script>
-        // --- 1. KONFIGURASI SUPABASE ---
-        // --- 1. KONFIGURASI SUPABASE ---
-const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
-const SUPABASE_KEY = 'YOUR_ANON_KEY';
 
-// FIX GLOBAL CDN
+//////////////////////////////
+// SUPABASE
+//////////////////////////////
+
+const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
+
 const { createClient } = window.supabase;
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 
-// --- 4. LOAD DATA USER & INIT FORM ---
-async function initForm() {
+//////////////////////////////
+// ELEMENT DROPDOWN
+//////////////////////////////
 
-    try {
+const provinceEl = document.getElementById('province');
+const cityEl = document.getElementById('city');
+const districtEl = document.getElementById('district');
+const villageEl = document.getElementById('village');
 
-        const { data: { user }, error } = await supabaseClient.auth.getUser();
 
-        if (error) throw error;
+//////////////////////////////
+// API INDONESIA (GRATIS)
+//////////////////////////////
 
-        if (!user) {
-            window.location.href = 'login.html';
+const API = "https://www.emsifa.com/api-wilayah-indonesia/api";
+
+
+//////////////////////////////
+// LOAD PROVINSI
+//////////////////////////////
+
+async function loadProvinces() {
+
+    const res = await fetch(`${API}/provinces.json`);
+    const provinces = await res.json();
+
+    provinces.forEach(p => {
+        provinceEl.innerHTML += `<option value="${p.name}" data-id="${p.id}">${p.name}</option>`;
+    });
+}
+
+loadProvinces();
+
+
+//////////////////////////////
+// RESET DROPDOWN
+//////////////////////////////
+
+function resetSelect(select, placeholder){
+
+    select.innerHTML = `<option value="">${placeholder}</option>`;
+    select.disabled = true;
+}
+
+
+//////////////////////////////
+// PROVINSI CHANGE
+//////////////////////////////
+
+provinceEl.addEventListener('change', async function(){
+
+    resetSelect(cityEl, "Pilih Kota...");
+    resetSelect(districtEl, "Pilih Kecamatan...");
+    resetSelect(villageEl, "Pilih Desa...");
+
+    if(!this.value) return;
+
+    cityEl.disabled = false;
+
+    const id = this.selectedOptions[0].dataset.id;
+
+    const res = await fetch(`${API}/regencies/${id}.json`);
+    const cities = await res.json();
+
+    cities.forEach(c=>{
+        cityEl.innerHTML += `<option value="${c.name}" data-id="${c.id}">${c.name}</option>`;
+    });
+
+});
+
+
+//////////////////////////////
+// KOTA CHANGE
+//////////////////////////////
+
+cityEl.addEventListener('change', async function(){
+
+    resetSelect(districtEl, "Pilih Kecamatan...");
+    resetSelect(villageEl, "Pilih Desa...");
+
+    if(!this.value) return;
+
+    districtEl.disabled = false;
+
+    const id = this.selectedOptions[0].dataset.id;
+
+    const res = await fetch(`${API}/districts/${id}.json`);
+    const districts = await res.json();
+
+    districts.forEach(d=>{
+        districtEl.innerHTML += `<option value="${d.name}" data-id="${d.id}">${d.name}</option>`;
+    });
+
+});
+
+
+//////////////////////////////
+// KECAMATAN CHANGE
+//////////////////////////////
+
+districtEl.addEventListener('change', async function(){
+
+    resetSelect(villageEl, "Pilih Desa...");
+
+    if(!this.value) return;
+
+    villageEl.disabled = false;
+
+    const id = this.selectedOptions[0].dataset.id;
+
+    const res = await fetch(`${API}/villages/${id}.json`);
+    const villages = await res.json();
+
+    villages.forEach(v=>{
+        villageEl.innerHTML += `<option value="${v.name}" data-id="${v.id}">${v.name}</option>`;
+    });
+
+});
+
+
+//////////////////////////////
+// INIT FORM
+//////////////////////////////
+
+async function initForm(){
+
+    try{
+
+        const { data:{user}, error } = await supabaseClient.auth.getUser();
+
+        if(error) throw error;
+
+        if(!user){
+            window.location.href='login.html';
             return;
         }
 
         const metadata = user.user_metadata || {};
         const name = metadata.full_name || metadata.name || user.email.split('@')[0];
 
-        if (document.getElementById('full_name')) {
-            document.getElementById('full_name').value = name;
-        }
+        document.getElementById('full_name').value = name;
 
-        // Ambil data existing
-        const { data: existingData, error: dbError } = await supabaseClient
+        const { data } = await supabaseClient
             .from('ngebelusers')
-            .select('phone, province, city')
+            .select('*')
             .eq('id', user.id)
             .maybeSingle();
 
-        if (dbError) throw dbError;
+        if(data){
 
-        if (existingData) {
+            document.getElementById('phone').value = data.phone || "";
 
-            if(existingData.phone) 
-                document.getElementById('phone').value = existingData.phone;
-
-            if(existingData.province) {
-
-                provinceEl.value = existingData.province;
-                provinceEl.dispatchEvent(new Event('change'));
-
-                setTimeout(() => {
-                    cityEl.value = existingData.city;
-                    cityEl.dispatchEvent(new Event('change'));
-                }, 200);
-            }
+            // AUTO SELECT (opsional ringan)
+            setTimeout(()=>{
+                provinceEl.value = data.province || "";
+            },500);
         }
 
-    } catch(err){
-        console.error("INIT ERROR:", err);
-        window.location.href = 'login.html';
+    }catch(err){
+
+        console.error("INIT ERROR:",err);
+        window.location.href='login.html';
     }
 }
 
+window.addEventListener('DOMContentLoaded', initForm);
 
-// --- 5. HANDLE SUBMIT FORM ---
-document.getElementById('completeForm').addEventListener('submit', async function(e) {
+
+
+//////////////////////////////
+// SUBMIT
+//////////////////////////////
+
+document.getElementById('completeForm')
+.addEventListener('submit', async function(e){
 
     e.preventDefault();
-            
+
     const btn = document.getElementById('submitBtn');
     const btnText = document.getElementById('btnText');
+    const loader = document.getElementById('loader');
     const feedback = document.getElementById('feedback');
-            
-    if (!document.getElementById('terms').checked) {
-        feedback.className = 'feedback error';
-        feedback.innerText = 'Mohon setujui Syarat & Ketentuan.';
-        feedback.style.display = 'block';
+
+    if(!document.getElementById('terms').checked){
+
+        feedback.className='feedback error';
+        feedback.innerText='Mohon setujui Syarat & Ketentuan.';
+        feedback.style.display='block';
         return;
     }
 
-    btn.disabled = true;
-    btnText.style.display = 'none';
-    document.getElementById('loader').style.display = 'block';
-    feedback.style.display = 'none';
+    btn.disabled=true;
+    btnText.style.display='none';
+    loader.style.display='block';
 
-    try {
+    try{
 
-        const { data: { user }, error } = await supabaseClient.auth.getUser();
+        const { data:{user} } = await supabaseClient.auth.getUser();
 
-        if (error) throw error;
-        if (!user) throw new Error("Sesi habis, silakan login ulang.");
+        if(!user) throw new Error("Session habis.");
 
-        const formData = {
-            full_name: document.getElementById('full_name').value,
-            phone: document.getElementById('phone').value,
-            province: provinceEl.value,
-            city: cityEl.value,
-            district: districtEl.value,
-            village: villageEl.value,
-            role: 'user',
-            updated_at: new Date()
-        };
+        const { error } = await supabaseClient
+        .from('ngebelusers')
+        .upsert({
 
-        const { error: upsertError } = await supabaseClient
-            .from('ngebelusers')
-            .upsert({
-                id: user.id,
-                email: user.email,
-                ...formData
-            }, { onConflict: 'id' });
+            id:user.id,
+            email:user.email,
+            full_name:document.getElementById('full_name').value,
+            phone:document.getElementById('phone').value,
+            province:provinceEl.value,
+            city:cityEl.value,
+            district:districtEl.value,
+            village:villageEl.value,
+            role:'user',
+            updated_at:new Date()
 
-        if (upsertError) throw upsertError;
+        },{onConflict:'id'});
 
-        feedback.className = 'feedback success';
-        feedback.innerText = 'Profil berhasil disimpan! Mengarahkan ke Dashboard...';
-        feedback.style.display = 'block';
+        if(error) throw error;
 
-        setTimeout(() => {
-            window.location.href = 'dashboard.html';
-        }, 1500);
+        feedback.className='feedback success';
+        feedback.innerText='Profil berhasil disimpan! Mengarahkan...';
+        feedback.style.display='block';
 
-    } catch (err) {
+        setTimeout(()=>{
+            window.location.href='dashboard.html';
+        },1500);
 
-        console.error("UPSERT ERROR:", err);
+    }catch(err){
 
-        btn.disabled = false;
-        btnText.style.display = 'block';
-        document.getElementById('loader').style.display = 'none';
-                
-        feedback.className = 'feedback error';
-        feedback.innerText = 'Gagal menyimpan: ' + err.message;
-        feedback.style.display = 'block';
+        btn.disabled=false;
+        btnText.style.display='block';
+        loader.style.display='none';
+
+        feedback.className='feedback error';
+        feedback.innerText='Gagal menyimpan: '+err.message;
+        feedback.style.display='block';
     }
+
 });
 
-window.addEventListener('DOMContentLoaded', initForm);
+</script>
 
-    </script>
 </body>
 </html>
