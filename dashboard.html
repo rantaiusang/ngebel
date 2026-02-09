@@ -52,7 +52,6 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes pulse-red { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.5); } 100% { opacity: 1; transform: scale(1); } }
-        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
         /* --- 3. COMPONENTS --- */
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 2; }
@@ -147,14 +146,12 @@
             display: flex; justify-content: space-around; align-items: center;
             box-shadow: 0 20px 60px rgba(0,0,0,0.15);
             z-index: 1000; padding: 10px; border: 1px solid rgba(255,255,255,0.6);
-            /* SCROLL MOBILE ENABLED */
             overflow-x: auto; 
             white-space: nowrap;
-            justify-content: flex-start; /* Perbaikan: Mulai dari kiri agar bisa discroll */
-            gap: 8px; /* Gap sedikit agar tidak terlalu padat */
+            justify-content: flex-start; 
+            gap: 8px; 
         }
         
-        /* Sembunyikan scrollbar di mobile untuk estetika */
         .bottom-nav::-webkit-scrollbar { display: none; } 
         .bottom-nav { -ms-overflow-style: none; scrollbar-width: none; }
 
@@ -162,19 +159,14 @@
             display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
             color: #94a3b8; font-size: 0.7rem; font-weight: 600;
             padding: 8px; border-radius: 20px; transition: all 0.3s;
-            min-width: 65px; /* Lebar minimum agar scroll terasa */
+            min-width: 65px; 
             position: relative; cursor: pointer; 
-            flex: 0 0 auto; /* Perbaikan: Jangan stretch, biarkan ukuran konten */
+            flex: 0 0 auto; 
         }
         .nav-item svg { width: 22px; height: 22px; stroke-width: 2; stroke: currentColor; fill: none; margin-bottom: 4px; transition: all 0.3s; }
         .nav-item.active { color: var(--primary); }
         .nav-item.active svg { transform: scale(1.1); stroke-width: 2.5; }
-
-        /* Style khusus untuk Logout agar warnanya merah jika dihover */
-        .nav-item.logout-item:hover {
-            color: #ef4444;
-            background: #fef2f2;
-        }
+        .nav-item.logout-item:hover { color: #ef4444; background: #fef2f2; }
 
         /* Desktop Nav */
         @media (min-width: 768px) {
@@ -186,7 +178,6 @@
                 border-radius: 0; box-shadow: 10px 0 30px rgba(0,0,0,0.05); border-right: 1px solid #eee;
                 align-items: stretch; 
                 overflow-x: visible;
-                /* SCROLL PC ENABLED Jika menu penuh */
                 overflow-y: auto; 
                 gap: 5px;
             }
@@ -199,7 +190,7 @@
                 gap: 15px; 
                 font-size: 1rem; 
                 flex: none; 
-                white-space: normal; /* Reset wrap text di desktop */
+                white-space: normal; 
             }
             .nav-item svg { margin-bottom: 0; }
         }
@@ -239,10 +230,12 @@
         }
         .toast.show { transform: translateX(0); }
 
-        /* Loading Overlay for Cards */
+        /* PERBAIKAN: Loading Overlay yang lebih halus */
         .card-loading {
-            position: absolute; inset: 0; background: rgba(255,255,255,0.8); z-index: 10;
-            display: flex; align-items: center; justify-content: center; backdrop-filter: blur(2px);
+            position: absolute; inset: 0; background: rgba(255,255,255,0.6); z-index: 10;
+            display: none; /* Default hidden agar tidak ganggu tampilan awal */
+            align-items: center; justify-content: center; backdrop-filter: blur(2px);
+            border-radius: var(--radius-lg);
         }
         .mini-spinner {
             width: 30px; height: 30px; border: 3px solid #f3f3f3;
@@ -256,9 +249,8 @@
     <!-- PRELOADER -->
     <div id="preloader">
         <div class="loader-content">
-            
-            <div class="modern-spinner"></div>
            
+            <div class="modern-spinner"></div>
         </div>
     </div>
 
@@ -419,7 +411,6 @@
         const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // --- 2. MENU CONFIGURATION ---
-        // MENU DIPERBARUI: Logout ditambahkan di posisi terakhir
         const menuItems = [
             { id: 'dashboard', icon: '<rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>', label: 'Dashboard', active: true },
             { id: 'monitoring', icon: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>', label: 'Monitoring', link: 'monitoring.html' },
@@ -433,20 +424,19 @@
             { id: 'lahan', icon: '<path d="M2 22h20"></path><path d="M12 2v20"></path><path d="m2 12 10-10 10 10"></path>', label: 'Lahan', link: 'lahan.html' },
             { id: 'subscription', icon: '<rect x="2" y="5" width="20" height="14" rx="2" /><line x1="2" y1="10" x2="22" y2="10" />', label: 'Langganan', link: 'subscription.html' },
             { id: 'devices', icon: '<rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line>', label: 'Devices', link: 'devices.html' },
-            // TAMBAHAN MENU LOGOUT
             { id: 'logout', icon: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line>', label: 'Keluar', action: 'logout' },
         ];
 
         // --- 3. STATE & CHART VARIABLES ---
         let chartData = { labels: [], moisture: [], temp: [] };
         let isPumpToggling = false;
+        let isFirstLoad = true; // Flag untuk mencegah loading berkedip saat load pertama
 
         // --- 4. INITIALIZATION ---
         window.addEventListener('load', async () => {
             renderNav();
-            initChart(); // Setup canvas resolution
+            initChart(); 
             
-            // Simulasikan delay preloader agar animasi terlihat seperti index.html
             setTimeout(() => {
                 const preloader = document.getElementById('preloader');
                 if(preloader) {
@@ -455,7 +445,6 @@
                 }
             }, 1200);
 
-            // Mulai fetching data
             fetchAllData();
             // Refresh setiap 5 detik
             setInterval(fetchAllData, 5000);
@@ -467,7 +456,6 @@
             navContainer.innerHTML = '';
             menuItems.forEach((item) => {
                 const a = document.createElement('div');
-                // Tambahkan class 'logout-item' jika ID adalah logout
                 a.className = `nav-item ${item.active ? 'active' : ''} ${item.id === 'logout' ? 'logout-item' : ''}`;
                 
                 a.innerHTML = `
@@ -475,7 +463,6 @@
                     <span>${item.label}</span>
                 `;
                 
-                // Cek apakah item ini action (logout) atau link
                 if (item.action === 'logout') {
                     a.onclick = handleLogout;
                 } else if (item.link) {
@@ -485,102 +472,99 @@
             });
         }
 
-        // --- 5.5 LOGOUT LOGIC ---
         async function handleLogout() {
-            // Konfirmasi sebelum logout
-            const confirmLogout = confirm("Apakah Anda yakin ingin keluar dari akun?");
+            const confirmLogout = confirm("Apakah Anda yakin ingin keluar?");
             if (!confirmLogout) return;
-
             try {
                 const { error } = await sb.auth.signOut();
                 if (error) throw error;
-
                 showToast("Berhasil keluar", "success");
-                
-                // Redirect ke halaman login atau index setelah singkat
-                setTimeout(() => {
-                    window.location.href = 'login.html'; // Pastikan file login.html ada
-                }, 1000);
+                setTimeout(() => window.location.href = 'login.html', 1000);
             } catch (err) {
                 console.error("Logout Error:", err);
                 showToast("Gagal keluar", "error");
             }
         }
 
-        // --- 6. DATA FETCHING (LIVE ONLY - NO DEMO) ---
+        // --- 6. DATA FETCHING (PERBAIKAN NAMA TABEL & ERROR HANDLING) ---
         async function fetchAllData() {
-            // Tampilkan loading pada kartu
-            document.querySelectorAll('.card-loading').forEach(el => el.style.display = 'flex');
+            // PERBAIKAN: Jangan tampilkan loading overlay jika sudah bukan first load (agar tidak kedip-kedip)
+            if (isFirstLoad) {
+                document.querySelectorAll('.card-loading').forEach(el => el.style.display = 'flex');
+            }
 
             try {
-                // 1. Sensor Logs (Latest)
+                // 1. Sensor Logs (PERBAIKAN: Nama tabel disesuaikan jadi ngebel_iot.sensor_logs)
                 const { data: logs, error: errLogs } = await sb
-                    .from('iot_ngebel.sensor_logs')
+                    .from('ngebel_iot.sensor_logs')
                     .select('moisture, temperature, created_at')
                     .order('created_at', { ascending: false })
                     .limit(1)
-                    .single();
+                    .maybeSingle(); // Gunakan maybeSingle agar tidak error jika data kosong
 
                 if (logs) {
                     updateSensorUI(logs);
                     updateChartData(logs);
-                } else {
-                    console.warn("Sensor Logs empty or error:", errLogs);
                 }
 
-                // 2. Device State (Pump)
+                // 2. Device State (PERBAIKAN: Nama tabel & kolom disesuaikan)
                 const { data: state, error: errState } = await sb
-                    .from('iot_ngebel.device_state')
-                    .select('pump_active, last_updated')
+                    .from('ngebel_iot.device_state')
+                    .select('pump_status, last_updated')
                     .order('last_updated', { ascending: false })
                     .limit(1)
-                    .single();
+                    .maybeSingle();
 
                 if (state) {
-                    updatePumpUI(state.pump_active);
+                    // Kolom di DB adalah pump_status ('on'/'off'), ubah ke boolean
+                    const isActive = state.pump_status === 'on';
+                    updatePumpUI(isActive);
                 }
 
-                // 3. Water Usage
-                const { data: water, error: errWater } = await sb
-                    .from('iot_ngebel.water_usage')
-                    .select('liters')
-                    .order('date', { ascending: false })
-                    .limit(1)
-                    .single();
-                
-                if(water) {
-                    document.getElementById('val-water').innerText = water.liters;
-                }
+                // 3. Water Usage (Fallback/Dummy jika tabel belum ada)
+                // Kita coba dulu, jika error kita abaikan untuk mencegah reload
+                try {
+                    const { data: water } = await sb
+                        .from('ngebel_iot.water_usage') // Jika tabel ini belum ada, catch akan menangkap
+                        .select('liters')
+                        .order('date', { ascending: false })
+                        .limit(1)
+                        .maybeSingle();
+                    
+                    if(water) document.getElementById('val-water').innerText = water.liters;
+                } catch(e) { console.log("Table water_usage belum ada"); }
 
-                // 4. AI Insight
-                const { data: ai, error: errAI } = await sb
-                    .from('iot_ngebel.ai_insight')
-                    .select('insight')
-                    .order('created_at', { ascending: false })
-                    .limit(1)
-                    .single();
+                // 4. AI Insight (PERBAIKAN: Nama tabel)
+                try {
+                    const { data: ai } = await sb
+                        .from('ngebel_iot.ai_insight')
+                        .select('title, content') // Kolom yg ada di SQL sebelumnya
+                        .order('created_at', { ascending: false })
+                        .limit(1)
+                        .maybeSingle();
 
-                if(ai) {
-                    document.getElementById('ai-text').innerText = ai.insight;
-                }
+                    if(ai) {
+                        document.getElementById('ai-text').innerText = ai.title + ": " + ai.content;
+                    }
+                } catch(e) { console.log("Table ai_insight belum ada"); }
 
-                // 5. Device List
-                const { data: devices, error: errDev } = await sb
-                    .from('iot_ngebel.devices')
-                    .select('*');
-
-                if(devices) {
-                    renderDeviceList(devices);
-                }
+                // 5. Device List (PERBAIKAN: Nama tabel)
+                try {
+                    const { data: devices } = await sb
+                        .from('ngebel_iot.devices')
+                        .select('*');
+                    if(devices) renderDeviceList(devices);
+                } catch(e) { console.log("Table devices belum ada"); }
 
             } catch (err) {
-                console.error("Fetch Error:", err);
-                showToast("Gagal mengambil data dari server", "error");
+                console.error("Fetch Error Global:", err);
+                // Jangan alert atau reload, cukup log console agar user tidak terganggu
             } finally {
-                // Sembunyikan loading setelah selesai (timeout kecil untuk UX)
+                // Hapus loading setelah selesai
                 setTimeout(() => {
                     document.querySelectorAll('.card-loading').forEach(el => el.style.display = 'none');
-                }, 500);
+                    isFirstLoad = false; // Set flag false setelah load pertama selesai
+                }, 300);
             }
         }
 
@@ -589,7 +573,6 @@
             const moisture = data.moisture;
             const temp = data.temperature;
 
-            // Moisture
             document.getElementById('val-moisture').innerText = moisture;
             document.getElementById('bar-moisture').style.width = moisture + '%';
             
@@ -601,7 +584,6 @@
             const moistEl = document.getElementById('sub-moisture');
             moistEl.innerHTML = `Kondisi: <span class="status-badge ${moistClass}" style="font-size: 0.7rem; padding: 2px 8px;">${moistStatus}</span>`;
 
-            // Temp
             document.getElementById('val-temp').innerText = temp;
             const weatherEmoji = document.getElementById('weather-emoji');
             const weatherText = document.getElementById('val-weather');
@@ -611,7 +593,6 @@
             else if (temp > 24) { weatherEmoji.innerText = "⛅"; weatherText.innerText = "Berawan"; }
             else { weatherEmoji.innerText = "🌧️"; weatherText.innerText = "Hujan/Dingin"; }
 
-            // Farm Status (Global Logic)
             const statusText = document.getElementById('farm-status-text');
             const statusBadge = document.getElementById('farm-status-badge');
             
@@ -632,7 +613,6 @@
             const toggle = document.getElementById('pump-toggle');
             const text = document.getElementById('pump-status-text');
             
-            // Jangan update checkbox jika user sedang mengklik (mencegah flicker)
             if(!isPumpToggling) {
                 toggle.checked = isActive;
             }
@@ -644,16 +624,13 @@
         function renderDeviceList(devices) {
             const container = document.getElementById('device-list-container');
             container.innerHTML = '';
-            
             if(devices.length === 0) {
                 container.innerHTML = '<p style="text-align:center; color:#aaa; padding:10px;">Tidak ada perangkat terdaftar</p>';
                 return;
             }
-
             devices.forEach(dev => {
                 const isOnline = dev.status === 'online' || dev.status === true;
                 const color = isOnline ? '#22c55e' : '#94a3b8';
-                
                 const div = document.createElement('div');
                 div.className = 'device-row';
                 div.innerHTML = `
@@ -673,25 +650,25 @@
         async function togglePump() {
             isPumpToggling = true;
             const toggle = document.getElementById('pump-toggle');
-            const newState = toggle.checked;
+            const newState = toggle.checked; // true = on, false = off
             const loading = document.getElementById('loading-pump');
             
-            loading.style.display = 'flex'; // Show loading
+            loading.style.display = 'flex'; 
             
             showToast(newState ? "Mengaktifkan Pompa..." : "Mematikan Pompa...", "info");
 
-            // Kirim update ke DB
-            // Asumsi ada kolom 'pump_active' dan id=1, atau upsert
+            // PERBAIKAN: Mapping boolean ke string 'on'/'off' sesuai DB
+            const dbStatus = newState ? 'on' : 'off';
+
             const { error } = await sb
-                .from('iot_ngebel.device_state')
-                .upsert({ id: 1, pump_active: newState, last_updated: new Date().toISOString() });
+                .from('ngebel_iot.device_state')
+                .upsert({ id: 1, pump_status: dbStatus, last_updated: new Date().toISOString() });
 
             if (error) {
                 showToast("Gagal mengubah status pompa!", "error");
-                toggle.checked = !newState; // Revert
+                toggle.checked = !newState; // Revert UI
             } else {
                 showToast("Status Pompa Berhasil Diubah", "success");
-                // Force refresh data UI setelah sukses
                 setTimeout(() => fetchAllData(), 1000);
             }
 
@@ -752,13 +729,12 @@
                 ctx.beginPath(); ctx.moveTo(padding, y); ctx.lineTo(w-padding, y); ctx.stroke();
             }
 
-            // Helper lines
             const getX = (i) => padding + (i / (chartData.labels.length - 1 || 1)) * chartW;
             const getY = (val, max) => h - padding - (val / max) * chartH;
 
-            // Draw Moisture (Green)
+            // Draw Moisture
             drawLine(ctx, chartData.moisture, '#0f766e', 100, getX, getY);
-            // Draw Temp (Orange)
+            // Draw Temp
             drawLine(ctx, chartData.temp, '#f59e0b', 50, getX, getY);
         }
 
@@ -777,7 +753,6 @@
             });
             ctx.stroke();
             
-            // Dots
             ctx.fillStyle = '#fff';
             data.forEach((val, i) => {
                 const x = getX(i);
