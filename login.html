@@ -210,7 +210,7 @@
                         Akses Realtime
                     </li>
                     <li class="feature-item">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.0 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
                         Multi Platform
                     </li>
                 </ul>
@@ -241,9 +241,9 @@
         }
 
         // --- 1. KONFIGURASI SUPABASE ---
-        // PASTIKAN KEY INI SUDAH BENAR DARI DASHBOARD
         const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
-        const SUPABASE_KEY = 'GANTI_DENGAN_KEY_ANON_ANDA_DISINI'; 
+        // Key Anon Anda (Diperbarui)
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA'; 
         
         const { createClient } = supabase;
         const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -302,6 +302,7 @@
 
                 try {
                     // 1. Cek data user di tabel 'ngebelusers'
+                    // Kita mengambil kolom 'role' sesuai struktur database Anda
                     console.log("🔍 Mencari data user di database...");
                     const { data: userData, error: fetchError } = await sb
                         .from('ngebelusers')
@@ -309,19 +310,21 @@
                         .eq('id', session.user.id)
                         .maybeSingle(); 
 
-                    // Jika TERJADI ERROR FATAL (RLS / Key Salah)
+                    // 2. Jika TERJADI ERROR FATAL (RLS / Key Salah)
                     if (fetchError && fetchError.code !== 'PGRST116') {
                         console.error("❌ Error Database:", fetchError);
-                        showToast("Terjadi kesalahan koneksi database. Arahkan ke signup...");
+                        showToast("Terjadi kesalahan koneksi database.");
                         
-                        // Fallback: Jika DB error, anggap user baru
+                        // Fallback safety: Jika DB error tapi user ada di Auth, 
+                        // kita coba arahkan ke signup (siapa tau butuh create data)
+                        // Atau biarkan user di login (untuk debugging ini kita arahkan signup)
                         setTimeout(() => {
                             window.location.href = 'signup.html';
-                        }, 1500);
+                        }, 2000);
                         return; 
                     }
 
-                    // 2. LOGIKA: JIKA DATA USER BELUM ADA (PERTAMA KALI LOGIN)
+                    // 3. LOGIKA: JIKA DATA USER BELUM ADA (PERTAMA KALI LOGIN)
                     if (!userData) {
                         console.log("ℹ️ Data belum ada (User Baru). Redirect ke signup.html...");
                         showToast("Akun baru! Silakan lengkapi data profil.");
@@ -332,10 +335,10 @@
                         return;
                     }
 
-                    // 3. LOGIKA: JIKA DATA SUDAH ADA (SUDAH SIGNUP SEBELUMNYA)
+                    // 4. LOGIKA: JIKA DATA SUDAH ADA (SUDAH SIGNUP SEBELUMNYA)
                     console.log("✅ Data user ditemukan:", userData);
                     
-                    const userRole = userData.role || 'user';
+                    const userRole = userData.role;
 
                     // Cek Role untuk menentukan halaman tujuan
                     if (userRole === 'admin') {
@@ -345,6 +348,7 @@
                             window.location.href = 'admin.html';
                         }, 1500);
                     } else {
+                        // Default role adalah 'user'
                         console.log("👤 Akses User Biasa. Redirect ke dashboard.html");
                         showToast("Login Berhasil! Mengalihkan ke Dashboard...");
                         setTimeout(() => {
