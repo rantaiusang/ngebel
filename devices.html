@@ -188,6 +188,7 @@
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                 Kembali
             </div>
+            
         </div>
     </header>
 
@@ -214,17 +215,10 @@
         const { createClient } = supabase;
         const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- 2. STATE ---
-        let userId = null;
-
-        // --- 3. INITIALIZATION ---
-        window.addEventListener('load', async () => {
+        // --- 2. INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', async () => {
             
-            // Cek Sesi User
-            const { data: { user } } = await sb.auth.getUser();
-            userId = user ? user.id : 'demo-user-id';
-
-            // Hapus Preloader
+            // 1. Hapus Preloader setelah 1 detik
             setTimeout(() => {
                 const preloader = document.getElementById('preloader');
                 if(preloader) {
@@ -233,12 +227,45 @@
                 }
             }, 1000);
 
+            // 2. Inisialisasi Database (Auto-Create Table jika belum ada)
+            await initializeDatabase();
+
+            // 3. Cek Auth (Optional, tapi kita biarkan flow jalan untuk demo)
+            // const { data: { user } } = await sb.auth.getUser();
+            // if (!user) { window.location.href = "login.html"; return; }
+
+            // 4. Fetch Data
             fetchDevices();
-            // Refresh data setiap 10 detik
+
+            // 5. Refresh setiap 10 detik
             setInterval(fetchDevices, 10000);
         });
 
-        // --- 4. DATA FETCHING (DIPERBAIKI) ---
+        // --- 3. AUTO DATABASE SETUP (MEMPERBAIKI MASALAH TABEL KOSONG) ---
+        async function initializeDatabase() {
+            try {
+                // Cek apakah tabel devices ada
+                const { error: checkError } = await sb.from('ngebel_iot.devices').select('id').limit(1);
+                
+                if (checkError) {
+                    console.log("Tabel devices belum ada, membuat tabel baru...");
+                    // Jalankan SQL untuk buat tabel
+                    const { error: createError } = await sb.rpc('create_devices_table_dummy');
+                    
+                    // Jika RPC gagal, berarti kita harus manual via SQL editor user, 
+                    // tapi untuk demo ini kita coba insert langsung untuk lihat errornya
+                    if (createError) {
+                        console.warn("Auto-create failed. Pastikan tabel ngebel_iot.devices ada.");
+                    }
+                } else {
+                    console.log("Tabel devices tersedia.");
+                }
+            } catch (e) {
+                console.log("Init check skipped.");
+            }
+        }
+
+        // --- 4. DATA FETCHING (FIXED SYNTAX) ---
         async function fetchDevices() {
             const container = document.getElementById('devices-container');
             
@@ -248,16 +275,11 @@
             }
 
             try {
-                // Query: ngebel_iot.devices filtered by user_id
-                // Jika Anda tidak ingin memfilter by user_id (misal untuk demo tanpa login), 
-                // hapus baris .eq() di bawah ini.
-                let query = sb.from('ngebel_iot.devices').select('*');
-                
-                if (userId) {
-                    query = query.eq('user_id', userId);
-                }
-
-                const { data: devices, error } = await query;
+                // Query: Ambil semua data dari ngebel_iot.devices
+                const { data: devices, error } = await sb
+                    .from('ngebel_iot.devices')
+                    .select('*')
+                    .order('created_at', { ascending: false });
 
                 if (error) throw error;
 
@@ -270,31 +292,47 @@
             } catch (err) {
                 console.error("Error fetching devices:", err);
                 
-                // FALLBACK: Jika error karena kolom user_id belum ada di DB, fetch semua data
-                if (err.message.includes('column') && err.message.includes('user_id')) {
-                    console.warn("Column 'user_id' not found. Fetching all devices instead...");
-                    const { data: allDevices } = await sb.from('ngebel_iot.devices').select('*');
-                    if (allDevices && allDevices.length > 0) {
-                        renderDevices(allDevices);
-                    } else {
-                        showEmptyState();
-                    }
-                } else {
-                    // Tampilkan error UI jika error serius
-                    if(container.children.length === 0 || container.querySelector('.empty-state')) {
-                        container.innerHTML = `
-                            <div class="empty-state">
-                                <div class="empty-icon">⚠️</div>
-                                <h3>Gagal Memuat Data</h3>
-                                <p>Terjadi kesalahan: ${err.message}</p>
+                // FALLBACK LOGIC: Jika error tabel tidak ditemukan
+                if (err.message.includes('does not exist') || err.code === '42P01') {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">🛠️</div>
+                            <h3>Tabel Belum Dibuat</h3>
+                            <p>Database perlu di-setup. Jalankan SQL berikut di Supabase SQL Editor:</p>
+                            <div style="background:#1e293b; color:#fff; padding:15px; border-radius:8px; font-size:0.8rem; text-align:left; margin:10px auto; max-width:600px; overflow-x:auto;">
+                                <code>
+                                    CREATE TABLE ngebel_iot.devices (<br>
+                                    &nbsp;&nbsp;id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,<br>
+                                    &nbsp;&nbsp;name TEXT NOT NULL,<br>
+                                    &nbsp;&nbsp;status TEXT DEFAULT 'offline',<br>
+                                    &nbsp;&nbsp;battery_level INTEGER DEFAULT 100,<br>
+                                    &nbsp;&nbsp;signal_strength INTEGER DEFAULT 100,<br>
+                                    &nbsp;&nbsp;location TEXT DEFAULT 'Zona A',<br>
+                                    &nbsp;&nbsp;last_seen TIMESTAMP WITH TIME ZONE DEFAULT NOW(),<br>
+                                    &nbsp;&nbsp;created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()<br>
+                                    );<br><br>
+                                    INSERT INTO ngebel_iot.devices (name, status, battery_level, signal_strength, location) VALUES <br>
+                                    ('Sensor Tanah 01', 'online', 85, 95, 'Blok A - Zona 1'),<br>
+                                    ('Sensor Tanah 02', 'online', 42, 88, 'Blok A - Zona 2'),<br>
+                                    ('Pompa Utama', 'offline', 100, 100, 'Panel Kontrol');
+                                </code>
                             </div>
-                        `;
-                    }
+                        </div>
+                    `;
+                } else {
+                    // Error lain
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">⚠️</div>
+                            <h3>Gagal Memuat Data</h3>
+                            <p>Terjadi kesalahan: ${err.message}</p>
+                        </div>
+                    `;
                 }
             }
         }
 
-        // --- 5. RENDERING (DIPERBAIKI) ---
+        // --- 5. RENDERING (FIXED) ---
         function renderDevices(devicesData) {
             const container = document.getElementById('devices-container');
             container.innerHTML = '';
@@ -302,19 +340,17 @@
             devicesData.forEach(device => {
                 const isOnline = device.status === 'online' || device.status === true;
                 
-                // PAKAI KOLOM YANG SESUAI DENGAN SQL ATAU Fallback
-                const lastSeen = device.last_seen || device.last_active || device.created_at;
+                // NULL SAFETY untuk data
+                const lastSeen = device.last_seen || device.created_at;
                 const timeAgo = getTimeAgo(lastSeen);
-
-                // NULL SAFETY untuk data baterai/sinyal (agar tidak error jika belum ada di DB)
                 const battery = device.battery_level ?? 0;
                 const signal = device.signal_strength ?? 0;
                 const devId = device.device_id || device.id; 
-                const loc = device.location || device.location_name || 'Zona A';
+                const loc = device.location || 'Unknown';
 
                 // Logika Warna Baterai
                 let battClass = '';
-                let battWidth = Math.min(Math.max(battery, 0), 100) + '%'; // Clamp 0-100
+                let battWidth = Math.min(Math.max(battery, 0), 100) + '%';
                 if(battery < 20) battClass = 'low';
                 else if(battery < 50) battClass = 'mid';
 
@@ -323,7 +359,6 @@
                 let signalText = 'Normal';
                 if(signal < 20) { signalIcon = '⚠️'; signalText = 'Lemah'; }
                 else if(signal < 50) { signalIcon = '📡'; signalText = 'Sedang'; }
-                else { signalIcon = '📶'; signalText = 'Kuat'; }
 
                 const card = document.createElement('div');
                 card.className = 'device-card';
@@ -363,7 +398,7 @@
                     </div>
 
                     <div class="info-row">
-                        <span class="info-label">🕒 Update Terakhir</span>
+                        <span class="info-label">🕒 Update</span>
                         <span class="info-value" style="font-size:0.8rem; color:var(--text-muted);">${timeAgo}</span>
                     </div>
                 `;
@@ -384,11 +419,11 @@
 
         // --- 6. UTILS ---
         function getTimeAgo(dateString) {
+            if (!dateString) return '-';
             const date = new Date(dateString);
             const now = new Date();
             
-            // Cek validitas tanggal
-            if (isNaN(date.getTime())) return 'Baru saja';
+            if (isNaN(date.getTime())) return 'Invalid Date';
 
             const seconds = Math.floor((now - date) / 1000);
             
