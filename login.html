@@ -241,7 +241,6 @@
         }
 
         // --- 1. KONFIGURASI SUPABASE ---
-        // PASTIKAN KEY INI SUDAH BENAR DARI DASHBOARD
         const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
         const SUPABASE_KEY = 'GANTI_DENGAN_KEY_ANON_ANDA_DISINI'; // Pastikan diisi
         
@@ -278,11 +277,13 @@
             }
         }
 
-        // --- 3. LOGIKA UTAMA: CEK is_admin (BOOLEAN) ---
-        async function checkSession() {
+        // --- 3. LOGIKA UTAMA: CEK is_admin (DENGAN SMART WAIT) ---
+        async function checkSession(maxRetries = 5) {
             console.log("🔄 Memulai pengecekan sesi...");
             
-            // Cek apakah user SUDAH login (session aktif)
+            const btn = document.getElementById('btn-google');
+            
+            // Cek apakah user SUDAH login
             const { data: { session }, error: sessionError } = await sb.auth.getSession();
             
             if (sessionError) {
@@ -293,8 +294,7 @@
             if (session) {
                 console.log("✅ User login terdeteksi. ID:", session.user.id);
                 
-                // Tampilkan Loading pada tombol untuk memberi feedback visual
-                const btn = document.getElementById('btn-google');
+                // Tampilkan Loading visual
                 if(btn) {
                     btn.innerHTML = `<svg class="spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 12a9 9 0 1 1-6 2.3l-4-4"></path></svg> Mengecek Hak Akses...`;
                     btn.style.opacity = '0.7';
@@ -302,38 +302,32 @@
 
                 try {
                     // 1. Cek data user dan ambil kolom is_admin
-                    console.log("🔍 Mencari data user & status admin...");
                     const { data: userData, error: fetchError } = await sb
                         .from('ngebelusers')
-                        .select('is_admin') // <--- PERUBAHAN: Ambil kolom Boolean
+                        .select('is_admin') 
                         .eq('id', session.user.id)
                         .maybeSingle(); 
 
-                    // Jika TERJADI ERROR FATAL (RLS / Key Salah)
+                    // Jika TERJADI ERROR FATAL
                     if (fetchError && fetchError.code !== 'PGRST116') {
                         console.error("❌ Error Database:", fetchError);
                         showToast("Terjadi kesalahan koneksi database.");
                         
-                        // Fallback: Jika DB error, anggap user baru
-                        setTimeout(() => {
-                            window.location.href = 'signup.html';
-                        }, 1500);
+                        // Fallback ke signup
+                        setTimeout(() => { window.location.href = 'signup.html'; }, 1500);
                         return; 
                     }
 
-                    // 2. LOGIKA: JIKA DATA USER BELUM ADA (PERTAMA KALI LOGIN)
+                    // 2. LOGIKA: JIKA DATA USER BELUM ADA
                     if (!userData) {
                         console.log("ℹ️ Data belum ada (User Baru). Redirect ke signup.html...");
                         showToast("Akun baru! Silakan lengkapi data profil.");
                         
-                        setTimeout(() => {
-                            window.location.href = 'signup.html';
-                        }, 1500);
+                        setTimeout(() => { window.location.href = 'signup.html'; }, 1500);
                         return;
                     }
 
                     // 3. LOGIKA ADMIN: CEK BOOLEAN is_admin
-                    // Mengambil nilai boolean. Jika null, defaultkan ke false.
                     const isAdmin = userData.is_admin; 
 
                     console.log("Status Admin:", isAdmin);
@@ -341,15 +335,11 @@
                     if (isAdmin === true) {
                         console.log("🚀 User adalah ADMIN. Redirect ke admin.html");
                         showToast("Login Berhasil! Selamat datang Admin.");
-                        setTimeout(() => {
-                            window.location.href = 'admin.html';
-                        }, 1500);
+                        setTimeout(() => { window.location.href = 'admin.html'; }, 1500);
                     } else {
                         console.log("👤 User adalah USER BIASA. Redirect ke dashboard.html");
                         showToast("Login Berhasil! Mengalihkan ke Dashboard...");
-                        setTimeout(() => {
-                            window.location.href = 'dashboard.html';
-                        }, 1500);
+                        setTimeout(() => { window.location.href = 'dashboard.html'; }, 1500);
                     }
 
                 } catch (err) {
@@ -357,7 +347,33 @@
                     showToast("Terjadi kesalahan sistem.");
                 }
             } else {
-                console.log("ℹ️ Tidak ada sesi aktif. Menunggu user login.");
+                // --- SMART WAIT LOGIC ---
+                // Jika tidak ada session, cek URL apakah ada indikasi baru kembali dari Google (access_token)
+                const urlParams = new URLSearchParams(window.location.search);
+                const hasAccessToken = urlParams.has('access_token') || urlParams.has('code');
+
+                if (hasAccessToken && maxRetries > 0) {
+                    console.log("⏳ Terdeteksi token Google di URL, tapi sesi belum siap. Menunggu...");
+                    
+                    // Ubah tombol jadi "Menunggu..."
+                    if(btn) {
+                        btn.disabled = true;
+                        btn.innerHTML = `<svg class="spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 12a9 9 0 1 1-6 2.3l-4-4"></path></svg> Menunggu konfirmasi Google...`;
+                    }
+
+                    // Coba lagi setelah 500ms
+                    setTimeout(() => {
+                        checkSession(maxRetries - 1);
+                    }, 500);
+                } else {
+                    console.log("ℹ️ Tidak ada sesi aktif. Menunggu user login.");
+                    // Pastikan tombol kembali normal jika menunggu selesai tapi tetap gagal
+                    if(btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = `<svg viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)"><path fill="#4285F4" d="M -3.264 51.509 C -3.264 50.719 -3.334 49.969 -3.454 49.239 L -14.754 49.239 L -14.754 53.749 L -8.284 53.749 C -8.574 55.229 -9.424 56.479 -10.684 57.329 L -10.684 60.329 L -6.824 60.329 C -4.564 58.239 -3.264 55.159 -3.264 51.509 Z"/><path fill="#34A853" d="M -14.754 63.239 C -11.514 63.239 -8.804 62.159 -6.824 60.329 L -10.684 57.329 C -11.764 58.049 -13.134 58.489 -14.754 58.489 C -17.884 58.489 -20.534 56.379 -21.484 53.529 L -25.464 53.529 L -25.464 56.619 C -23.494 60.539 -19.444 63.239 -14.754 63.239 Z"/><path fill="#FBBC05" d="M -21.484 53.529 C -21.734 52.809 -21.864 52.039 -21.864 51.239 C -21.864 50.439 -21.734 49.669 -21.484 48.949 L -21.484 45.859 L -25.464 45.859 C -26.284 47.79 -26.754 49.299 -26.754 51.239 C -26.754 53.179 -26.284 54.999 -25.464 56.619 L -21.484 53.529 Z"/><path fill="#EA4335" d="M -14.754 43.989 C -12.984 43.989 -11.404 44.599 -10.154 45.789 L -6.734 42.369 C -8.804 40.429 -11.514 39.239 -14.754 39.239 C -19.444 39.239 -23.494 41.939 -25.464 45.859 L -21.484 48.949 C -20.534 46.099 -17.884 43.989 -14.754 43.989 Z"/></g></svg> Masuk dengan Google`;
+                        btn.style.opacity = '1';
+                    }
+                }
             }
         }
 
