@@ -20,13 +20,13 @@
         :root {
             --primary: #0f766e; --primary-light: #14b8a6; --primary-dark: #0f5132;
             --accent: #f59e0b; 
-            --gold-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            --danger: #ef4444;
             --bg-body: #f8fafc;
             --glass: rgba(255, 255, 255, 0.7);
             --text-main: #1e293b; --text-muted: #64748b;
             
             --radius-xl: 32px; --radius-lg: 24px; --radius-md: 12px;
-            --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0,0.05);
+            --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.05);
             --shadow-hover: 0 20px 50px -12px rgba(15, 118, 110, 0.3);
             --nav-height: 80px;
             --font-mono: 'JetBrains Mono', monospace;
@@ -105,8 +105,7 @@
         .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         input:checked + .slider { background-color: var(--primary); }
         input:checked + .slider:before { transform: translateX(22px); background-color: white; }
         input:disabled + .slider { opacity: 0.5; cursor: not-allowed; }
@@ -119,13 +118,6 @@
         }
         .brand { display: flex; align-items: center; gap: 10px; font-family: 'Outfit'; font-weight: 800; font-size: 1.3rem; color: var(--primary); cursor: pointer; }
         
-        /* Admin Badge (Style Dashboard) */
-        .admin-badge { 
-            background: linear-gradient(135deg, #0f766e, #0d5f58); color: white; 
-            padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; letter-spacing: 1px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0,0.1);
-        }
-
         /* Sidebar Nav (Style Dashboard) */
         .bottom-nav {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
@@ -137,7 +129,7 @@
             z-index: 1000; padding: 10px;
             border: 1px solid rgba(255,255,255,0.6);
             overflow-x: auto; 
-            white-space: nowrap; /* Agar menu banyak, bisa discroll horizontal */
+            white-space: nowrap; 
             justify-content: flex-start; 
             gap: 8px; 
         }
@@ -157,7 +149,7 @@
         
         .nav-item.active { color: var(--primary); }
         .nav-item.active svg { transform: scale(1.1); stroke-width: 2.5; }
-        .nav-item.logout-item:hover { color: #ef4444; background: #fef2f2; } /* Style Dashboard Admin Merah */
+        .nav-item.logout-item:hover { color: #ef4444; background: #fef2f2; } 
 
         /* Desktop Nav (Sidebar) */
         @media (min-width: 768px) {
@@ -186,7 +178,7 @@
             .nav-item svg { margin-bottom: 0; }
         }
 
-        /* --- 5. PRELOADER (SAMA SEPERTI DASHBOARD) --- */
+        /* --- 5. PRELOADER --- */
         #preloader {
             position: fixed; inset: 0; background: #ffffff; z-index: 9999; 
             display: flex; justify-content: center; align-items: center; flex-direction: column;
@@ -216,20 +208,42 @@
             background: white; padding: 15px 25px; border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-left: 4px solid var(--primary);
             display: flex; align-items: center; gap: 12px; font-weight: 600;
-            transform: translateX(120%); transition: transform: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-size: 0.9rem;
+            transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-size: 0.9rem;
         }
         .toast.show { transform: translateX(0); }
 
-        /* PERBAIKAN: Loading Overlay yang lebih halus */
         .card-loading {
             position: absolute; inset: 0; background: rgba(255,255,255,0.6); z-index: 10;
-            display: none; /* Default hidden */
-            align-items: center; justify-content: center; backdrop-filter: blur(2px);
+            display: none; align-items: center; justify-content: center; backdrop-filter: blur(2px);
             border-radius: var(--radius-lg);
         }
         .mini-spinner {
             width: 30px; height: 30px; border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite;
         }
+
+        /* Table Styles */
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #f1f5f9; }
+        th { font-weight: 700; color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; }
+        tr:hover { background-color: #f8fafc; }
+
+        /* Settings Form Elements */
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem; }
+        .form-input { 
+            width: 100%; padding: 12px; border: 1px solid #e2e8f0; 
+            border-radius: var(--radius-md); font-size: 1rem; font-family: inherit; 
+            transition: border 0.3s;
+        }
+        .form-input:focus { outline: none; border-color: var(--primary); }
+        .btn { 
+            padding: 12px 24px; border-radius: var(--radius-md); border: none; 
+            font-weight: 700; cursor: pointer; transition: opacity 0.2s; 
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
 
     </style>
 </head>
@@ -238,21 +252,227 @@
     <!-- PRELOADER -->
     <div id="preloader">
         <div class="loader-content">
-           
             <div class="modern-spinner"></div>
         </div>
     </div>
 
-    <!-- HEADER (Style Dashboard) -->
+    <!-- HEADER -->
     <header>
-        <div class="brand" onclick="window.location.reload()">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.74 5.88-5.74 5.88-5.74-5.88L12 2.69M12 22a9.97 9.97 0 0 1-7.07-2.93l-1.41 1.41A11.97 11.97 0 0 0 12 24a11.97 11.97 0 0 0 8.49-3.52l-1.41-1.41A9.97 9.97 0 0 1 12 24a11.97 11.97 0 0 0 8.49-3.52l-1.41-1.41A9.97 9.97 0 0 1-2.83 0 2 2 0 0 1-2.83l.06-.06a1.65 1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1-2 2 2 2 0 0 1 2 2v-.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v-.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 0.33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v-.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82 1.65 1. 0 0 0 1 1.51 1H21a2 2 0 0 1 2 2 2 0 0 1 2 2h-.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v-.09A1.65 1. 65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0 1 1.51 1H21a2 2 0 0 1 2 2 0 0 1 2 2h-.09a1.65 1.65 1. 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v-.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v-.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0 1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v-.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0 1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v-.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2 2h-.09a1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v-.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v-.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v-.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0 1 1.51 1H21a2 2 0 0 1 2 2 2 0 0 1 2 2h-.09a1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0 1.51 1z"></path></svg>  label: 'Dashboard', active: true },
-            { id: 'users', icon: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2</path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>', label: 'User Management' },
-            { id: 'devices', icon: '<rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></rect></svg>', label: 'Monitoring Device' },
-            { id: 'alerts', icon: '<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9-3-9 9h18s-3-2-3-3-9-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>', label: 'Alerts' },
-            { id: 'analytics', icon: '<line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>', label: 'Analitik' },
-            { id: 'settings', icon: '<circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v-.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v-.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0 1.1.51 1H21a2 2 0 0 1 2 2 2 0 0 1 2 2h-.09a1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0 1.51 1z"></path></svg>', label: 'Pengaturan', link: 'setting.html' }, // DI SINI KLIK KE HALAMAN KE SETTING KE `setting.html` (karena admin)
-            { id: 'logout', icon: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1-2-2v2"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></line></svg>', label: 'Keluar', action: 'logout' },
+        <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="brand" onclick="window.location.reload()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.74 5.88-5.74 5.88-5.74-5.88L12 2.69M12 22a9.97 9.97 0 0 1-7.07-2.93l-1.41 1.41A11.97 11.97 0 0 0 12 24a11.97 11.97 0 0 0 8.49-3.52l-1.41-1.41A9.97 9.97 0 0 1 12 22z"/></svg>
+                Ngebel Admin
+            </div>
+            <div class="status-badge status-healthy">
+                <div class="blink-dot"></div> SYSTEM ONLINE
+            </div>
+        </div>
+    </header>
+
+    <main class="container" style="padding-top: 90px;">
+        
+        <!-- PAGE TITLE -->
+        <div style="margin-bottom: 30px; animation: fadeInUp 0.6s ease-out;">
+            <h1 style="font-size: 2rem; margin-bottom: 5px;">Dashboard Admin</h1>
+            <p>Monitoring IoT, Manajemen User, dan Kontrol Sistem.</p>
+        </div>
+
+        <!-- DASHBOARD GRID -->
+        <section class="dashboard-grid">
+            
+            <!-- 1. SYSTEM STATUS -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Status Kesehatan</span>
+                    <span id="status-icon">🌱</span>
+                </div>
+                <div style="text-align: center;">
+                    <h2 id="farm-status-text" style="font-size: 2rem; margin-bottom: 10px;">--</h2>
+                    <span id="farm-status-badge" class="status-badge status-healthy">Checking...</span>
+                </div>
+                <div id="loading-status" class="card-loading"><div class="mini-spinner"></div></div>
+            </div>
+
+            <!-- 2. KELEMBABAN & SUHU (Ringkasan) -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Sensor Terkini</span>
+                    <span style="font-size: 1.2rem;">🌡️</span>
+                </div>
+                <div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                        <span class="metric-sub">Tanah</span>
+                        <span style="font-weight:700;" id="val-moisture">--%</span>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="bar-moisture" style="width: 0%;"></div>
+                    </div>
+                    <div style="margin-top: 15px; display:flex; justify-content:space-between; align-items:center;">
+                        <span class="metric-sub">Udara</span>
+                        <span style="font-size:1.2rem; font-weight:700; color:var(--primary);" id="val-temp">--°C</span>
+                    </div>
+                </div>
+                <div id="loading-moisture" class="card-loading"><div class="mini-spinner"></div></div>
+            </div>
+
+            <!-- 3. KONTROL POMPA -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Kontrol Pompa</span>
+                    <span style="font-size: 1.2rem;">⚙️</span>
+                </div>
+                <div class="switch-container">
+                    <div>
+                        <div style="font-weight: 700; color: var(--text-main);">Pompa Irigasi</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Status: <span id="pump-status-text">OFF</span></div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="pump-toggle" onchange="togglePump()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div id="loading-pump" class="card-loading"><div class="mini-spinner"></div></div>
+            </div>
+
+            <!-- 4. BROADCAST SECTION -->
+            <div class="card col-span-full">
+                <div class="card-header">
+                    <span class="card-title">Broadcast Terakhir</span>
+                    <button class="btn btn-primary btn-sm" onclick="window.location.href='broadcast.html'">Kelola Broadcast</button>
+                </div>
+                <div style="display: flex; gap: 20px; align-items: flex-start;">
+                    <div style="flex: 1;">
+                        <h4 style="font-size: 1.1rem; color: var(--text-main); margin-bottom: 5px;">Informasi Cuaca</h4>
+                        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 10px;">Dikirim: Hari ini, 10:00 WIB</p>
+                        <p style="font-size: 0.95rem; line-height: 1.5;">"Waspada hujan lebat di area Waduk Ngebel antara pukul 14.00 - 18.00 WIB."</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <span class="status-badge status-healthy">Terkirim (24/24)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. USER MANAGEMENT (PREVIEW) -->
+            <div class="card col-span-full">
+                <div class="card-header">
+                    <span class="card-title">Manajemen User</span>
+                    <button class="btn btn-primary btn-sm" onclick="window.location.href='users.html'">Lihat Semua</button>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Email</th>
+                                <th>Nama</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="user-table-body">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="loading-users" class="card-loading"><div class="mini-spinner"></div></div>
+            </div>
+
+            <!-- 6. DEVICE STATUS -->
+            <div class="card col-span-full">
+                <div class="card-header">
+                    <span class="card-title">Status Perangkat (IoT)</span>
+                    <span style="font-size: 1.2rem;">📡</span>
+                </div>
+                <div id="device-list-container">
+                    <!-- Device list injected by JS -->
+                </div>
+                <div id="loading-devices" class="card-loading"><div class="mini-spinner"></div></div>
+            </div>
+
+             <!-- 7. ALERTS -->
+             <div class="card col-span-full">
+                <div class="card-header">
+                    <span class="card-title">Log Alerts Sistem</span>
+                    <span style="font-size: 1.2rem;">🔔</span>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Waktu</th>
+                                <th>Perangkat</th>
+                                <th>Tipe</th>
+                                <th>Pesan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="alerts-table-body">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 8. GRAFIK REALTIME -->
+            <div class="card col-span-full">
+                <div class="card-header">
+                    <span class="card-title">Grafik Realtime (10 Menit Terakhir)</span>
+                    <div style="display: flex; gap: 10px; font-size: 0.8rem;">
+                        <span style="color: var(--primary);">● Kelembaban</span>
+                        <span style="color: var(--accent);">● Suhu</span>
+                    </div>
+                </div>
+                <div style="position: relative; height: 250px; width: 100%;">
+                    <canvas id="dashboardChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 9. SETTINGS PREVIEW -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Pengaturan Cepat</span>
+                    <button class="btn btn-sm" style="font-size:0.8rem; color:var(--primary);" onclick="window.location.href='setting.html'">Edit Lengkap</button>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span class="metric-sub">Mode Otomatis</span>
+                        <span style="font-weight:600; color:var(--primary);">AKTIF</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span class="metric-sub">Notifikasi Alert</span>
+                        <span style="font-weight:600; color:var(--primary);">AKTIF</span>
+                    </div>
+                     <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span class="metric-sub">Maintenance Mode</span>
+                        <span style="font-weight:600; color:#94a3b8;">NON-AKTIF</span>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- NAVIGATION -->
+    <nav class="bottom-nav" id="main-nav"></nav>
+
+    <!-- TOAST CONTAINER -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        // --- 1. KONFIGURASI SUPABASE ---
+        const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
+        
+        const { createClient } = supabase;
+        const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // --- 2. MENU CONFIGURATION ---
+        const menuItems = [
+            { id: 'dashboard', icon: '<rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>', label: 'Dashboard', active: true },
+            { id: 'broadcast', icon: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>', label: 'Broadcast', link: 'broadcast.html' },
+            { id: 'users', icon: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>', label: 'User Mgmt', link: 'users.html' },
+            { id: 'devices', icon: '<rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line>', label: 'Devices', link: 'devices.html' },
+            { id: 'alerts', icon: '<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path>', label: 'Alerts', link: 'alerts.html' },
+            { id: 'settings', icon: '<circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0 .33-1.82l.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1 2 2h-.09a1.65 1.65 0 0 0-1.51 1H21a2 2 0 0 1-2 2h.09a1.65 1.65 0 0 0 1.51 1z"></path>', label: 'Settings', link: 'setting.html' },
+            { id: 'logout', icon: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line>', label: 'Keluar', action: 'logout' },
         ];
 
         // --- 3. STATE & CHART VARIABLES ---
@@ -263,17 +483,16 @@
         // --- 4. INITIALIZATION ---
         window.addEventListener('load', async () => {
             renderNav();
+            initChart(); 
             
-            // Preloader
             setTimeout(() => {
                 const preloader = document.getElementById('preloader');
                 if(preloader) {
                     preloader.style.opacity = '0';
                     setTimeout(() => preloader.remove(), 600);
                 }
-            }, 1000);
+            }, 1200);
 
-            // Fetch Data
             fetchAllData();
             // Refresh setiap 5 detik
             setInterval(fetchAllData, 5000);
@@ -283,53 +502,40 @@
         function renderNav() {
             const navContainer = document.getElementById('main-nav');
             navContainer.innerHTML = '';
-            
             menuItems.forEach((item) => {
                 const a = document.createElement('div');
-                // Menambahkan kelas 'nav-item' dan kelas 'logout-item' secara spesifik
                 a.className = `nav-item ${item.active ? 'active' : ''} ${item.id === 'logout' ? 'logout-item' : ''}`;
                 
-                // SVG Icon & Label
-                const icon = item.icon;
-                const label = item.label;
-
                 a.innerHTML = `
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">${icon}</svg>
-                    <span>${label}</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">${item.icon}</svg>
+                    <span>${item.label}</span>
                 `;
                 
-                // Logic Klik
-                if (item.id === 'logout') {
+                if (item.action === 'logout') {
                     a.onclick = handleLogout;
-                } else if (item.id === 'settings') {
-                    // PERBAIKAN: Jika diklik menu Settings, arahkan ke setting.html (hanya redirect)
-                    window.location.href = 'setting.html';
                 } else if (item.link) {
                     a.onclick = () => window.location.href = item.link;
                 }
-                
                 navContainer.appendChild(a);
             });
         }
 
         async function handleLogout() {
-            const confirmLogout = confirm("Keluar dari Admin Panel?");
-            if(confirmLogout) {
-                try {
-                    const { error } = await sb.auth.signOut();
-                    if (error) throw error;
-                    showToast("Berhasil keluar", "success");
-                    setTimeout(() => window.location.href = 'index.html', 1000);
-                } catch (err) {
-                    console.error("Logout Error:", err);
-                    showToast("Gagal keluar", "error");
-                }
+            const confirmLogout = confirm("Apakah Anda yakin ingin keluar?");
+            if (!confirmLogout) return;
+            try {
+                const { error } = await sb.auth.signOut();
+                if (error) throw error;
+                showToast("Berhasil keluar", "success");
+                setTimeout(() => window.location.href = 'index.html', 1000);
+            } catch (err) {
+                console.error("Logout Error:", err);
+                showToast("Gagal keluar", "error");
             }
         }
 
-        // --- 6. DATA FETCHING (MODERN & MOCK + SUPABASE) ---
+        // --- 6. DATA FETCHING ---
         async function fetchAllData() {
-            // Tampilkan loading hanya saat pertama kali agar tidak kedip-kedip
             if (isFirstLoad) {
                 document.querySelectorAll('.card-loading').forEach(el => el.style.display = 'flex');
             }
@@ -361,28 +567,33 @@
                     updatePumpUI(isActive);
                 }
 
-                // 3. Data Mock (Admin View) -> Data User/User/Device di sini (Mock Data)
-                // Kita gunakan data mock untuk Dashboard Admin yang isinya belum terisi data real.
-                const mockUsers = 24; 
-                const mockDevices = 8;   
+                // 3. Mock Data Users (Karena belum ada tabel user riil)
+                const mockUsers = [
+                    { email: 'admin@ngebel.com', name: 'Super Admin', role: 'admin', status: 'active' },
+                    { email: 'staff1@ngebel.com', name: 'Budi Santoso', role: 'staff', status: 'active' },
+                    { email: 'staff2@ngebel.com', name: 'Siti Aminah', role: 'staff', status: 'inactive' },
+                ];
+                renderUserList(mockUsers);
 
-                // Update Metrics
-                updateMetric('total-users', mockUsers);
-                updateMetric('total-devices', mockDevices);
-                updateMetric('total-online', mockDevices - 1); // Satu device offline
-
-                // Render Lists
-                renderUserList(mockUsers); 
+                // 4. Mock Data Devices
+                const mockDevices = [
+                    { name: 'Sensor Tanah A1', status: 'online' },
+                    { name: 'Sensor Udara B2', status: 'online' },
+                    { name: 'Pompa Utama', status: 'online' },
+                    { name: 'Kamera Gerbang', status: 'offline' },
+                ];
                 renderDeviceList(mockDevices);
 
-                // Alerts (Mock Data Alerts)
-                const mockAlerts = 5;
-                updateMetric('total-alerts', mockAlerts);
+                // 5. Mock Data Alerts
+                const mockAlerts = [
+                    { time: '10:05', device: 'Pompa Utama', type: 'INFO', msg: 'Otomatis menyala' },
+                    { time: '09:30', device: 'Sensor Udara B2', type: 'WARNING', msg: 'Suhu Tinggi (34°C)' },
+                    { time: '08:15', device: 'Kamera Gerbang', type: 'ERROR', msg: 'Koneksi Terputus' },
+                ];
                 renderAlerts(mockAlerts);
 
             } catch (err) {
                 console.error("Fetch Error Global:", err);
-                // Jangan alert atau reload, cukup log console agar user tidak terganggu
             } finally {
                 setTimeout(() => {
                     document.querySelectorAll('.card-loading').forEach(el => el.style.display = 'none');
@@ -396,7 +607,7 @@
             const moisture = data.moisture;
             const temp = data.temperature;
 
-            document.getElementById('val-moisture').innerText = moisture;
+            document.getElementById('val-moisture').innerText = moisture + "%";
             document.getElementById('bar-moisture').style.width = moisture + '%';
             
             let moistStatus = "Kering";
@@ -404,17 +615,7 @@
             if(moisture > 40) { moistStatus = "Cukup Basah"; moistClass = "status-warning"; }
             if(moisture > 70) { moistStatus = "Sangat Basah"; moistClass = "status-healthy"; }
             
-            const moistEl = document.getElementById('sub-moisture');
-            moistEl.innerHTML = `Kondisi: <span class="status-badge ${moistClass}" style="font-size: 0.7rem; padding: 2px 8px;">${moistStatus}</span>`;
-
-            document.getElementById('val-temp').innerText = temp;
-            const weatherEmoji = document.getElementById('weather-emoji');
-            const weatherText = document.getElementById('val-weather');
-            
-            if (temp > 32) { weatherEmoji.innerText = "🔥"; weatherText.innerText = "Panas Sekali"; }
-            else if (temp > 28) { weatherEmoji.innerText = "☀️"; weatherText.innerText = "Cerah Berawan"; }
-            else if (temp > 24) { weatherEmoji.innerText = "⛅"; weatherText = "Berawan"; }
-            else { weatherEmoji.innerText = "🌧️"; weatherText = "Hujan/Dingin"; }
+            document.getElementById('val-temp').innerText = temp + "°C";
 
             const statusText = document.getElementById('farm-status-text');
             const statusBadge = document.getElementById('farm-status-badge');
@@ -422,12 +623,12 @@
             if (temp > 35 || moisture < 20) {
                 statusText.innerText = "WARNING";
                 statusText.style.color = "#eab308";
-                statusBadge.className = "status-warning";
-                statusBadge.innerText = "Perlu Perlu Perhatian";
+                statusBadge.className = "status-badge status-warning";
+                statusBadge.innerText = "Perlu Perhatian";
             } else {
-                statusText.innerText = "SYSTEM ONLINE";
+                statusText.innerText = "ONLINE";
                 statusText.style.color = "var(--primary)";
-                statusBadge.className = "status-healthy";
+                statusBadge.className = "status-badge status-healthy";
                 statusBadge.innerText = "Sistem Normal";
             }
         }
@@ -444,53 +645,39 @@
             text.style.color = isActive ? "var(--primary)" : "var(--text-muted)";
         }
 
-        // --- 8. RENDER MOCK DATA ---
-        function renderUserList(mockUsers) {
-            const container = document.getElementById('user-table tbody');
-            container.innerHTML = '';
-            
-            if(mockUsers.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:#aaa; padding:10px;">Belum ada user lain terdaftar</p>';
-                return;
-            }
-
-            mockUsers.forEach(u => {
+        function renderUserList(users) {
+            const tbody = document.getElementById('user-table-body');
+            tbody.innerHTML = '';
+            users.forEach(u => {
                 const tr = document.createElement('tr');
-                const roleBadge = u.role === 'admin' ? 'badge-success' : 'badge-info';
+                const roleBadge = u.role === 'admin' ? 'status-healthy' : 'status-warning';
+                const statusColor = u.status === 'active' ? '#22c55e' : '#94a3b8';
                 
                 tr.innerHTML = `
                     <td>${u.email}</td>
                     <td>${u.name}</td>
-                    <td><span class="badge ${roleBadge}">${u.role.toUpperCase()}</span></td>
-                    <td>
-                        <button class="btn btn-sm" onclick="alert('Edit User: ${u.email}')">Edit</button>
-                    </td>
+                    <td><span class="status-badge ${roleBadge}">${u.role.toUpperCase()}</span></td>
+                    <td><span style="color:${statusColor}; font-weight:600;">● ${u.status.toUpperCase()}</span></td>
                 `;
-                container.appendChild(tr);
+                tbody.appendChild(tr);
             });
         }
 
         function renderDeviceList(devices) {
             const container = document.getElementById('device-list-container');
             container.innerHTML = '';
-            
-            if(devices.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:#aaa; padding:10px;">Belum ada perangkat terdaftar</p>';
-                return;
-            }
-
             devices.forEach(dev => {
-                const isOnline = dev.status === 'online' || dev.status === true;
+                const isOnline = dev.status === 'online';
                 const color = isOnline ? '#22c55e' : '#94a3b8';
                 const div = document.createElement('div');
-                div.className = 'device-row';
+                div.style.cssText = "display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9;";
                 div.innerHTML = `
-                    <div class="device-name">
-                        <span class="device-icon">📡</span> ${dev.name}
+                    <div style="display:flex; align-items:center; gap:10px; font-weight:600;">
+                        <span>📡</span> ${dev.name}
                     </div>
-                    <div style="display: flex; align-items:center; gap:8px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
                         <span style="font-size:0.85rem; color: ${color}; font-weight:600;">${isOnline ? 'Online' : 'Offline'}</span>
-                        <div style="width:8px; height: 8px; border-radius:50%; background:${color}; box-shadow: 0 0 5px ${color}; box-shadow: 0 0 5px ${color};"></div>
+                        <div style="width:8px; height: 8px; border-radius:50%; background:${color}; box-shadow: 0 0 5px ${color};"></div>
                     </div>
                 `;
                 container.appendChild(div);
@@ -498,25 +685,53 @@
         }
 
         function renderAlerts(alerts) {
-            const container = document.getElementById('alerts-table tbody');
-            container.innerHTML = '';
-
+            const tbody = document.getElementById('alerts-table-body');
+            tbody.innerHTML = '';
             alerts.forEach(a => {
                 const tr = document.createElement('tr');
-                const badgeClass = a.type === 'ERROR' ? 'badge-danger' : a.type === 'WARNING' ? 'badge-warning' : 'badge-info';
+                let badgeClass = "status-healthy"; // INFO
+                if(a.type === 'WARNING') badgeClass = "status-warning";
+                if(a.type === 'ERROR') badgeClass = "status-danger";
                 
                 tr.innerHTML = `
-                    <td>${a.time}</td>
+                    <td style="font-family: var(--font-mono);">${a.time}</td>
                     <td>${a.device}</td>
-                    <td><span class="badge ${badgeClass}">${a.type}</span></td>
+                    <td><span class="status-badge ${badgeClass}">${a.type}</span></td>
                     <td>${a.msg}</td>
-                    <td>${a.status}</td>
                 `;
-                container.appendChild(tr);
+                tbody.appendChild(tr);
             });
         }
 
-        // --- 9. CHART ENGINE (SAMA SEPERTI DASHBOARD) ---
+        // --- 8. INTERACTIONS ---
+        async function togglePump() {
+            isPumpToggling = true;
+            const toggle = document.getElementById('pump-toggle');
+            const newState = toggle.checked; 
+            const loading = document.getElementById('loading-pump');
+            
+            loading.style.display = 'flex'; 
+            showToast(newState ? "Mengaktifkan Pompa..." : "Mematikan Pompa...", "info");
+
+            const dbStatus = newState ? 'on' : 'off';
+
+            const { error } = await sb
+                .from('ngebel_iot.device_state')
+                .upsert({ id: 1, pump_status: dbStatus, last_updated: new Date().toISOString() });
+
+            if (error) {
+                showToast("Gagal mengubah status pompa!", "error");
+                toggle.checked = !newState; // Revert UI
+            } else {
+                showToast("Status Pompa Berhasil Diubah", "success");
+                setTimeout(() => fetchAllData(), 1000);
+            }
+
+            loading.style.display = 'none';
+            isPumpToggling = false;
+        }
+
+        // --- 9. CHARTING ENGINE ---
         function initChart() {
             const canvas = document.getElementById('dashboardChart');
             const ctx = canvas.getContext('2d');
@@ -557,7 +772,7 @@
             
             ctx.clearRect(0, 0, w, h);
             
-            const padding = 30px;
+            const padding = 30;
             const chartW = w - padding * 2;
             const chartH = h - padding * 2;
             
