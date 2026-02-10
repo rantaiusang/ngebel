@@ -236,7 +236,8 @@
                 // Langsung select * dari tabel ngebel_iot.farms
                 // Tidak perlu filter user_id untuk sementara agar demo berjalan lancar
                 const { data: farms, error } = await sb
-                    .from('ngebel_iot.farms')
+                    .schema('ngebel_iot')
+                     .from('farms')
                     .select('*')
                     .order('created_at', { ascending: false });
 
