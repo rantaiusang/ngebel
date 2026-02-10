@@ -479,7 +479,7 @@
                 const { error } = await sb.auth.signOut();
                 if (error) throw error;
                 showToast("Berhasil keluar", "success");
-                setTimeout(() => window.location.href = 'login.html', 1000);
+                setTimeout(() => window.location.href = 'index.html', 1000);
             } catch (err) {
                 console.error("Logout Error:", err);
                 showToast("Gagal keluar", "error");
