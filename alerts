@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Alert & Notifikasi | Ngebel Smart Farm</title>
-    <meta name="theme-color" content="#ef4444"> <!-- Merah untuk alert -->
+    <meta name="theme-color" content="#ef4444">
     <meta name="description" content="Log Peringatan dan Masalah Sistem Ngebel Smart Farm">
 
     <!-- SUPABASE CLIENT -->
@@ -159,7 +159,6 @@
     <!-- PRELOADER -->
     <div id="preloader">
         <div class="loader-content">
-            <!-- PERBAIKAN: Menambahkan kembali logo teks -->
             
             <div class="modern-spinner"></div>
         </div>
@@ -221,14 +220,15 @@
             setInterval(fetchAlerts, 30000);
         });
 
-        // --- 3. DATA FETCHING ---
+        // --- 3. DATA FETCHING (FIXED SYNTAX) ---
         async function fetchAlerts() {
             const container = document.getElementById('alerts-container');
             
             try {
-                // Query sesuai permintaan: ngebel_iot.alerts, limit 5
+                // ✅ PERBAIKAN: Gunakan .schema('ngebel_iot').from('alerts')
                 const { data: alerts, error } = await sb
-                    .from('ngebel_iot.alerts')
+                    .schema('ngebel_iot')
+                    .from('alerts')
                     .select('*')
                     .order('created_at', { ascending: false })
                     .limit(5);
@@ -264,10 +264,10 @@
                 let bgClass = 'bg-info';
                 let icon = 'ℹ️';
 
-                // PERBAIKAN LOGIC: Menggunakan 'alert_type' sesuai kolom SQL, dengan fallback ke 'type'
-                const type = alert.alert_type || alert.type || 'info'; 
+                // Cek kolom 'type' (sesuai SQL yang kita buat)
+                const type = alert.type || 'info'; 
                 
-                if (type.toLowerCase() === 'critical') {
+                if (type.toLowerCase() === 'danger' || type.toLowerCase() === 'critical') {
                     typeClass = 'alert-critical';
                     bgClass = 'bg-danger';
                     icon = '⚠️';
@@ -286,6 +286,9 @@
                 const timeString = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
                 const dateString = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
 
+                // Menampilkan Device ID (Jika kolom sudah ditambahkan di Langkah 1)
+                const devId = alert.device_id ? `DEVICE-${alert.device_id}` : 'SYSTEM';
+
                 card.innerHTML = `
                     <div class="alert-header">
                         <div class="alert-icon ${bgClass}">${icon}</div>
@@ -295,8 +298,7 @@
                         </div>
                     </div>
                     <div class="alert-meta">
-                        <!-- PERBAIKAN: Menggunakan device_id sebagai sumber, karena kolom 'source' tidak ada di SQL -->
-                        <span>DEVICE-${alert.device_id || 'SYS'}</span>
+                        <span>${devId}</span>
                         <span>${dateString}, ${timeString}</span>
                     </div>
                 `;
