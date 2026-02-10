@@ -146,6 +146,10 @@
         .feed-item {
             display: flex; gap: 15px; padding-bottom: 15px; margin-bottom: 15px;
             border-bottom: 1px solid #f1f5f9; align-items: flex-start;
+            animation: slideInRight 0.5s ease-out forwards; opacity: 0; transform: translateX(-20px);
+        }
+        @keyframes slideInRight {
+            to { opacity: 1; transform: translateX(0); }
         }
         .feed-item:last-child { border-bottom: none; margin: 0; padding: 0; }
         .feed-icon {
@@ -170,32 +174,48 @@
         }
         .cta-btn:hover { transform: translateY(-2px); }
 
-        /* --- 7. MODAL STYLES --- */
+        /* --- 7. MODAL STYLES (PERBAIKAN AGAR LEBIH HALUS) --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px);
+            background: rgba(0, 0, 0, 0.6); 
+            backdrop-filter: blur(8px); /* Blur lebih kuat */
+            -webkit-backdrop-filter: blur(8px);
             z-index: 9999; display: none;
             align-items: center; justify-content: center;
-            opacity: 0; transition: opacity 0.3s ease;
+            opacity: 0; transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .modal-overlay.active { opacity: 1; }
+        
         .modal-content {
             background: white; width: 90%; max-width: 500px;
-            border-radius: var(--radius-xl); overflow: hidden;
-            transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-radius: var(--radius-xl); overflow: visible; /* visible agar shadow terlihat */
+            transform: scale(0.95); /* Scale awal lebih dekat ke 1 */
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
             position: relative;
+            box-shadow: 0 20px 60px -12px rgba(0, 0, 0, 0.15); /* Shadow lebih lembut */
         }
         .modal-overlay.active .modal-content { transform: scale(1); }
-        .modal-header { height: 120px; background: linear-gradient(to right, var(--primary-dark), var(--primary)); position: relative; }
+        
+        .modal-header { 
+            height: 120px; background: linear-gradient(135deg, var(--primary-dark), var(--primary)); 
+            position: relative; 
+            border-radius: var(--radius-xl) var(--radius-xl) 0 0 0 0; /* Rounded di atas */
+        }
         .close-modal-btn {
             position: absolute; top: 15px; right: 15px;
             background: rgba(255,255,255,0.2); color: white;
             border: none; width: 32px; height: 32px; border-radius: 50%;
             cursor: pointer; display: flex; align-items: center; justify-content: center;
-            font-size: 1.2rem; transition: 0.2s;
+            font-size: 1.2rem; transition: all 0.2s;
         }
-        .close-modal-btn:hover { background: rgba(255,255,255,0.4); transform: rotate(90deg); }
-        .modal-body { text-align: center; padding: 0 30px 40px; margin-top: -50px; }
+        .close-modal-btn:hover { 
+            background: rgba(255,255,255,0.4); transform: rotate(90deg); 
+        }
+        
+        .modal-body { 
+            text-align: center; padding: 0 30px 40px; margin-top: -50px; 
+            position: relative; z-index: 10; /* Pastikan konten ada di atas header */
+        }
         .modal-avatar {
             width: 100px; height: 100px; border-radius: 50%;
             border: 4px solid white; object-fit: cover;
@@ -222,7 +242,7 @@
         /* --- 8. LOADING SPINNER --- */
         .loading-container {
             grid-column: 1 / -1; text-align: center; padding: 40px;
-            display: none; /* Hidden by default */
+            display: none; 
         }
         .spinner {
             width: 40px; height: 40px; border: 4px solid #f3f3f3;
@@ -230,6 +250,32 @@
             animation: spin 1s linear infinite; margin: 0 auto 15px;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- 9. PRELOADER STYLE --- */
+        #preloader {
+            position: fixed; inset: 0; background: #ffffff; z-index: 9999; 
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+            transition: opacity 0.6s ease-in-out, visibility 0.6s;
+        }
+        .loader-content { text-align: center; }
+        .brand-logo-loader {
+            font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 2rem;
+            color: var(--primary); margin-bottom: 20px; letter-spacing: -1px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        .modern-spinner {
+            width: 50px; height: 50px;
+            border: 4px solid rgba(15, 118, 110, 0.1);
+            border-left-color: var(--primary); border-radius: 50%;
+            animation: spin 1s linear infinite; position: relative;
+        }
+        .modern-spinner::after {
+            content: ""; position: absolute; top: 6px; left: 6px; right: 6px; bottom: 6px;
+            border: 3px solid transparent; border-top-color: var(--accent);
+            border-radius: 50%; animation: spin 0.8s linear infinite reverse;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
         /* Responsive */
         @media (max-width: 600px) {
@@ -240,6 +286,13 @@
     </style>
 </head>
 <body>
+
+    <!-- PRELOADER -->
+    <div id="preloader">
+        <div class="loader-content">
+          <div class="modern-spinner"></div>
+        </div>
+    </div>
 
     <!-- Header -->
     <header>
@@ -264,29 +317,8 @@
             <!-- Activity Feed -->
             <section class="activity-feed fade-up">
                 <h3 style="font-size: 1.1rem; margin-bottom: 20px;">🔥 Aktivitas Terbaru</h3>
-                <div class="feed-item">
-                    <div class="feed-icon">🍈</div>
-                    <div class="feed-content">
-                        <h4>Panen Raya Durian</h4>
-                        <p>Kelompok Tani Subur Makmur baru saja memanen 2 ton durian minggu ini.</p>
-                        <span class="time-ago">2 jam yang lalu</span>
-                    </div>
-                </div>
-                <div class="feed-item">
-                    <div class="feed-icon">🧹</div>
-                    <div class="feed-content">
-                        <h4>Gerakan Bersih Danau</h4>
-                        <p>Karang Taruna Desa Ngebel mengadakan aksi bersih sampah di area dermaga.</p>
-                        <span class="time-ago">Kemarin</span>
-                    </div>
-                </div>
-                <div class="feed-item">
-                    <div class="feed-icon">🤝</div>
-                    <div class="feed-content">
-                        <h4>Kolaborasi UMKM</h4>
-                        <p>Warung Othok-othok bekerja sama dengan Homestay Danau Indah untuk paket wisata kuliner.</p>
-                        <span class="time-ago">2 hari yang lalu</span>
-                    </div>
+                <div id="activity-list-container">
+                    <!-- Item akan di-inject di sini -->
                 </div>
             </section>
 
@@ -346,10 +378,9 @@
     <script>
         /**
          * LOGIKA WEB APP KOMUNITAS NGBEL
-         * Developer: Professional AI Assistant
-         * - Keamanan: Menghindari innerHTML langsung untuk konten user.
-         * - Performa: Menggunakan DocumentFragment.
-         * - Fallback: Data dummy jika DB gagal.
+         * - Menambahkan Preloader.
+         * - Realtime Activity Feed.
+         * - Modal yang lebih lembut (Smooth Animation).
          */
 
         // --- KONFIGURASI SUPABASE ---
@@ -362,8 +393,8 @@
         // --- STATE DATA ---
         let communityData = [];
 
-        // --- DUMMY DATA ---
-        const dummyData = [
+        // --- DUMMY DATA (KOMUNITAS) ---
+        const dummyCommunityData = [
             {
                 id: 'dummy-001',
                 full_name: 'Gorbon',
@@ -384,6 +415,28 @@
             },
         ];
 
+        // --- DUMMY DATA (AKTIVITAS) ---
+        const dummyActivities = [
+            {
+                icon: '🍈',
+                title: 'Panen Raya Durian',
+                desc: 'Kelompok Tani Subur Makmur baru saja memanen 2 ton durian minggu ini.',
+                time: '2 jam yang lalu'
+            },
+            {
+                icon: '🧹',
+                title: 'Gerakan Bersih Danau',
+                desc: 'Karang Taruna Desa Ngebel mengadakan aksi bersih sampah di area dermaga.',
+                time: 'Kemarin'
+            },
+            {
+                icon: '🤝',
+                title: 'Kolaborasi UMKM',
+                desc: 'Warung Othok-othok bekerja sama dengan Homestay Danau Indah untuk paket wisata kuliner.',
+                time: '2 hari yang lalu'
+            }
+        ];
+
         // --- FUNGSI UTILITY ---
 
         function getRoleBadgeClass(role) {
@@ -399,6 +452,35 @@
         function openWhatsApp(phone) {
             if(!phone) return;
             window.open(`https://wa.me/${phone}`, '_blank');
+        }
+
+        // --- RENDER ACTIVITY FEED ---
+        function renderActivityFeed(activities) {
+            const container = document.getElementById('activity-list-container');
+            container.innerHTML = ''; // Clear existing
+
+            if (!activities || activities.length === 0) {
+                container.innerHTML = '<div style="text-align:center; color:#94a3b8; padding:20px;">Belum ada aktivitas baru.</div>';
+                return;
+            }
+
+            // Ambil 5 terakhir saja
+            const recentActivities = activities.slice(0, 5);
+
+            recentActivities.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'feed-item';
+                div.style.animationDelay = `${index * 0.1}s`; 
+                div.innerHTML = `
+                    <div class="feed-icon">${item.icon || '📢'}</div>
+                    <div class="feed-content">
+                        <h4>${item.title}</h4>
+                        <p>${item.desc}</p>
+                        <span class="time-ago">${item.time_ago || 'Baru saja'}</span>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
         }
 
         // --- RENDER CARD (SECURE & OPTIMIZED) ---
@@ -421,7 +503,7 @@
                 // 3. Clean Phone Number
                 const cleanPhone = member.whatsapp_number ? member.whatsapp_number.replace(/[^0-9]/g, '') : '';
 
-                // 4. Construct HTML Structure using DOM methods (Security)
+                // 4. Construct HTML Structure
                 article.innerHTML = `
                     <div class="card-header">
                         <img src="${avatarSrc}" alt="${member.full_name}" class="avatar">
@@ -442,7 +524,7 @@
                     </div>
                 `;
 
-                // Add event listener to Profile button to prevent inline HTML JS logic clutter
+                // Add event listener to Profile button
                 const profileBtn = article.querySelector('[data-id]');
                 profileBtn.addEventListener('click', () => showDetail(member.id));
 
@@ -455,7 +537,7 @@
                 fragment.appendChild(article);
             });
 
-            container.innerHTML = ''; // Clear previous content (including loader)
+            container.innerHTML = ''; 
             container.appendChild(fragment);
         }
 
@@ -504,11 +586,10 @@
             const container = document.getElementById('community-container');
             const loadingState = document.getElementById('loading-state');
             
-            // Show Loading
             loadingState.style.display = 'block';
 
             try {
-                console.log("Fetching data from Supabase...");
+                console.log("Fetching community data...");
                 const { data, error } = await supabaseClient
                     .from('ngebel_community')
                     .select('*')
@@ -517,21 +598,52 @@
                 if (error) throw error;
 
                 // Use DB data if available, else use Dummy
-                communityData = (data && data.length > 0) ? data : dummyData;
+                communityData = (data && data.length > 0) ? data : dummyCommunityData;
                 
                 renderCommunityCards(communityData);
                 console.log(`Rendered ${communityData.length} profiles.`);
 
             } catch (err) {
                 console.error("Fetch error, switching to dummy data:", err);
-                communityData = dummyData;
+                communityData = dummyCommunityData;
                 renderCommunityCards(communityData);
             } finally {
-                // Hide Loading (Handled inside renderCommunityCards via innerHTML '', but good practice)
                 loadingState.style.display = 'none';
             }
             
             observeAnimations();
+        }
+
+        // --- LOAD ACTIVITIES ---
+        async function loadActivities() {
+            try {
+                // Coba ambil dari tabel 'ngebelaktivitas'
+                const { data, error } = await supabaseClient
+                    .from('ngebelaktivitas')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(5);
+
+                if (data && data.length > 0) {
+                    renderActivityFeed(data);
+                } else {
+                    throw new Error("No data");
+                }
+            } catch (err) {
+                console.warn("Gagal load aktivitas dari DB, menggunakan dummy data:", err);
+                renderActivityFeed(dummyActivities);
+            }
+        }
+
+        // --- SUBSCRIBE REALTIME AKTIVITAS ---
+        function subscribeActivities() {
+            supabaseClient
+                .channel('ngebelaktivitas_changes')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ngebelaktivitas' }, (payload) => {
+                    console.log('Aktivitas Baru!', payload);
+                    loadActivities(); 
+                })
+                .subscribe();
         }
 
         // --- SCROLL ANIMATION ---
@@ -541,13 +653,13 @@
                     if (entry.isIntersecting) {
                         entry.target.style.opacity = '1';
                         entry.target.style.transform = 'translateY(0)';
-                        observer.unobserve(entry.target); // Stop observing once animated
+                        observer.unobserve(entry.target);
                     }
                 });
             }, { threshold: 0.1 });
 
             document.querySelectorAll('.fade-up').forEach(el => {
-                if (el.style.opacity !== '1') { // Only if not already visible
+                if (el.style.opacity !== '1') {
                     el.style.opacity = '0';
                     el.style.transform = 'translateY(20px)';
                     el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
@@ -557,8 +669,21 @@
         }
 
         // --- INIT ---
-        document.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('load', () => {
+            // 1. Preloader Logic
+            setTimeout(() => {
+                const preloader = document.getElementById('preloader');
+                if(preloader) {
+                    preloader.style.opacity = '0';
+                    preloader.style.visibility = 'hidden';
+                    setTimeout(() => preloader.remove(), 600);
+                }
+            }, 1500);
+
+            // 2. Load Data
             loadCommunity();
+            loadActivities();
+            subscribeActivities();
         });
 
     </script>
