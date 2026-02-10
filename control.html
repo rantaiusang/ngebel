@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Kontrol Perangkat | Ngebel Smart Farm</title>
+    <meta name="theme-color" content="#0f766e">
+    <meta name="description" content="Kontrol Manual Pompa dan Irigasi Ngebel Smart Farm">
+
+    <!-- SUPABASE CLIENT -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- 1. VARIABLES & RESET --- */
+        :root {
+            --primary: #0f766e; --primary-light: #14b8a6; --primary-dark: #0f5132;
+            --accent: #f59e0b; 
+            --bg-body: #f8fafc;
+            --glass: rgba(255, 255, 255, 0.7);
+            --text-main: #1e293b; --text-muted: #64748b;
+            
+            --radius-xl: 32px; --radius-lg: 24px;
+            --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.05);
+            --shadow-hover: 0 20px 50px -12px rgba(15, 118, 110, 0.3);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 40px;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3 { font-family: 'Outfit', sans-serif; letter-spacing: -0.02em; }
+
+        /* --- 2. ANIMATIONS --- */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(20, 184, 166, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(20, 184, 166, 0); } 100% { box-shadow: 0 0 0 0 rgba(20, 184, 166, 0); } }
+
+        /* --- 3. COMPONENTS --- */
+        .container { max-width: 800px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 2; }
+
+        /* Header & Back Button */
+        header {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(255,255,255,0.85); backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0,0,0,0.05); height: 70px; display: flex; align-items: center;
+        }
+        .nav-content { width: 100%; max-width: 800px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; }
+        
+        .back-btn {
+            display: flex; align-items: center; gap: 8px;
+            color: var(--text-muted); font-weight: 600; font-size: 0.9rem;
+            padding: 8px 16px; border-radius: 50px;
+            background: rgba(255,255,255,0.6); border: 1px solid rgba(0,0,0,0.05);
+            transition: all 0.2s ease; cursor: pointer;
+        }
+        .back-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+        .back-btn svg { width: 18px; height: 18px; stroke-width: 2.5; }
+
+        .page-title-header { font-weight: 700; color: var(--primary); font-size: 1.1rem; }
+
+        /* Control Card */
+        .control-card {
+            background: white; border: 1px solid rgba(0,0,0,0.05);
+            border-radius: var(--radius-lg); padding: 24px;
+            box-shadow: var(--shadow-soft); margin-bottom: 24px;
+            position: relative; overflow: hidden;
+            transition: transform 0.2s;
+        }
+        .control-card:active { transform: scale(0.99); }
+
+        .card-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #f1f5f9;
+        }
+        .card-title { font-size: 1.1rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
+        .status-badge {
+            padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .status-on { background: #dcfce7; color: #166534; }
+        .status-off { background: #f1f5f9; color: #64748b; }
+
+        /* Toggle Switch (Large) */
+        .switch-container-large {
+            display: flex; align-items: center; justify-content: space-between;
+            background: #f8fafc; padding: 20px; border-radius: 16px; margin-top: 10px;
+        }
+        .switch-lg { position: relative; display: inline-block; width: 60px; height: 34px; }
+        .switch-lg input { opacity: 0; width: 0; height: 0; }
+        .slider-lg {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #cbd5e1; transition: .4s; border-radius: 34px;
+        }
+        .slider-lg:before {
+            position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px;
+            background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        input:checked + .slider-lg { background-color: var(--primary); }
+        input:checked + .slider-lg:before { transform: translateX(26px); }
+        input:disabled + .slider-lg { opacity: 0.5; cursor: not-allowed; }
+
+        /* Mode Selector (Tabs) */
+        .mode-selector {
+            display: flex; background: #f1f5f9; padding: 5px; border-radius: 16px; margin-bottom: 30px;
+        }
+        .mode-option {
+            flex: 1; text-align: center; padding: 12px; border-radius: 12px; font-weight: 600; font-size: 0.9rem;
+            color: var(--text-muted); cursor: pointer; transition: all 0.3s ease;
+        }
+        .mode-option.active {
+            background: white; color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        /* Device List Grid */
+        .device-grid {
+            display: grid; grid-template-columns: 1fr; gap: 20px;
+        }
+
+        /* Small Spinner for Cards */
+        .spinner { width: 24px; height: 24px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 1s linear infinite; }
+
+        /* Toast */
+        .toast-container { position: fixed; top: 90px; right: 20px; z-index: 3000; display: flex; flex-direction: column; gap: 10px; }
+        .toast {
+            background: white; padding: 15px 25px; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-left: 4px solid var(--primary);
+            display: flex; align-items: center; gap: 12px; font-weight: 600;
+            transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-size: 0.9rem; max-width: 300px;
+        }
+        .toast.show { transform: translateX(0); }
+
+        /* --- 4. PRELOADER --- */
+        #preloader {
+            position: fixed; inset: 0; background: #ffffff; z-index: 9999; 
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+            transition: opacity 0.6s ease-in-out, visibility 0.6s;
+        }
+        .loader-content { text-align: center; }
+        .brand-logo-loader {
+            font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 2rem;
+            color: var(--primary); margin-bottom: 20px; letter-spacing: -1px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        .modern-spinner {
+            width: 50px; height: 50px;
+            border: 4px solid rgba(15, 118, 110, 0.1);
+            border-left-color: var(--primary); border-radius: 50%;
+            animation: spin 1s linear infinite; position: relative;
+        }
+        .modern-spinner::after {
+            content: ""; position: absolute; top: 6px; left: 6px; right: 6px; bottom: 6px;
+            border: 3px solid transparent; border-top-color: var(--accent);
+            border-radius: 50%; animation: spin 0.8s linear infinite reverse;
+        }
+
+        /* --- 5. PAGE LAYOUT --- */
+        main { padding-top: 90px; }
+    </style>
+</head>
+<body>
+
+    <!-- PRELOADER (FIXED) -->
+    <div id="preloader">
+        <div class="loader-content">
+            
+            <div class="modern-spinner"></div>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header>
+        <div class="nav-content">
+            <div class="back-btn" onclick="window.location.href='dashboard.html'">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                Kembali
+            </div>
+            
+        </div>
+    </header>
+
+    <main class="container">
+        
+        <!-- PAGE TITLE -->
+        <div style="margin-bottom: 30px; animation: fadeInUp 0.6s ease-out;">
+            <h1 style="font-size: 2rem; margin-bottom: 5px;">Pusat Kontrol</h1>
+            <p style="color: var(--text-muted);">Kelola pompa, katup zona, dan mode operasi irigasi.</p>
+        </div>
+
+        <!-- MODE SELECTOR -->
+        <div class="mode-selector">
+            <div class="mode-option active" id="mode-manual" onclick="setMode('MANUAL')">Manual</div>
+            <div class="mode-option" id="mode-auto" onclick="setMode('AUTO')">Otomatis</div>
+        </div>
+
+        <!-- DEVICE GRID -->
+        <div class="device-grid" id="device-container">
+            <!-- Devices will be injected here via JS -->
+        </div>
+
+    </main>
+
+    <!-- TOAST CONTAINER -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        // --- 1. KONFIGURASI SUPABASE ---
+        const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
+        
+        const { createClient } = supabase;
+        const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // --- 2. STATE & DEVICES CONFIG (SESUAI DB) ---
+        let currentMode = 'MANUAL'; 
+        let isUpdating = false;
+
+        // Konfigurasi perangkat yang cocok dengan kolom SQL
+        // PERBAIKAN: 'valve_a_status' diganti menjadi 'zone_a_status'
+        const deviceConfig = [
+            { 
+                id: 1, 
+                name: 'Pompa Utama', 
+                type: 'pump', 
+                icon: '⚙️',
+                stateKey: 'pump_status', 
+                stateLabel: 'Status Pompa' 
+            },
+            { 
+                id: 2, 
+                name: 'Irigasi Zona A', 
+                type: 'valve', 
+                icon: '💧',
+                stateKey: 'zone_a_status', // PERBAIKAN DISINI
+                stateLabel: 'Status Zona A' 
+            },
+            { 
+                id: 3, 
+                name: 'Irigasi Zona B', 
+                type: 'valve', 
+                icon: '🌱',
+                stateKey: 'zone_b_status', // PERBAIKAN DISINI
+                stateLabel: 'Status Zona B' 
+            }
+        ];
+
+        // --- 3. INITIALIZATION ---
+        window.addEventListener('load', async () => {
+            setTimeout(() => {
+                const preloader = document.getElementById('preloader');
+                if(preloader) {
+                    preloader.style.opacity = '0';
+                    setTimeout(() => preloader.remove(), 600);
+                }
+            }, 1200);
+
+            await loadDeviceStates();
+        });
+
+        // --- 4. LOGIKA UTAMA ---
+
+        // Fungsi Load State Awal dari DB
+        async function loadDeviceStates() {
+            try {
+                // Asumsi kita mengambil ID 1 (default control row)
+                const { data, error } = await sb
+                    .from('ngebel_iot.device_state')
+                    .select('*')
+                    .eq('id', 1) // Ambil baris kontrol spesifik
+                    .single();
+
+                if (error && error.code !== 'PGRST116') { 
+                    // PGRST116 = Row not found (wajar jika belum ada data)
+                    console.warn("State belum ada, membuat default...");
+                }
+
+                if (data) {
+                    // Update UI berdasarkan data DB
+                    if(data.operation_mode) currentMode = data.operation_mode.toUpperCase();
+                    updateModeUI();
+                    renderDevices(data);
+                } else {
+                    // Fallback: Jika DB kosong, coba insert data dummy pertama
+                    await seedInitialState();
+                    renderDevices(); // Render default OFF
+                }
+            } catch (err) {
+                console.error("Gagal load state:", err);
+                renderDevices(); // Fallback ke default
+            }
+        }
+
+        // Fungsi Helper untuk membuat data awal jika kosong
+        async function seedInitialState() {
+            try {
+                const { error } = await sb.from('ngebel_iot.device_state').insert({
+                    id: 1,
+                    pump_status: 'off',
+                    zone_a_status: 'off',
+                    zone_b_status: 'off',
+                    operation_mode: 'manual'
+                });
+                if(error) throw error;
+            } catch (e) {
+                console.error("Gagal membuat state awal:", e);
+            }
+        }
+
+        // Render UI Device
+        function renderDevices(dbState = {}) {
+            const container = document.getElementById('device-container');
+            container.innerHTML = '';
+
+            deviceConfig.forEach(dev => {
+                // Cek status dari DB atau default false
+                const isActive = dbState[dev.stateKey] === 'on' || dbState[dev.stateKey] === true;
+                
+                const card = document.createElement('div');
+                card.className = 'control-card';
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span style="font-size: 1.5rem;">${dev.icon}</span>
+                            <div>
+                                <div>${dev.name}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 400;">${dev.stateLabel}</div>
+                            </div>
+                        </div>
+                        <span class="status-badge ${isActive ? 'status-on' : 'status-off'}" id="badge-${dev.id}">
+                            ${isActive ? 'ON' : 'OFF'}
+                        </span>
+                    </div>
+                    <div class="switch-container-large">
+                        <span style="font-weight: 600; color: var(--text-muted);">Matikan / Nyalakan</span>
+                        <label class="switch-lg">
+                            <input type="checkbox" id="toggle-${dev.id}" ${isActive ? 'checked' : ''} onchange="toggleDevice('${dev.stateKey}', ${dev.id}, this)">
+                            <span class="slider-lg"></span>
+                        </label>
+                    </div>
+                    <div id="loading-${dev.id}" style="display:none; position:absolute; inset:0; background:rgba(255,255,255,0.7); align-items:center; justify-content:center; z-index:10;">
+                        <div class="spinner" style="border-top-color: var(--primary); border-color: #e2e8f0;"></div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Fungsi Ganti Mode
+        async function setMode(mode) {
+            if(isUpdating) return;
+            isUpdating = true;
+
+            try {
+                const { error } = await sb
+                    .from('ngebel_iot.device_state')
+                    .update({ operation_mode: mode.toLowerCase(), last_updated: new Date().toISOString() })
+                    .eq('id', 1);
+
+                if (error) throw error;
+
+                currentMode = mode;
+                updateModeUI();
+                showToast(`Mode beralih ke ${mode}`, 'success');
+
+            } catch (err) {
+                console.error(err);
+                showToast("Gagal mengubah mode", "error");
+            } finally {
+                isUpdating = false;
+            }
+        }
+
+        function updateModeUI() {
+            document.getElementById('mode-manual').className = `mode-option ${currentMode === 'MANUAL' ? 'active' : ''}`;
+            document.getElementById('mode-auto').className = `mode-option ${currentMode === 'AUTO' ? 'active' : ''}`;
+            
+            // Disable toggles jika mode Auto
+            const inputs = document.querySelectorAll('input[type="checkbox"]');
+            inputs.forEach(input => {
+                input.disabled = (currentMode === 'AUTO');
+                input.parentElement.style.opacity = (currentMode === 'AUTO') ? '0.5' : '1';
+            });
+        }
+
+        // Fungsi Toggle Device
+        async function toggleDevice(stateKey, deviceId, checkbox) {
+            if(currentMode === 'AUTO') {
+                checkbox.checked = !checkbox.checked; 
+                showToast("Matikan mode Otomatis terlebih dahulu!", "error");
+                return;
+            }
+
+            const newState = checkbox.checked ? 'on' : 'off';
+            const loading = document.getElementById(`loading-${deviceId}`);
+            
+            loading.style.display = 'flex';
+            
+            try {
+                const { error } = await sb
+                    .from('ngebel_iot.device_state')
+                    .update({ [stateKey]: newState, last_updated: new Date().toISOString() })
+                    .eq('id', 1);
+
+                if (error) throw error;
+
+                // Update UI Local
+                const badge = document.getElementById(`badge-${deviceId}`);
+                badge.className = `status-badge ${newState === 'on' ? 'status-on' : 'status-off'}`;
+                badge.innerText = newState === 'on' ? 'ON' : 'OFF';
+
+                showToast(`${deviceConfig.find(d => d.id === deviceId).name} ${newState.toUpperCase()}`, 'success');
+
+            } catch (err) {
+                console.error(err);
+                showToast("Gagal mengubah status perangkat", "error");
+                checkbox.checked = !newState; // Revert
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        // --- 5. UTILS ---
+        function showToast(msg, type='info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            let icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+            if(type === 'error') toast.style.borderLeftColor = '#ef4444';
+            
+            toast.innerHTML = `<span>${icon}</span> ${msg}`;
+            container.appendChild(toast);
+            
+            requestAnimationFrame(() => toast.classList.add('show'));
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
