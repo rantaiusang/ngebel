@@ -65,7 +65,7 @@
             color: var(--text-muted); font-weight: 600; font-size: 0.9rem;
             padding: 8px 16px; border-radius: 50px;
             background: rgba(255,255,255,0.6); border: 1px solid rgba(0,0,0,0.05);
-            transition: all 0.2s ease; cursor: pointer;
+            transition: all 0.2s ease; cursor: pointer; text-decoration: none;
         }
         .back-btn:hover { background: var(--text-main); color: white; border-color: var(--text-main); }
         .back-btn svg { width: 18px; height: 18px; stroke-width: 2.5; }
@@ -106,7 +106,7 @@
         .alert-meta {
             display: flex; justify-content: space-between; align-items: center;
             margin-top: 15px; padding-top: 15px; border-top: 1px solid #f1f5f9;
-            font-size: 0.8rem; color: #94a3b8; font-family: var(--font-mono);
+            font-size: 0.8rem; color: #94a3b8; font-family: 'JetBrains Mono', monospace;
         }
 
         /* Empty State */
@@ -119,6 +119,7 @@
             text-align: left; background: #f8fafc; padding: 15px; border-radius: 8px; 
             font-size: 0.8rem; color: #64748b; margin-top: 10px; 
             border: 1px dashed #cbd5e1; word-break: break-all;
+            font-family: 'JetBrains Mono', monospace;
         }
 
         /* Preloader */
@@ -162,7 +163,7 @@
     <!-- PRELOADER -->
     <div id="preloader">
         <div class="loader-content">
-           
+            
             <div class="modern-spinner"></div>
         </div>
     </div>
@@ -170,15 +171,15 @@
     <!-- HEADER -->
     <header>
         <div class="nav-content">
-            <div class="back-btn" onclick="window.location.href='dashboard.html'">
+            <a href="dashboard.html" class="back-btn">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                 Kembali
-            </div>
+            </a>
             <div class="page-title-header">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation: pulse-red 2s infinite;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
                 Notifikasi
             </div>
-            <div class="refresh-btn" onclick="fetchAlerts()">
+            <div class="refresh-btn" onclick="fetchAlerts(true)">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
             </div>
         </div>
@@ -201,6 +202,7 @@
 
     <script>
         // --- 1. KONFIGURASI SUPABASE ---
+        // PENTING: Ganti URL dan KEY ini dengan Key Project Anda yang baru jika sudah bocor
         const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
         
@@ -209,48 +211,60 @@
 
         // --- 2. INITIALIZATION ---
         window.addEventListener('load', async () => {
+            // Hilangkan preloader setelah delay singkat
             setTimeout(() => {
                 const preloader = document.getElementById('preloader');
                 if(preloader) {
                     preloader.style.opacity = '0';
                     setTimeout(() => preloader.remove(), 600);
                 }
-            }, 1000);
+            }, 800);
 
             fetchAlerts();
-            setInterval(fetchAlerts, 30000);
+            // Refresh otomatis setiap 30 detik
+            setInterval(() => fetchAlerts(), 30000);
         });
 
-        // --- 3. DATA FETCHING (DENGAN FALLBACK KE PUBLIC SCHEMA) ---
-        async function fetchAlerts() {
+        // --- 3. DATA FETCHING (DENGAN DEBUGGING LEBIH BAIK) ---
+        async function fetchAlerts(isManualRefresh = false) {
             const container = document.getElementById('alerts-container');
-            container.innerHTML = '<div style="text-align:center; padding:40px; color:#64748b;">Memuat data...</div>';
             
+            // Jika bukan refresh manual, tampilkan loading (agar tidak flicker saat auto refresh)
+            if (!isManualRefresh && container.innerHTML.trim() === '') {
+                container.innerHTML = '<div style="text-align:center; padding:40px; color:#64748b;">Memuat data...</div>';
+            }
+
             try {
-                // COBA PERTAMA: Schema ngebel_iot
-                let { data: alerts, error } = await sb
+                // STRATEGI: Coba Schema 'ngebel_iot' dulu
+                let query = sb
                     .schema('ngebel_iot')
                     .from('alerts')
                     .select('*')
                     .order('created_at', { ascending: false })
-                    .limit(5);
+                    .limit(10); // Ambil 10 data terakhir
 
-                // JIKA GAGAL, COBA KEDUA: Schema public (Fallback)
+                let { data: alerts, error } = await query;
+
+                // FALLBACK: Jika error (misal schema tidak ada atau permission denied), coba public
+                // Catatan: Ini hanya bekerja jika struktur tabel sama
                 if (error) {
-                    console.warn("Gagal akses 'ngebel_iot', mencoba akses 'public'...", error);
-                    const res = await sb
+                    console.log(`[INFO] Gagal akses schema 'ngebel_iot': ${error.message}. Mencoba schema 'public'...`);
+                    
+                    const fallbackRes = await sb
                         .schema('public') 
                         .from('alerts')
                         .select('*')
                         .order('created_at', { ascending: false })
-                        .limit(5);
+                        .limit(10);
                     
-                    alerts = res.data;
-                    error = res.error;
+                    alerts = fallbackRes.data;
+                    error = fallbackRes.error;
                 }
 
+                // Jika masih error juga, lempar ke catch block
                 if (error) throw error;
 
+                // Render Data
                 if (alerts && alerts.length > 0) {
                     renderAlerts(alerts);
                 } else {
@@ -258,19 +272,32 @@
                 }
 
             } catch (err) {
-                console.error("GAGAL TOTAL:", err);
+                console.error("[CRITICAL] Error Fetching Data:", err);
                 
-                // TAMPILKAN ERROR ASLI DI LAYAR
-                const errorMsg = err.message || JSON.stringify(err);
+                // TAMPILKAN ERROR YANG JELAS
+                const errorCode = err.code ? `Code: ${err.code}` : 'Unknown Error';
+                const errorMessage = err.message || err.toString();
+                
+                // Deteksi masalah umum
+                let hint = "";
+                if (err.code === '42P01') hint = "Tabel 'alerts' tidak ditemukan di schema manapun.";
+                else if (err.code === '42501') hint = "Izin akses ditolak (RLS Policy). Cek dashboard Supabase.";
+                else hint = "Pastikan koneksi internet stabil.";
+
                 container.innerHTML = `
                     <div class="empty-state" style="border: 1px solid #fee2e2; background: #fef2f2;">
-                        <div class="empty-icon">⚠️</div>
-                        <h3>Gagal Memuat Notifikasi</h3>
-                        <p style="font-size:0.9rem;">Cek Console (F12) atau info di bawah.</p>
+                        <div class="empty-icon">❌</div>
+                        <h3 style="color:var(--danger)">Koneksi Gagal</h3>
+                        <p style="font-size:0.9rem; margin-bottom:10px;">Sistem tidak dapat mengambil data notifikasi.</p>
+                        
                         <div class="error-debug">
-                            <strong>Pesan Error:</strong><br>
-                            ${errorMsg}
+                            <strong>Detail:</strong> ${errorCode}<br>
+                            ${errorMessage}
                         </div>
+                        <div style="font-size:0.8rem; margin-top:8px; color:#d97706;">
+                            <strong>Tip:</strong> ${hint}
+                        </div>
+                        <button onclick="fetchAlerts(true)" style="margin-top:15px; padding:8px 16px; background:var(--text-main); color:white; border:none; border-radius:8px; cursor:pointer;">Coba Lagi</button>
                     </div>
                 `;
             }
@@ -286,13 +313,14 @@
                 let bgClass = 'bg-info';
                 let icon = 'ℹ️';
 
-                const type = (alert.type || 'info').toLowerCase(); 
+                // Normalisasi tipe alert (case insensitive)
+                const type = (alert.type || alert.severity || 'info').toLowerCase(); 
                 
-                if (type === 'danger' || type === 'critical') {
+                if (type.includes('danger') || type.includes('critical') || type.includes('error')) {
                     typeClass = 'alert-critical';
                     bgClass = 'bg-danger';
                     icon = '⚠️';
-                } else if (type === 'warning') {
+                } else if (type.includes('warning')) {
                     typeClass = 'alert-warning';
                     bgClass = 'bg-warning';
                     icon = '⚡';
@@ -302,29 +330,32 @@
                 card.className = `alert-card ${typeClass}`;
                 card.style.animationDelay = `${index * 0.1}s`;
 
+                // Format Tanggal yang lebih aman
                 let dateString = '--';
                 let timeString = '--';
                 if (alert.created_at) {
                     try {
                         const d = new Date(alert.created_at);
-                        timeString = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-                        dateString = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
-                    } catch(e) {}
+                        if (!isNaN(d.getTime())) {
+                            timeString = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                            dateString = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+                        }
+                    } catch(e) { console.warn("Date parse error", e); }
                 }
 
-                const devId = alert.device_id ? `DEVICE-${alert.device_id}` : 'SYSTEM';
+                const devId = alert.device_id ? `DEV:${alert.device_id}` : (alert.source || 'SYSTEM');
 
                 card.innerHTML = `
                     <div class="alert-header">
                         <div class="alert-icon ${bgClass}">${icon}</div>
                         <div class="alert-content">
-                            <div class="alert-title">${alert.title || 'Tanpa Judul'}</div>
-                            <div class="alert-desc">${alert.message || 'Tidak ada deskripsi.'}</div>
+                            <div class="alert-title">${alert.title || 'Peringatan Sistem'}</div>
+                            <div class="alert-desc">${alert.message || alert.description || 'Tidak ada detail pesan.'}</div>
                         </div>
                     </div>
                     <div class="alert-meta">
                         <span>${devId}</span>
-                        <span>${dateString}, ${timeString}</span>
+                        <span>${dateString} • ${timeString}</span>
                     </div>
                 `;
                 container.appendChild(card);
@@ -337,7 +368,7 @@
                 <div class="empty-state">
                     <div class="empty-icon">✅</div>
                     <h3>Sistem Normal</h3>
-                    <p>Tidak ada peringatan atau masalah yang terdeteksi saat ini.</p>
+                    <p>Tidak ada peringatan aktif saat ini.</p>
                 </div>
             `;
         }
