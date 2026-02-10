@@ -224,8 +224,8 @@
     <script>
         // --- 1. KONFIGURASI SUPABASE ---
         const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co';
-        // PASTIKAN KEY INI ADALAH KEY 'ANON' YANG BENAR
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pqY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
+        // PASTIKAN KEY INI ADALAH KEY 'ANON' YANG BENAR DARI DASHBOARD
+        const SUPABASE_KEY = 'GANTI_DENGAN_KEY_ANON_ANDA_DISINI';
         
         const { createClient } = supabase;
         const db = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -305,7 +305,8 @@
                 // 3. JIKA NOMOR AMAN -> LAKUKAN INSERT
                 console.log("Nomor tersedia. Melakukan INSERT...");
                 
-                let userRole = 'user';
+                // PERUBAHAN: User baru SELALU bukan admin (is_admin = false)
+                const isAdminStatus = false;
 
                 const { error: insertError } = await db
                     .from('ngebelusers')
@@ -315,7 +316,7 @@
                             email: user.email,
                             full_name: fullName,
                             phone: phoneNumber,
-                            role: userRole
+                            is_admin: isAdminStatus // <--- SIMPAN BOOLEAN FALSE
                         }
                     ]);
 
@@ -334,15 +335,13 @@
 
                 // 4. Update Metadata di Auth
                 await db.auth.updateUser({
-                    data: { full_name: fullName, phone: phoneNumber, role: userRole }
+                    data: { full_name: fullName, phone: phoneNumber, is_admin: isAdminStatus }
                 });
 
                 // 5. Redirect
-                if (userRole === 'admin') {
-                    window.location.href = 'admin.html';
-                } else {
-                    window.location.href = 'dashboard.html';
-                }
+                // PERUBAHAN: Karena user baru pasti bukan admin, langsung ke dashboard saja
+                console.log("Pendaftaran berhasil. Mengalihkan ke Dashboard...");
+                window.location.href = 'dashboard.html';
 
             } catch (err) {
                 console.error("Terjadi Error:", err);
