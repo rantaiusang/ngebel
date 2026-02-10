@@ -241,8 +241,7 @@
         }
 
         // --- 1. KONFIGURASI SUPABASE ---
-        // PERINGATAN: GANTI KEY INI DENGAN KEY 'ANON' / 'PUBLIC' DARI SUPABASE DASHBOARD!
-        // JANGAN PAKAI KEY SERVICE ROLE.
+        // PASTIKAN KEY INI SUDAH BENAR DARI DASHBOARD
         const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
         const SUPABASE_KEY = 'GANTI_DENGAN_KEY_ANON_ANDA_DISINI'; 
         
@@ -281,9 +280,16 @@
 
         // --- 3. LOGIKA UTAMA: CEK SESSION, REDIRECT BERDASARKAN DATA ---
         async function checkSession() {
-            // Cek apakah user SUDAH login (session aktif)
-            const { data: { session } } = await sb.auth.getSession();
+            console.log("🔄 Memulai pengecekan sesi...");
             
+            // Cek apakah user SUDAH login (session aktif)
+            const { data: { session }, error: sessionError } = await sb.auth.getSession();
+            
+            if (sessionError) {
+                console.error("Error saat ambil session:", sessionError);
+                return;
+            }
+
             if (session) {
                 console.log("✅ User login terdeteksi. ID:", session.user.id);
                 
@@ -296,20 +302,19 @@
 
                 try {
                     // 1. Cek data user di tabel 'ngebelusers'
-                    // Ini untuk membedakan: User Baru (Belum ada DB) vs User Lama (Sudah ada DB)
+                    console.log("🔍 Mencari data user di database...");
                     const { data: userData, error: fetchError } = await sb
                         .from('ngebelusers')
                         .select('role') 
                         .eq('id', session.user.id)
-                        .maybeSingle(); // Mengembalikan null jika tidak ditemukan, bukan error
+                        .maybeSingle(); 
 
-                    // Jika TERJADI ERROR FATAL (misal Policy RLS salah atau Key Salah)
+                    // Jika TERJADI ERROR FATAL (RLS / Key Salah)
                     if (fetchError && fetchError.code !== 'PGRST116') {
-                        console.error("❌ Error Database (Mungkin Key Salah atau Tabel Belum Dibuat):", fetchError);
+                        console.error("❌ Error Database:", fetchError);
+                        showToast("Terjadi kesalahan koneksi database. Arahkan ke signup...");
                         
-                        // PERBAIKAN: Jika error DB, asumsikan user baru dan arahkan ke signup
-                        // Ini mencegah user terjebak di halaman login jika ada masalah setup DB
-                        showToast("Sedang memproses akun baru...");
+                        // Fallback: Jika DB error, anggap user baru
                         setTimeout(() => {
                             window.location.href = 'signup.html';
                         }, 1500);
@@ -349,8 +354,10 @@
 
                 } catch (err) {
                     console.error("Kesalahan Redirect:", err);
-                    showToast("Terjadi kesalahan saat memuat data user.");
+                    showToast("Terjadi kesalahan sistem.");
                 }
+            } else {
+                console.log("ℹ️ Tidak ada sesi aktif. Menunggu user login.");
             }
         }
 
