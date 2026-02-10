@@ -7,8 +7,8 @@
     <meta name="theme-color" content="#ef4444">
     <meta name="description" content="Log Peringatan dan Masalah Sistem Ngebel Smart Farm">
 
-    <!-- SUPABASE CLIENT -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- SUPABASE CLIENT (FORCE VERSION TO AVOID CACHE) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2?v=final"></script>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -163,7 +163,7 @@
     <!-- PRELOADER -->
     <div id="preloader">
         <div class="loader-content">
-            
+           
             <div class="modern-spinner"></div>
         </div>
     </div>
@@ -202,13 +202,13 @@
 
     <script>
         // --- 1. KONFIGURASI SUPABASE ---
-        // PENTING: Ganti URL dan KEY ini dengan Key Project Anda yang baru jika sudah bocor
         const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
         
         const { createClient } = supabase;
         
-        // PERBAIKAN: Set schema default di sini agar tidak perlu diulang
+        // PERBAIKAN KRUSIAL: Set schema default secara GLOBAL.
+        // Jangan gunakan .schema() lagi di fungsi fetch di bawah.
         const sb = createClient(SUPABASE_URL, SUPABASE_KEY, { 
             db: { schema: 'ngebel_iot' } 
         });
@@ -228,23 +228,24 @@
             setInterval(() => fetchAlerts(), 30000);
         });
 
-        // --- 3. DATA FETCHING (SIMPLIFIED) ---
+        // --- 3. DATA FETCHING ---
         async function fetchAlerts(isManualRefresh = false) {
             const container = document.getElementById('alerts-container');
             
+            // Tampilkan loading jika kosong
             if (!isManualRefresh && container.innerHTML.trim() === '') {
                 container.innerHTML = '<div style="text-align:center; padding:40px; color:#64748b;">Memuat data...</div>';
             }
 
             try {
-                // PERBAIKAN: Hapus .schema() karena sudah di-set global
+                // QUERY BENAR: Hanya .from('alerts') tanpa .schema()
+                // Karena schema sudah di-set di createClient di atas.
                 let { data: alerts, error } = await sb
                     .from('alerts')
                     .select('*')
                     .order('created_at', { ascending: false })
                     .limit(10);
 
-                // PERBAIKAN: Hapus fallback ke public, langsung throw error jika gagal
                 if (error) throw error;
 
                 if (alerts && alerts.length > 0) {
@@ -260,13 +261,14 @@
                 const errorMessage = err.message || err.toString();
                 
                 let hint = "";
-                if (err.code === '42P01') hint = "Tabel 'alerts' tidak ditemukan.";
-                else if (err.code === '42501') hint = "Izin akses ditolak (RLS Policy).";
-                else hint = "Pastikan koneksi internet stabil.";
+                if (err.code === '42P01') hint = "Tabel 'alerts' tidak ditemukan di schema 'ngebel_iot'.";
+                else if (err.code === 'PGRST116') hint = "Kolom tidak ditemukan.";
+                else if (err.code === '42501') hint = "RLS Policy menolak akses.";
+                else hint = "Cek koneksi internet.";
 
                 container.innerHTML = `
                     <div class="empty-state" style="border: 1px solid #fee2e2; background: #fef2f2;">
-                        <div class="empty-icon">❌</div>
+                        <div class="empty-icon">⚠️</div>
                         <h3 style="color:var(--danger)">Koneksi Gagal</h3>
                         <p style="font-size:0.9rem; margin-bottom:10px;">Sistem tidak dapat mengambil data notifikasi.</p>
                         
@@ -309,7 +311,7 @@
                 card.className = `alert-card ${typeClass}`;
                 card.style.animationDelay = `${index * 0.1}s`;
 
-                // PERBAIKAN: Tambahkan efek untuk is_read
+                // EFEK is_read: Transparansi jika sudah dibaca
                 if(alert.is_read) {
                     card.style.opacity = '0.6';
                 }
