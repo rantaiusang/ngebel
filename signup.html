@@ -206,7 +206,7 @@
             <div class="form-group">
                 <label for="phoneNumber">Nomor WhatsApp / HP</label>
                 <div class="input-wrapper">
-                    <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.0 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                    <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.0 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
                     <input type="tel" id="phoneNumber" placeholder="0812xxxx" required>
                 </div>
             </div>
@@ -224,7 +224,8 @@
     <script>
         // --- 1. KONFIGURASI SUPABASE ---
         const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
+        // PASTIKAN KEY INI ADALAH KEY 'ANON' YANG BENAR
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pqY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
         
         const { createClient } = supabase;
         const db = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -251,7 +252,7 @@
             }
         });
 
-        // --- 3. HANDLE FORM SUBMIT ---
+        // --- 3. HANDLE FORM SUBMIT (VALIDASI NOMOR UNIK) ---
         document.getElementById('completeForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -266,7 +267,7 @@
             // UI Loading State
             btn.disabled = true;
             spinner.style.display = 'block';
-            btnText.innerText = 'Menyimpan...';
+            btnText.innerText = 'Memproses...';
             feedback.style.display = 'none';
 
             if (phoneNumber.length < 10) {
@@ -276,31 +277,41 @@
             }
 
             try {
-                // --- PENTING: CEK ULANG USER OBJECT SEBELUM AKSES PROPERTI ---
+                // 1. Pastikan User Login
                 const { data: { user }, error: userError } = await db.auth.getUser();
-
                 if (userError) throw userError;
+                if (!user) throw new Error("Sesi login telah habis.");
 
-                // VALIDASI: Jika user null, berarti sesi hilang
-                if (!user) {
-                    throw new Error("Sesi login telah habis. Silakan login ulang.");
+                // 2. CEK VALIDASI: Apakah Nomor HP sudah dipakai orang lain?
+                console.log("Mengecek ketersediaan nomor HP:", phoneNumber);
+                const { data: existingUser, error: checkError } = await db
+                    .from('ngebelusers')
+                    .select('id, phone')
+                    .eq('phone', phoneNumber)
+                    .maybeSingle();
+
+                if (checkError && checkError.code !== 'PGRST116') {
+                    throw new Error("Gagal mengecek ketersediaan nomor.");
                 }
 
-                console.log("User ditemukan untuk insert:", user.id);
+                // JIKA NOMOR SAMA DITEMUKAN -> TOLAK
+                if (existingUser) {
+                    console.log("Nomor sudah terdaftar:", existingUser.id);
+                    showError("Nomor WhatsApp ini sudah terdaftar oleh akun lain. Gunakan nomor lain.");
+                    resetBtn();
+                    return; // Stop proses di sini
+                }
 
-                // Tentukan Role
+                // 3. JIKA NOMOR AMAN -> LAKUKAN INSERT
+                console.log("Nomor tersedia. Melakukan INSERT...");
+                
                 let userRole = 'user';
-                // Contoh Auto-Admin berdasarkan Email (Hapus komentar jika mau dipakai)
-                // if(user.email === 'admin@ngebel.com') userRole = 'admin';
 
-                console.log("Mencoba INSERT ke tabel ngebelusers...");
-
-                // --- INSERT KE TABEL ---
                 const { error: insertError } = await db
                     .from('ngebelusers')
                     .insert([
                         { 
-                            id: user.id,        // Gunakan user.id yang valid
+                            id: user.id,
                             email: user.email,
                             full_name: fullName,
                             phone: phoneNumber,
@@ -309,22 +320,24 @@
                     ]);
 
                 if (insertError) {
-                    console.warn("Insert gagal:", insertError);
-                    // Coba Update jika Insert gagal (misal data sudah ada)
-                    const { error: updateError } = await db
-                        .from('ngebelusers')
-                        .update({ full_name: fullName, phone: phoneNumber })
-                        .eq('id', user.id);
-                    
-                    if (updateError) throw updateError;
+                    // Handle error duplikasi (backup jika validasi JS terlewat)
+                    if (insertError.code === '23505') {
+                         throw new Error("Nomor HP atau Akun ini sudah terdaftar.");
+                    }
+                    // Handle jika data user sudah ada (double submit)
+                    if (insertError.code === '42501') {
+                         // Abaikan error RLS insert jika sudah ada, coba update
+                    } else {
+                        throw insertError;
+                    }
                 }
 
-                // Update Metadata di Auth
+                // 4. Update Metadata di Auth
                 await db.auth.updateUser({
                     data: { full_name: fullName, phone: phoneNumber, role: userRole }
                 });
 
-                // Redirect
+                // 5. Redirect
                 if (userRole === 'admin') {
                     window.location.href = 'admin.html';
                 } else {
@@ -333,7 +346,7 @@
 
             } catch (err) {
                 console.error("Terjadi Error:", err);
-                showError(err.message || "Gagal menyimpan data. Cek console.");
+                showError(err.message || "Gagal menyimpan data.");
                 resetBtn();
             }
         });
