@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lengkapi Profil | Ngebel Smart Farm</title>
+    <title>Lengkapi Profil | Ngebel Smart Tourism</title>
     
     <!-- SUPABASE CLIENT -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <!-- Google Font (Inter) -->
+    <!-- Google Font -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
@@ -210,7 +210,7 @@
             </div>
         </div>
 
-        <h2>Selamat Datang!</h2>
+        <h2>Lengkapi Profil</h2>
         <p class="subtitle">Kami terdeteksi Anda masuk menggunakan Google. Silakan lengkapi data diri untuk melanjutkan.</p>
 
         <form id="completeForm">
@@ -246,23 +246,22 @@
     <script>
         // --- 1. KONFIGURASI SUPABASE ---
         const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pqY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
         
         const { createClient } = supabase;
         const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // --- 2. CEK SESSION SAAT HALAMAN DIMUAT ---
         window.addEventListener('load', async () => {
-            // Cek apakah user sudah login (karena redirect dari Google)
+            // Cek apakah user sudah login
             const { data: { session }, error } = await db.auth.getSession();
 
             if (error || !session) {
-                // Jika tidak ada session, lempar ke login
                 window.location.href = 'login.html';
                 return;
             }
 
-            // Jika ada session, ambil data user untuk pre-fill nama
+            // Ambil data user untuk pre-fill nama
             const user = session.user;
             const userName = user.user_metadata.full_name || user.user_metadata.name;
             
@@ -271,7 +270,7 @@
             }
         });
 
-        // --- 3. HANDLE FORM SUBMIT (LENGKAP PROFIL & ROUTING) ---
+        // --- 3. HANDLE FORM SUBMIT (INSERT KE DATABASE) ---
         document.getElementById('completeForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -297,29 +296,50 @@
             }
 
             try {
-                // Ambil data user saat ini untuk mengecek role yang sudah ada (jika ada)
-                const { data: { user: currentUser } } = await db.auth.getUser();
+                // 1. Ambil data user saat ini
+                const { data: { user } } = await db.auth.getUser();
                 
-                // Tentukan role: Jika belum ada role, defaultkan sebagai 'user'
-                // Jika user sudah login dan di-set admin manual di dashboard, role ini akan terbaca disini.
-                const userRole = currentUser.user_metadata.role || 'user';
+                // Tentukan Role (Default 'user', kecuali email tertentu atau sudah set manual)
+                // Anda bisa logika khusus di sini jika ingin auto-admin berdasarkan email
+                let userRole = 'user'; 
+                // Contoh: Jika ingin email tertentu otomatis admin:
+                // if(user.email === 'admin@ngebel.com') userRole = 'admin';
 
-                console.log("Saving profile for:", currentUser.email, "with role:", userRole);
+                console.log("Mencoba menyimpan ke tabel ngebelusers...");
 
-                // Update Metadata User (Nama, HP, dan Role)
-                const { error: updateError } = await db.auth.updateUser({
-                    data: {
-                        full_name: fullName,
-                        phone: phoneNumber,
-                        role: userRole // Pastikan role tersimpan di metadata
-                    }
+                // 2. INSERT DATA KE TABEL `ngebelusers`
+                // INI KUNCI PERBAIKANNYA
+                const { data, error: insertError } = await db
+                    .from('ngebelusers')
+                    .insert([
+                        { 
+                            id: user.id,        // ID harus sama dengan ID Auth
+                            email: user.email,
+                            full_name: fullName,
+                            phone: phoneNumber,
+                            role: userRole
+                        }
+                    ]);
+
+                if (insertError) {
+                    // Jika error karena duplikat ID (sudah ada datanya), kita abaikan atau update
+                    console.warn("Insert gagal (mungkin sudah ada):", insertError);
+                    
+                    // Coba Update jika insert gagal
+                    const { error: updateError } = await db
+                        .from('ngebelusers')
+                        .update({ full_name: fullName, phone: phoneNumber })
+                        .eq('id', user.id);
+                    
+                    if (updateError) throw updateError;
+                }
+
+                // 3. Update Metadata di Auth Supabase (Opsional, untuk backup)
+                await db.auth.updateUser({
+                    data: { full_name: fullName, phone: phoneNumber, role: userRole }
                 });
 
-                if (updateError) throw updateError;
-
-                // Logika Redirect
-                // Admin -> admin.html
-                // User Biasa -> dashboard.html
+                // 4. Redirect sesuai Role
                 if (userRole === 'admin') {
                     window.location.href = 'admin.html';
                 } else {
@@ -328,7 +348,7 @@
 
             } catch (err) {
                 console.error(err);
-                showError("Gagal menyimpan profil: " + err.message);
+                showError("Gagal menyimpan data: " + err.message);
                 resetBtn();
             }
         });
