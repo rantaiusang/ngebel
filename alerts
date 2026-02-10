@@ -23,10 +23,8 @@
             --danger: #ef4444;
             --warning: #eab308;
             --info: #3b82f6;
-            
             --bg-body: #f8fafc;
             --text-main: #1e293b; --text-muted: #64748b;
-            
             --radius-xl: 32px; --radius-lg: 24px;
             --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.05);
             --shadow-hover: 0 20px 50px -12px rgba(15, 118, 110, 0.3);
@@ -117,6 +115,11 @@
             background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-soft);
         }
         .empty-icon { font-size: 3rem; margin-bottom: 15px; opacity: 0.5; }
+        .error-debug {
+            text-align: left; background: #f8fafc; padding: 15px; border-radius: 8px; 
+            font-size: 0.8rem; color: #64748b; margin-top: 10px; 
+            border: 1px dashed #cbd5e1; word-break: break-all;
+        }
 
         /* Preloader */
         #preloader {
@@ -159,7 +162,7 @@
     <!-- PRELOADER -->
     <div id="preloader">
         <div class="loader-content">
-            
+           
             <div class="modern-spinner"></div>
         </div>
     </div>
@@ -206,7 +209,6 @@
 
         // --- 2. INITIALIZATION ---
         window.addEventListener('load', async () => {
-            // Preloader
             setTimeout(() => {
                 const preloader = document.getElementById('preloader');
                 if(preloader) {
@@ -216,62 +218,74 @@
             }, 1000);
 
             fetchAlerts();
-            // Refresh setiap 30 detik
             setInterval(fetchAlerts, 30000);
         });
 
-        // --- 3. DATA FETCHING (DENGAN DEBUGGING) ---
+        // --- 3. DATA FETCHING (DENGAN FALLBACK KE PUBLIC SCHEMA) ---
         async function fetchAlerts() {
             const container = document.getElementById('alerts-container');
+            container.innerHTML = '<div style="text-align:center; padding:40px; color:#64748b;">Memuat data...</div>';
             
             try {
-                console.log("🔄 Mengambil data alerts...");
-                
-                const { data: alerts, error } = await sb
+                // COBA PERTAMA: Schema ngebel_iot
+                let { data: alerts, error } = await sb
                     .schema('ngebel_iot')
                     .from('alerts')
                     .select('*')
                     .order('created_at', { ascending: false })
                     .limit(5);
 
+                // JIKA GAGAL, COBA KEDUA: Schema public (Fallback)
                 if (error) {
-                    console.error("❌ Error dari Supabase:", error);
-                    throw error;
+                    console.warn("Gagal akses 'ngebel_iot', mencoba akses 'public'...", error);
+                    const res = await sb
+                        .schema('public') 
+                        .from('alerts')
+                        .select('*')
+                        .order('created_at', { ascending: false })
+                        .limit(5);
+                    
+                    alerts = res.data;
+                    error = res.error;
                 }
 
-                console.log("✅ Data diterima:", alerts); // Cek data di Console (F12)
+                if (error) throw error;
 
                 if (alerts && alerts.length > 0) {
                     renderAlerts(alerts);
                 } else {
-                    console.warn("⚠️ Tabel alerts kosong.");
                     showEmptyState();
                 }
 
             } catch (err) {
-                console.error("🚨 Error Total Fetch:", err);
+                console.error("GAGAL TOTAL:", err);
+                
+                // TAMPILKAN ERROR ASLI DI LAYAR
+                const errorMsg = err.message || JSON.stringify(err);
                 container.innerHTML = `
                     <div class="empty-state" style="border: 1px solid #fee2e2; background: #fef2f2;">
                         <div class="empty-icon">⚠️</div>
                         <h3>Gagal Memuat Notifikasi</h3>
-                        <p style="font-size:0.9rem;">Terjadi kesalahan koneksi. Cek Console (F12) untuk detail error.</p>
+                        <p style="font-size:0.9rem;">Cek Console (F12) atau info di bawah.</p>
+                        <div class="error-debug">
+                            <strong>Pesan Error:</strong><br>
+                            ${errorMsg}
+                        </div>
                     </div>
                 `;
             }
         }
 
-        // --- 4. RENDERING (FIXED LOGIC) ---
+        // --- 4. RENDERING ---
         function renderAlerts(alertsData) {
             const container = document.getElementById('alerts-container');
             container.innerHTML = '';
 
             alertsData.forEach((alert, index) => {
-                // Tentukan style berdasarkan severity/tipe
                 let typeClass = 'alert-info';
                 let bgClass = 'bg-info';
                 let icon = 'ℹ️';
 
-                // Safety check untuk kolom type
                 const type = (alert.type || 'info').toLowerCase(); 
                 
                 if (type === 'danger' || type === 'critical') {
@@ -288,7 +302,6 @@
                 card.className = `alert-card ${typeClass}`;
                 card.style.animationDelay = `${index * 0.1}s`;
 
-                // Format waktu (Safety check agar tidak crash jika tanggal null)
                 let dateString = '--';
                 let timeString = '--';
                 if (alert.created_at) {
@@ -296,10 +309,9 @@
                         const d = new Date(alert.created_at);
                         timeString = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
                         dateString = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
-                    } catch(e) { console.error("Error format tanggal", e); }
+                    } catch(e) {}
                 }
 
-                // Menampilkan Device ID dengan fallback
                 const devId = alert.device_id ? `DEVICE-${alert.device_id}` : 'SYSTEM';
 
                 card.innerHTML = `
