@@ -207,11 +207,14 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
         
         const { createClient } = supabase;
-        const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        // PERBAIKAN: Set schema default di sini agar tidak perlu diulang
+        const sb = createClient(SUPABASE_URL, SUPABASE_KEY, { 
+            db: { schema: 'ngebel_iot' } 
+        });
 
         // --- 2. INITIALIZATION ---
         window.addEventListener('load', async () => {
-            // Hilangkan preloader setelah delay singkat
             setTimeout(() => {
                 const preloader = document.getElementById('preloader');
                 if(preloader) {
@@ -225,46 +228,25 @@
             setInterval(() => fetchAlerts(), 30000);
         });
 
-        // --- 3. DATA FETCHING (DENGAN DEBUGGING LEBIH BAIK) ---
+        // --- 3. DATA FETCHING (SIMPLIFIED) ---
         async function fetchAlerts(isManualRefresh = false) {
             const container = document.getElementById('alerts-container');
             
-            // Jika bukan refresh manual, tampilkan loading (agar tidak flicker saat auto refresh)
             if (!isManualRefresh && container.innerHTML.trim() === '') {
                 container.innerHTML = '<div style="text-align:center; padding:40px; color:#64748b;">Memuat data...</div>';
             }
 
             try {
-                // STRATEGI: Coba Schema 'ngebel_iot' dulu
-                let query = sb
-                    .schema('ngebel_iot')
+                // PERBAIKAN: Hapus .schema() karena sudah di-set global
+                let { data: alerts, error } = await sb
                     .from('alerts')
                     .select('*')
                     .order('created_at', { ascending: false })
-                    .limit(10); // Ambil 10 data terakhir
+                    .limit(10);
 
-                let { data: alerts, error } = await query;
-
-                // FALLBACK: Jika error (misal schema tidak ada atau permission denied), coba public
-                // Catatan: Ini hanya bekerja jika struktur tabel sama
-                if (error) {
-                    console.log(`[INFO] Gagal akses schema 'ngebel_iot': ${error.message}. Mencoba schema 'public'...`);
-                    
-                    const fallbackRes = await sb
-                        .schema('public') 
-                        .from('alerts')
-                        .select('*')
-                        .order('created_at', { ascending: false })
-                        .limit(10);
-                    
-                    alerts = fallbackRes.data;
-                    error = fallbackRes.error;
-                }
-
-                // Jika masih error juga, lempar ke catch block
+                // PERBAIKAN: Hapus fallback ke public, langsung throw error jika gagal
                 if (error) throw error;
 
-                // Render Data
                 if (alerts && alerts.length > 0) {
                     renderAlerts(alerts);
                 } else {
@@ -274,14 +256,12 @@
             } catch (err) {
                 console.error("[CRITICAL] Error Fetching Data:", err);
                 
-                // TAMPILKAN ERROR YANG JELAS
                 const errorCode = err.code ? `Code: ${err.code}` : 'Unknown Error';
                 const errorMessage = err.message || err.toString();
                 
-                // Deteksi masalah umum
                 let hint = "";
-                if (err.code === '42P01') hint = "Tabel 'alerts' tidak ditemukan di schema manapun.";
-                else if (err.code === '42501') hint = "Izin akses ditolak (RLS Policy). Cek dashboard Supabase.";
+                if (err.code === '42P01') hint = "Tabel 'alerts' tidak ditemukan.";
+                else if (err.code === '42501') hint = "Izin akses ditolak (RLS Policy).";
                 else hint = "Pastikan koneksi internet stabil.";
 
                 container.innerHTML = `
@@ -313,7 +293,6 @@
                 let bgClass = 'bg-info';
                 let icon = 'ℹ️';
 
-                // Normalisasi tipe alert (case insensitive)
                 const type = (alert.type || alert.severity || 'info').toLowerCase(); 
                 
                 if (type.includes('danger') || type.includes('critical') || type.includes('error')) {
@@ -330,7 +309,12 @@
                 card.className = `alert-card ${typeClass}`;
                 card.style.animationDelay = `${index * 0.1}s`;
 
-                // Format Tanggal yang lebih aman
+                // PERBAIKAN: Tambahkan efek untuk is_read
+                if(alert.is_read) {
+                    card.style.opacity = '0.6';
+                }
+
+                // Format Tanggal
                 let dateString = '--';
                 let timeString = '--';
                 if (alert.created_at) {
