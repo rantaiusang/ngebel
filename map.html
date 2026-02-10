@@ -7,6 +7,11 @@
     <meta name="theme-color" content="#0f766e">
     <meta name="description" content="Peta Wisata Digital Telaga Ngebel">
 
+    <!-- Fonts (Outfit & Plus Jakarta Sans) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+
     <style>
         /* --- 1. VARIABLES --- */
         :root {
@@ -37,7 +42,7 @@
         a { text-decoration: none; color: inherit; }
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 2; }
 
-        /* --- 3. HEADER (SEPERTI LAINNYA) --- */
+        /* --- 3. HEADER --- */
         header {
             position: sticky; top: 0; z-index: 100;
             background: rgba(255,255,255,0.85); backdrop-filter: blur(12px);
@@ -56,7 +61,7 @@
         .back-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
         .back-btn svg { width: 18px; height: 18px; stroke-width: 2.5; }
 
-        /* --- 4. VISUAL MAP CONTAINER (RINGAN) --- */
+        /* --- 4. VISUAL MAP CONTAINER --- */
         .map-visual-container {
             margin: 30px 0 40px 0;
             position: relative;
@@ -69,19 +74,16 @@
             background-color: #cbd5e1;
         }
 
-        /* Gambar Peta Statis (Lebih Ringan dari Iframe) */
         .map-image {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            /* Menggunakan gambar peta berkualitas tinggi dari Unsplash sebagai representasi Telaga Ngebel */
             background-image: url('https://images.unsplash.com/photo-1572344251989-8175e4877e00?q=80&w=1600&auto=format&fit=crop'); 
             background-size: cover;
             background-position: center;
             transition: transform 0.5s ease;
         }
         
-        /* Efek zoom saat hover */
         .map-visual-container:hover .map-image {
             transform: scale(1.05);
         }
@@ -148,15 +150,48 @@
 
         /* --- 7. ANIMATIONS --- */
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
         .fade-up { animation: fadeInUp 0.6s ease-out forwards; opacity: 0; }
         .delay-1 { animation-delay: 0.1s; }
         .delay-2 { animation-delay: 0.2s; }
+
+        /* --- 8. PRELOADER STYLE (SAMA SEPERTI KODE LAINNYA) --- */
+        #preloader {
+            position: fixed; inset: 0; background: #ffffff; z-index: 9999; 
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+            transition: opacity 0.6s ease-in-out, visibility 0.6s;
+        }
+        .loader-content { text-align: center; }
+        .brand-logo-loader {
+            font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 2rem;
+            color: var(--primary); margin-bottom: 20px; letter-spacing: -1px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        .modern-spinner {
+            width: 50px; height: 50px;
+            border: 4px solid rgba(15, 118, 110, 0.1);
+            border-left-color: var(--primary); border-radius: 50%;
+            animation: spin 1s linear infinite; position: relative;
+        }
+        .modern-spinner::after {
+            content: ""; position: absolute; top: 6px; left: 6px; right: 6px; bottom: 6px;
+            border: 3px solid transparent; border-top-color: var(--accent);
+            border-radius: 50%; animation: spin 0.8s linear infinite reverse;
+        }
 
     </style>
 </head>
 <body>
 
-    <!-- HEADER (STICKY WITH BACK BUTTON) -->
+    <!-- PRELOADER (ANIMASI LOADER) -->
+    <div id="preloader">
+        <div class="loader-content">
+            
+            <div class="modern-spinner"></div>
+        </div>
+    </div>
+
+    <!-- HEADER -->
     <header>
         <div class="nav-content">
             <div class="back-btn" onclick="window.location.href='index.html'">
@@ -263,7 +298,19 @@
     </main>
 
     <script>
-        // Interaksi sederhana untuk checkbox layer
+        // --- LOGIKA PRELOADER (ANIMASI LOADER) ---
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const preloader = document.getElementById('preloader');
+                if(preloader) {
+                    preloader.style.opacity = '0';
+                    preloader.style.visibility = 'hidden';
+                    setTimeout(() => preloader.remove(), 600);
+                }
+            }, 1500); // Durasi animasi loader 1.5 detik
+        });
+
+        // --- LOGiro INTERAKSI LAYER ---
         document.querySelectorAll('.layer-item').forEach(item => {
             item.addEventListener('click', (e) => {
                 // Jika yang diklik bukan checkbox-nya sendiri, toggle checkbox
@@ -272,8 +319,7 @@
                     checkbox.checked = !checkbox.checked;
                 }
                 
-                // Efek visual sederhana (bisa dikembangkan untuk menyembunyikan marker di peta asli)
-                const icon = item.querySelector('.layer-icon');
+                // Efek visual sederhana (opacity berubah jika layer dimatikan)
                 if(item.querySelector('input').checked) {
                     item.style.opacity = '1';
                 } else {
