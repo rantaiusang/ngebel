@@ -220,12 +220,13 @@
             setInterval(fetchAlerts, 30000);
         });
 
-        // --- 3. DATA FETCHING (FIXED SYNTAX) ---
+        // --- 3. DATA FETCHING (DENGAN DEBUGGING) ---
         async function fetchAlerts() {
             const container = document.getElementById('alerts-container');
             
             try {
-                // ✅ PERBAIKAN: Gunakan .schema('ngebel_iot').from('alerts')
+                console.log("🔄 Mengambil data alerts...");
+                
                 const { data: alerts, error } = await sb
                     .schema('ngebel_iot')
                     .from('alerts')
@@ -233,27 +234,33 @@
                     .order('created_at', { ascending: false })
                     .limit(5);
 
-                if (error) throw error;
+                if (error) {
+                    console.error("❌ Error dari Supabase:", error);
+                    throw error;
+                }
+
+                console.log("✅ Data diterima:", alerts); // Cek data di Console (F12)
 
                 if (alerts && alerts.length > 0) {
                     renderAlerts(alerts);
                 } else {
+                    console.warn("⚠️ Tabel alerts kosong.");
                     showEmptyState();
                 }
 
             } catch (err) {
-                console.error("Gagal mengambil alerts:", err);
+                console.error("🚨 Error Total Fetch:", err);
                 container.innerHTML = `
                     <div class="empty-state" style="border: 1px solid #fee2e2; background: #fef2f2;">
                         <div class="empty-icon">⚠️</div>
                         <h3>Gagal Memuat Notifikasi</h3>
-                        <p style="font-size:0.9rem;">Terjadi kesalahan saat menghubungi server.</p>
+                        <p style="font-size:0.9rem;">Terjadi kesalahan koneksi. Cek Console (F12) untuk detail error.</p>
                     </div>
                 `;
             }
         }
 
-        // --- 4. RENDERING ---
+        // --- 4. RENDERING (FIXED LOGIC) ---
         function renderAlerts(alertsData) {
             const container = document.getElementById('alerts-container');
             container.innerHTML = '';
@@ -264,14 +271,14 @@
                 let bgClass = 'bg-info';
                 let icon = 'ℹ️';
 
-                // Cek kolom 'type' (sesuai SQL yang kita buat)
-                const type = alert.type || 'info'; 
+                // Safety check untuk kolom type
+                const type = (alert.type || 'info').toLowerCase(); 
                 
-                if (type.toLowerCase() === 'danger' || type.toLowerCase() === 'critical') {
+                if (type === 'danger' || type === 'critical') {
                     typeClass = 'alert-critical';
                     bgClass = 'bg-danger';
                     icon = '⚠️';
-                } else if (type.toLowerCase() === 'warning') {
+                } else if (type === 'warning') {
                     typeClass = 'alert-warning';
                     bgClass = 'bg-warning';
                     icon = '⚡';
@@ -281,20 +288,26 @@
                 card.className = `alert-card ${typeClass}`;
                 card.style.animationDelay = `${index * 0.1}s`;
 
-                // Format waktu
-                const d = new Date(alert.created_at || Date.now());
-                const timeString = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-                const dateString = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+                // Format waktu (Safety check agar tidak crash jika tanggal null)
+                let dateString = '--';
+                let timeString = '--';
+                if (alert.created_at) {
+                    try {
+                        const d = new Date(alert.created_at);
+                        timeString = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                        dateString = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+                    } catch(e) { console.error("Error format tanggal", e); }
+                }
 
-                // Menampilkan Device ID (Jika kolom sudah ditambahkan di Langkah 1)
+                // Menampilkan Device ID dengan fallback
                 const devId = alert.device_id ? `DEVICE-${alert.device_id}` : 'SYSTEM';
 
                 card.innerHTML = `
                     <div class="alert-header">
                         <div class="alert-icon ${bgClass}">${icon}</div>
                         <div class="alert-content">
-                            <div class="alert-title">${alert.title || 'Peringatan Sistem'}</div>
-                            <div class="alert-desc">${alert.message || 'Tidak ada deskripsi detail.'}</div>
+                            <div class="alert-title">${alert.title || 'Tanpa Judul'}</div>
+                            <div class="alert-desc">${alert.message || 'Tidak ada deskripsi.'}</div>
                         </div>
                     </div>
                     <div class="alert-meta">
