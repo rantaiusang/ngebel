@@ -327,7 +327,7 @@
                     
                     // Pesan error spesifik untuk debugging Anda
                     if(insertError.code === '23505') {
-                        throw new Error("Data user sudah ada (Duplicate ID).");
+                        throw new Error("Nomor Sudah Terdaftar (Duplicate Nomor).");
                     } else if (insertError.code === '42501') {
                         throw new Error("Akses Ditolak (RLS Policy). Anda belum mengatur Policy INSERT di Supabase.");
                     } else {
