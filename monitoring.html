@@ -281,13 +281,11 @@
         const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // --- 2. STATE ---
-        // Default ID 1 jika tidak ada parameter URL
         let deviceId = new URLSearchParams(window.location.search).get('device_id') || 1;
         let chartData = { labels: [], soil: [], temp: [], humid: [] };
 
         // --- 3. INITIALIZATION ---
         window.addEventListener('load', async () => {
-            // Hapus Preloader
             setTimeout(() => {
                 const preloader = document.getElementById('preloader');
                 if(preloader) {
@@ -298,15 +296,16 @@
 
             initChart();
             fetchSensorData();
-            // Refresh setiap 3 detik untuk realtime feel
             setInterval(fetchSensorData, 3000);
         });
 
-        // --- 4. DATA FETCHING ---
+        // --- 4. DATA FETCHING (FIXED SCHEMA SYNTAX) ---
         async function fetchSensorData() {
             try {
+                // ✅ PERBAIKAN: Gunakan .schema() terpisah
                 const { data: logs, error } = await sb
-                    .from('ngebel_iot.sensor_logs')
+                    .schema('ngebel_iot')   // 1. Schema
+                    .from('sensor_logs')   // 2. Tabel
                     .select('*')
                     .eq('device_id', deviceId)
                     .order('created_at', { ascending: false })
@@ -315,11 +314,9 @@
                 if (error) throw error;
 
                 if (logs && logs.length > 0) {
-                    // Data terakhir untuk UI Angka
                     const latest = logs[0];
                     updateLiveUI(latest);
                     
-                    // Semua data (dibalik urutannya untuk grafik kronologis)
                     const chronological = [...logs].reverse();
                     updateChart(chronological);
                 }
@@ -331,28 +328,24 @@
 
         // --- 5. UI UPDATERS ---
         function updateLiveUI(data) {
-            // Soil (Sesuai SQL: ph_level)
             document.getElementById('val-soil').innerText = data.moisture ?? 0;
             document.getElementById('val-ph').innerText = data.ph_level ?? 0;
 
-            // Environment
             document.getElementById('val-temp').innerText = data.temperature ?? 0;
             document.getElementById('val-humid').innerText = data.humidity ?? 0;
 
-            // Water (Sesuai SQL: water_level & flow_rate)
             const waterLevel = data.water_level ?? 0;
             document.getElementById('val-water-level').innerText = waterLevel;
             document.getElementById('visual-water').style.height = waterLevel + '%';
             document.getElementById('val-water-flow').innerText = data.flow_rate ?? 0;
 
-            // Timestamp
             if(data.created_at) {
                 const d = new Date(data.created_at);
                 document.getElementById('last-update').innerText = d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0');
             }
         }
 
-        // --- 6. CHARTING ENGINE (Vanilla JS Multi-line) ---
+        // --- 6. CHARTING ENGINE ---
         function initChart() {
             const canvas = document.getElementById('sensorChart');
             const ctx = canvas.getContext('2d');
@@ -400,7 +393,6 @@
             const chartW = w - padding * 2;
             const chartH = h - padding * 2;
             
-            // Grid
             ctx.strokeStyle = '#f1f5f9';
             ctx.lineWidth = 1;
             for(let i=0; i<5; i++) {
@@ -411,12 +403,8 @@
             const getX = (i) => padding + (i / (chartData.labels.length - 1 || 1)) * chartW;
             const getY = (val, max) => h - padding - (val / max) * chartH;
 
-            // Draw Lines (Soil, Temp, Humid)
-            // Soil (Brown)
             drawLine(ctx, chartData.soil, '#8B4513', 100, getX, getY);
-            // Temp (Orange)
             drawLine(ctx, chartData.temp, '#f59e0b', 50, getX, getY);
-            // Humidity (Blue)
             drawLine(ctx, chartData.humid, '#3b82f6', 100, getX, getY);
         }
 
