@@ -243,7 +243,7 @@
         // --- 1. KONFIGURASI SUPABASE ---
         // PASTIKAN KEY INI SUDAH BENAR DARI DASHBOARD
         const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA'; 
+        const SUPABASE_KEY = 'GANTI_DENGAN_KEY_ANON_ANDA_DISINI'; // Pastikan diisi
         
         const { createClient } = supabase;
         const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -278,7 +278,7 @@
             }
         }
 
-        // --- 3. LOGIKA UTAMA: CEK SESSION, REDIRECT BERDASARKAN DATA ---
+        // --- 3. LOGIKA UTAMA: CEK is_admin (BOOLEAN) ---
         async function checkSession() {
             console.log("🔄 Memulai pengecekan sesi...");
             
@@ -296,23 +296,23 @@
                 // Tampilkan Loading pada tombol untuk memberi feedback visual
                 const btn = document.getElementById('btn-google');
                 if(btn) {
-                    btn.innerHTML = `<svg class="spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 12a9 9 0 1 1-6 2.3l-4-4"></path></svg> Mengecek Akun...`;
+                    btn.innerHTML = `<svg class="spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 12a9 9 0 1 1-6 2.3l-4-4"></path></svg> Mengecek Hak Akses...`;
                     btn.style.opacity = '0.7';
                 }
 
                 try {
-                    // 1. Cek data user di tabel 'ngebelusers'
-                    console.log("🔍 Mencari data user di database...");
+                    // 1. Cek data user dan ambil kolom is_admin
+                    console.log("🔍 Mencari data user & status admin...");
                     const { data: userData, error: fetchError } = await sb
                         .from('ngebelusers')
-                        .select('role') 
+                        .select('is_admin') // <--- PERUBAHAN: Ambil kolom Boolean
                         .eq('id', session.user.id)
                         .maybeSingle(); 
 
                     // Jika TERJADI ERROR FATAL (RLS / Key Salah)
                     if (fetchError && fetchError.code !== 'PGRST116') {
                         console.error("❌ Error Database:", fetchError);
-                        showToast("Terjadi kesalahan koneksi database. Arahkan ke signup...");
+                        showToast("Terjadi kesalahan koneksi database.");
                         
                         // Fallback: Jika DB error, anggap user baru
                         setTimeout(() => {
@@ -332,20 +332,20 @@
                         return;
                     }
 
-                    // 3. LOGIKA: JIKA DATA SUDAH ADA (SUDAH SIGNUP SEBELUMNYA)
-                    console.log("✅ Data user ditemukan:", userData);
-                    
-                    const userRole = userData.role || 'user';
+                    // 3. LOGIKA ADMIN: CEK BOOLEAN is_admin
+                    // Mengambil nilai boolean. Jika null, defaultkan ke false.
+                    const isAdmin = userData.is_admin; 
 
-                    // Cek Role untuk menentukan halaman tujuan
-                    if (userRole === 'admin') {
-                        console.log("🚀 Akses Admin. Redirect ke admin.html");
-                        showToast("Login Berhasil! Mengalihkan ke Admin Panel...");
+                    console.log("Status Admin:", isAdmin);
+
+                    if (isAdmin === true) {
+                        console.log("🚀 User adalah ADMIN. Redirect ke admin.html");
+                        showToast("Login Berhasil! Selamat datang Admin.");
                         setTimeout(() => {
                             window.location.href = 'admin.html';
                         }, 1500);
                     } else {
-                        console.log("👤 Akses User Biasa. Redirect ke dashboard.html");
+                        console.log("👤 User adalah USER BIASA. Redirect ke dashboard.html");
                         showToast("Login Berhasil! Mengalihkan ke Dashboard...");
                         setTimeout(() => {
                             window.location.href = 'dashboard.html';
