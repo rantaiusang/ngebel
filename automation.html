@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Otomatisasi | Ngebel Smart Farm</title>
+    <meta name="theme-color" content="#0f766e">
+    <meta name="description" content="Konfigurasi Otomatisasi Irigasi Cerdas Telaga Ngebel">
+
+    <!-- SUPABASE CLIENT -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- 1. VARIABLES & RESET --- */
+        :root {
+            --primary: #0f766e; --primary-light: #14b8a6; --primary-dark: #0f5132;
+            --accent: #f59e0b; 
+            --bg-body: #f8fafc;
+            --glass: rgba(255, 255, 255, 0.7);
+            --text-main: #1e293b; --text-muted: #64748b;
+            
+            --radius-xl: 32px; --radius-lg: 24px;
+            --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.05);
+            --shadow-hover: 0 20px 50px -12px rgba(15, 118, 110, 0.3);
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 40px;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3 { font-family: 'Outfit', sans-serif; letter-spacing: -0.02em; }
+
+        /* --- 2. ANIMATIONS --- */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse-ai { 0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); } 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); } }
+
+        /* --- 3. COMPONENTS --- */
+        .container { max-width: 800px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 2; }
+
+        /* Header & Back Button */
+        header {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(255,255,255,0.85); backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0,0,0,0.05); height: 70px; display: flex; align-items: center;
+        }
+        .nav-content { width: 100%; max-width: 800px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; }
+        
+        .back-btn {
+            display: flex; align-items: center; gap: 8px;
+            color: var(--text-muted); font-weight: 600; font-size: 0.9rem;
+            padding: 8px 16px; border-radius: 50px;
+            background: rgba(255,255,255,0.6); border: 1px solid rgba(0,0,0,0.05);
+            transition: all 0.2s ease; cursor: pointer;
+        }
+        .back-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+        .back-btn svg { width: 18px; height: 18px; stroke-width: 2.5; }
+
+        .page-title-header { font-weight: 700; color: var(--primary); font-size: 1.1rem; }
+
+        /* Mode Selector (Tabs) */
+        .mode-selector {
+            display: flex; background: #f1f5f9; padding: 6px; border-radius: 16px; margin-bottom: 30px;
+        }
+        .mode-option {
+            flex: 1; text-align: center; padding: 12px; border-radius: 12px; font-weight: 600; font-size: 0.9rem;
+            color: var(--text-muted); cursor: pointer; transition: all 0.3s ease;
+        }
+        .mode-option.active {
+            background: white; color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .mode-ai.active { color: var(--accent); }
+
+        /* Rule Cards */
+        .rule-card {
+            background: white; border: 1px solid rgba(0,0,0,0.05);
+            border-radius: var(--radius-lg); padding: 24px;
+            box-shadow: var(--shadow-soft); margin-bottom: 20px;
+            position: relative; transition: all 0.3s ease;
+            border-left: 5px solid #cbd5e1;
+        }
+        .rule-card.active-rule { border-left-color: var(--primary); background: linear-gradient(to right, #f0fdfa, white); }
+        .rule-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+
+        .rule-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+        .rule-icon { 
+            width: 40px; height: 40px; background: #f1f5f9; color: var(--text-muted); 
+            border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+        }
+        .active-rule .rule-icon { background: var(--primary); color: white; }
+        
+        .rule-title { font-size: 1.1rem; font-weight: 700; color: var(--text-main); margin-bottom: 4px; }
+        .rule-type { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 600; }
+
+        /* Logic Display (IF -> THEN) */
+        .logic-box {
+            background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px;
+            padding: 15px; margin-top: 15px; font-family: var(--font-mono); font-size: 0.85rem;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .logic-arrow { color: var(--accent); font-weight: bold; font-size: 1.2rem; }
+        .logic-part { flex: 1; text-align: center; }
+        .logic-label { display: block; font-size: 0.7rem; color: #94a3b8; font-family: 'Plus Jakarta Sans', sans-serif; margin-bottom: 4px; }
+        
+        /* Switch inside card */
+        .rule-toggle { position: absolute; top: 24px; right: 24px; }
+        .switch-sm { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch-sm input { opacity: 0; width: 0; height: 0; }
+        .slider-sm {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #cbd5e1; transition: .4s; border-radius: 24px;
+        }
+        .slider-sm:before {
+            position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
+            background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        input:checked + .slider-sm { background-color: var(--primary); }
+        input:checked + .slider-sm:before { transform: translateX(20px); }
+
+        /* AI Status Special */
+        .ai-status-card {
+            background: linear-gradient(135deg, #fffbeb, #fef3c7);
+            border: 1px solid #fcd34d;
+            border-radius: var(--radius-lg); padding: 20px; margin-bottom: 24px;
+            display: flex; align-items: center; gap: 15px;
+        }
+        .ai-pulse {
+            width: 12px; height: 12px; background: var(--accent); border-radius: 50%;
+            animation: pulse-ai 2s infinite;
+        }
+
+        /* Preloader */
+        #preloader {
+            position: fixed; inset: 0; background: #ffffff; z-index: 9999; 
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+            transition: opacity 0.6s ease-in-out, visibility 0.6s;
+        }
+        .brand-logo-loader {
+            font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 2rem;
+            color: var(--primary); margin-bottom: 20px; letter-spacing: -1px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        .modern-spinner {
+            width: 50px; height: 50px;
+            border: 4px solid rgba(15, 118, 110, 0.1);
+            border-left-color: var(--primary); border-radius: 50%;
+            animation: spin 1s linear infinite; position: relative;
+        }
+        .modern-spinner::after {
+            content: ""; position: absolute; top: 6px; left: 6px; right: 6px; bottom: 6px;
+            border: 3px solid transparent; border-top-color: var(--accent);
+            border-radius: 50%; animation: spin 0.8s linear infinite reverse;
+        }
+
+        /* Toast */
+        .toast-container { position: fixed; top: 90px; right: 20px; z-index: 3000; display: flex; flex-direction: column; gap: 10px; }
+        .toast {
+            background: white; padding: 15px 25px; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-left: 4px solid var(--primary);
+            display: flex; align-items: center; gap: 12px; font-weight: 600;
+            transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-size: 0.9rem; max-width: 300px;
+        }
+        .toast.show { transform: translateX(0); }
+
+        main { padding-top: 90px; }
+    </style>
+</head>
+<body>
+
+    <!-- PRELOADER -->
+    <div id="preloader">
+        <div class="loader-content">
+            <!-- PERBAIKAN: Menambahkan kembali logo teks -->
+          
+            <div class="modern-spinner"></div>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header>
+        <div class="nav-content">
+            <div class="back-btn" onclick="window.location.href='dashboard.html'">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                Kembali 
+            </div>
+            <!-- PERBAIKAN: Menambahkan judul di header -->
+           
+        </div>
+    </header>
+
+    <main class="container">
+        
+        <!-- PAGE TITLE -->
+        <div style="margin-bottom: 30px; animation: fadeInUp 0.6s ease-out;">
+            <h1 style="font-size: 2rem; margin-bottom: 5px;">Sistem Cerdas</h1>
+            <p style="color: var(--text-muted);">Konfigurasi Rule, Jadwal, dan AI Auto-Control.</p>
+        </div>
+
+        <!-- MODE SELECTOR -->
+        <div class="mode-selector">
+            <div class="mode-option active" id="mode-rule" onclick="setMode('RULE')">Berdasarkan Aturan</div>
+            <div class="mode-option mode-ai" id="mode-ai" onclick="setMode('AI')">AI Auto Control</div>
+        </div>
+
+        <!-- AI STATUS (Hanya muncul jika mode AI) -->
+        <div id="ai-status" style="display: none; animation: fadeInUp 0.5s ease-out;">
+            <div class="ai-status-card">
+                <div class="ai-pulse"></div>
+                <div>
+                    <div style="font-weight: 700; color: #92400e;">AI Berjalan</div>
+                    <div style="font-size: 0.85rem; color: #b45309;">Menganalisis pola data sensor untuk mengoptimalkan irigasi.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RULES CONTAINER -->
+        <div id="rules-container">
+            <!-- Rules will be injected here via JS -->
+            <div style="text-align:center; color:#94a3b8; margin-top:50px;">Memuat aturan...</div>
+        </div>
+
+    </main>
+
+    <!-- TOAST CONTAINER -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        // --- 1. KONFIGURASI SUPABASE ---
+        const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
+        
+        const { createClient } = supabase;
+        const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // --- 2. STATE & RULE DATA ---
+        let currentMode = 'RULE'; // 'RULE' or 'AI'
+        let automationRules = []; // Akan diisi dari DB atau Fallback ke Dummy
+
+        // Fallback Hardcoded Rules jika DB kosong/error
+        const defaultRules = [
+            {
+                id: 1,
+                type: 'TRIGGER SENSOR',
+                name: 'Irigasi Kering',
+                icon: '🌡️',
+                active: true,
+                ifCondition: 'Soil Moisture < 45%',
+                thenAction: 'Pompa ON',
+                desc: 'Menyiram tanah jika kelembaban turun di bawah ambang batas.'
+            },
+            {
+                id: 2,
+                type: 'TRIGGER CUACA',
+                name: 'Stop Saat Hujan',
+                icon: '🌧️',
+                active: true,
+                ifCondition: 'Curah Hujan > 0mm',
+                thenAction: 'Stop Irigasi',
+                desc: 'Menghentikan pompa secara otomatis jika terdeteksi hujan.'
+            },
+            {
+                id: 3,
+                type: 'JADWAL WAKTU',
+                name: 'Siram Pagi',
+                icon: '⏰',
+                active: true,
+                ifCondition: 'Jam 06:00',
+                thenAction: 'Siram 10 Menit',
+                desc: 'Jadwal penyiraman rutin pagi hari menjaga kelembaban optimal.'
+            },
+            {
+                id: 4,
+                type: 'TRIGGER SENSOR',
+                name: 'Batas Suhu Tinggi',
+                icon: '🥵',
+                active: false,
+                ifCondition: 'Suhu > 35°C',
+                thenAction: 'Siram 5 Menit',
+                desc: 'Pendingin darurat jika suhu lingkungan mencapai level panas ekstrem.'
+            }
+        ];
+
+        // --- 3. INITIALIZATION ---
+        window.addEventListener('load', async () => {
+            // Preloader delay
+            setTimeout(() => {
+                const preloader = document.getElementById('preloader');
+                if(preloader) {
+                    preloader.style.opacity = '0';
+                    setTimeout(() => preloader.remove(), 600);
+                }
+            }, 1000);
+
+            // Coba ambil data dari DB, jika gagal pakai dummy
+            await loadSystemState();
+        });
+
+        // --- 4. LOGIKA UTAMA ---
+
+        async function loadSystemState() {
+            try {
+                // Cek apakah tabel automation_rules ada dan berisi data
+                const { data, error } = await sb
+                    .from('ngebel_iot.automation_rules')
+                    .select('*')
+                    .eq('device_id', 1); // Hardcode device 1 untuk demo
+
+                if (error) throw error;
+
+                if (data && data.length > 0) {
+                    // Mapping data DB ke format UI
+                    automationRules = data.map(dbRule => ({
+                        id: dbRule.id,
+                        type: dbRule.rule_type.toUpperCase(), // 'sensor_trigger' -> 'SENSOR_TRIGGER'
+                        name: dbRule.description || 'Rule Tanpa Nama',
+                        icon: getIconByRule(dbRule.rule_type, dbRule.target_sensor),
+                        active: dbRule.is_active,
+                        ifCondition: formatCondition(dbRule),
+                        thenAction: `${dbRule.action_target} ${dbRule.action_value.toUpperCase()}`,
+                        desc: `Otomatisasi tipe ${dbRule.rule_type}`
+                    }));
+                    console.log("Data loaded from DB");
+                } else {
+                    throw new Error("No data found");
+                }
+
+            } catch (err) {
+                console.warn("Gagal ambil data DB, menggunakan data dummy:", err.message);
+                automationRules = [...defaultRules]; // Gunakan default
+            }
+
+            renderRules();
+        }
+
+        // Helper untuk memetakan tipe ke Icon
+        function getIconByRule(type, target) {
+            if (type === 'schedule') return '⏰';
+            if (target === 'rain') return '🌧️';
+            if (target === 'moisture') return '💧';
+            if (target === 'temperature') return '🌡️';
+            return '⚙️'; // Default gear
+        }
+
+        // Helper untuk format teks kondisi
+        function formatCondition(rule) {
+            if (rule.rule_type === 'schedule') {
+                return `Jam ${rule.schedule_time.substring(0,5)}`;
+            }
+            if (rule.rule_type === 'sensor_trigger') {
+                return `${rule.target_sensor} ${rule.condition_operator} ${rule.threshold_value}`;
+            }
+            return 'Otomatis';
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            updateModeUI();
+            showToast(`Mode diubah ke ${mode === 'AI' ? 'AI Auto Control' : 'Berdasarkan Aturan'}`, 'success');
+        }
+
+        function updateModeUI() {
+            // Update Tab UI
+            document.getElementById('mode-rule').className = `mode-option ${currentMode === 'RULE' ? 'active' : ''}`;
+            document.getElementById('mode-ai').className = `mode-option mode-ai ${currentMode === 'AI' ? 'active' : ''}`;
+
+            // Show/Hide AI Status
+            const aiStatus = document.getElementById('ai-status');
+            aiStatus.style.display = currentMode === 'AI' ? 'flex' : 'none';
+
+            // Render ulang aturan dengan visual state yang sesuai
+            renderRules();
+        }
+
+        function renderRules() {
+            const container = document.getElementById('rules-container');
+            container.innerHTML = '';
+
+            automationRules.forEach((rule, index) => {
+                const isVisuallyActive = rule.active;
+                
+                const card = document.createElement('div');
+                card.className = `rule-card ${isVisuallyActive ? 'active-rule' : ''}`;
+                card.style.animation = `fadeInUp 0.5s ease-out backwards ${index * 0.1}s`;
+
+                card.innerHTML = `
+                    <div class="rule-toggle">
+                        <label class="switch-sm">
+                            <input type="checkbox" ${isVisuallyActive ? 'checked' : ''} onchange="toggleRule(${rule.id}, this)">
+                            <span class="slider-sm"></span>
+                        </label>
+                    </div>
+                    <div class="rule-header" style="margin-right: 60px;">
+                        <div class="rule-icon">${rule.icon}</div>
+                        <div style="flex:1; margin-left: 15px;">
+                            <div class="rule-title">${rule.name}</div>
+                            <div class="rule-type">${rule.type}</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 10px; font-size: 0.9rem; color: var(--text-muted); line-height: 1.4;">
+                        ${rule.desc}
+                    </div>
+
+                    <div class="logic-box">
+                        <div class="logic-part">
+                            <span class="logic-label">JIKALAU (IF)</span>
+                            <strong>${rule.ifCondition}</strong>
+                        </div>
+                        <div class="logic-arrow">➜</div>
+                        <div class="logic-part">
+                            <span class="logic-label">MAKA (THEN)</span>
+                            <strong style="color: var(--primary);">${rule.thenAction}</strong>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        async function toggleRule(id, checkbox) {
+            if(currentMode === 'AI') {
+                checkbox.checked = !checkbox.checked;
+                showToast("Nonaktifkan mode AI terlebih dahulu untuk mengedit rule manual.", "error");
+                return;
+            }
+
+            const isActive = checkbox.checked;
+            const rule = automationRules.find(r => r.id === id);
+            
+            // Update Local State
+            rule.active = isActive;
+            
+            // Re-render agar style border-left berubah
+            renderRules();
+
+            // Kirim ke Supabase (Opsional/Real Implementation)
+            try {
+                const { error } = await sb
+                    .from('ngebel_iot.automation_rules')
+                    .update({ is_active: isActive })
+                    .eq('id', id);
+                
+                if (error) throw error;
+                
+                showToast(`Aturan "${rule.name}" ${isActive ? 'diaktifkan' : 'dinonaktifkan'}`, 'success');
+            } catch (err) {
+                console.error(err);
+                showToast("Gagal menyimpan perubahan ke database", "error");
+            }
+        }
+
+        // --- 5. UTILS ---
+        function showToast(msg, type='info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            let icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+            if(type === 'error') toast.style.borderLeftColor = '#ef4444';
+            
+            toast.innerHTML = `<span>${icon}</span> ${msg}`;
+            container.appendChild(toast);
+            
+            requestAnimationFrame(() => toast.classList.add('show'));
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
+        }
+
+    </script>
+</body>
+</html>
