@@ -10,11 +10,11 @@
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 
-    <!-- Font: Plus Jakarta Sans & Outfit (Sama seperti referensi) -->
+    <!-- Font: Plus Jakarta Sans & Outfit -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* --- 1. VARIABLES (COPY DARI REFERENSI) --- */
+        /* --- 1. VARIABLES --- */
         :root {
             --primary: #0f766e; --primary-light: #14b8a6; --accent: #f59e0b;
             --bg-body: #f8fafc; --text-main: #1e293b; --text-muted: #64748b;
@@ -41,7 +41,31 @@
         a { text-decoration: none; color: inherit; }
         .container { max-width: 800px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 2; }
 
-        /* --- 3. HEADER (GLASSMORPHISM) --- */
+        /* --- 3. PRELOADER (DARI REFERENSI) --- */
+        #preloader {
+            position: fixed; inset: 0; background: #ffffff; z-index: 9999; 
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+            transition: opacity 0.6s ease-in-out, visibility 0.6s;
+        }
+        .loader-content { text-align: center; }
+        .brand-logo-loader {
+            font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 2rem;
+            color: var(--primary); margin-bottom: 20px; letter-spacing: -1px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        .modern-spinner {
+            width: 50px; height: 50px;
+            border: 4px solid rgba(15, 118, 110, 0.1);
+            border-left-color: var(--primary); border-radius: 50%;
+            animation: spin 1s linear infinite; position: relative;
+        }
+        .modern-spinner::after {
+            content: ""; position: absolute; top: 6px; left: 6px; right: 6px; bottom: 6px;
+            border: 3px solid transparent; border-top-color: var(--accent);
+            border-radius: 50%; animation: spin 0.8s linear infinite reverse;
+        }
+
+        /* --- 4. HEADER --- */
         header {
             position: sticky; top: 0; z-index: 1000;
             background: rgba(255,255,255,0.85); backdrop-filter: blur(12px);
@@ -60,7 +84,7 @@
         .back-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
         .back-btn svg { width: 18px; height: 18px; stroke-width: 2.5; }
 
-        /* --- 4. INTERACTIVE MAP CONTAINER --- */
+        /* --- 5. INTERACTIVE MAP CONTAINER --- */
         .map-wrapper {
             margin: 30px 0;
             position: relative;
@@ -70,12 +94,11 @@
             border-radius: var(--radius-xl);
             overflow: hidden;
             box-shadow: var(--shadow-soft);
-            border: 4px solid white; /* Clean look */
+            border: 4px solid white;
         }
 
         #map { height: 100%; width: 100%; background: #e2e8f0; z-index: 1; }
 
-        /* Overlay di atas peta */
         .map-card-overlay {
             position: absolute; bottom: 20px; left: 20px; right: 20px;
             background: var(--glass); backdrop-filter: blur(12px);
@@ -83,23 +106,20 @@
             border: 1px solid rgba(255,255,255,0.5);
             display: flex; justify-content: space-between; align-items: center;
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            z-index: 500; /* Di atas layer peta Leaflet */
+            z-index: 500; 
             animation: fadeInUp 0.6s ease-out;
         }
 
-        .location-badge {
-            display: flex; align-items: center; gap: 12px;
-        }
+        .location-badge { display: flex; align-items: center; gap: 12px; }
         .pin-icon {
             width: 36px; height: 36px; background: var(--primary);
             color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 12px rgba(15, 118, 110, 0.4);
-            font-size: 16px;
+            box-shadow: 0 4px 12px rgba(15, 118, 110, 0.4); font-size: 16px;
         }
         .loc-text h4 { font-size: 1rem; color: var(--text-main); margin: 0; font-weight: 700; }
         .loc-text span { font-size: 0.8rem; color: var(--text-muted); }
 
-        /* --- 5. ACTIONS GRID --- */
+        /* --- 6. ACTIONS GRID --- */
         .action-grid {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;
             margin-bottom: 40px;
@@ -123,7 +143,7 @@
         .btn-outline { background: white; border: 2px solid var(--primary); color: var(--primary); }
         .btn-outline:hover { background: var(--primary); color: white; }
 
-        /* --- 6. LAYERS LIST --- */
+        /* --- 7. LAYERS LIST --- */
         .layers-section h2 { margin-bottom: 20px; font-size: 1.5rem; }
         
         .layer-list { display: flex; flex-direction: column; gap: 15px; }
@@ -135,10 +155,10 @@
         }
         .layer-item:hover { border-color: var(--primary); background: #f0fdfa; }
         
-        .layer-info { display: flex; align-items: center; gap: 12px; }
+        .layer-info { display: flex; align-items: center; gap: 12px; pointer-events: none; } /* Agar klik di sini tembus ke parent */
         .layer-icon { width: 36px; height: 36px; border-radius: 8px; background: #e0f2fe; color: #0284c7; display: flex; align-items: center; justify-content: center; }
 
-        /* Checkbox Custom Style */
+        /* Toggle Switch */
         .toggle-switch {
             appearance: none; width: 44px; height: 24px;
             background: #cbd5e1; border-radius: 20px;
@@ -152,14 +172,25 @@
         .toggle-switch:checked { background: var(--primary); }
         .toggle-switch:checked::after { transform: translateX(20px); }
 
-        /* --- 7. ANIMATIONS --- */
+        /* --- 8. ANIMATIONS --- */
+        @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); } 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); } }
+
         .fade-up { animation: fadeInUp 0.6s ease-out forwards; opacity: 0; }
         .delay-1 { animation-delay: 0.1s; }
         .delay-2 { animation-delay: 0.2s; }
     </style>
 </head>
 <body>
+
+    <!-- PRELOADER -->
+    <div id="preloader">
+        <div class="loader-content">
+            
+            <div class="modern-spinner"></div>
+        </div>
+    </div>
 
     <!-- HEADER -->
     <header>
@@ -176,7 +207,6 @@
         
         <!-- SECTION: INTERACTIVE MAP -->
         <section class="map-wrapper fade-up">
-            <!-- Leaflet Map Container -->
             <div id="map"></div>
             
             <!-- Floating Info Card -->
@@ -188,7 +218,6 @@
                         <span>Ngebel, Ponorogo</span>
                     </div>
                 </div>
-                <!-- GPS Pulse Indicator -->
                 <div style="display:flex; align-items:center; gap:8px;">
                     <small style="color:#22c55e; font-weight:700; font-size:0.75rem;">LIVE</small>
                     <div style="width: 10px; height: 10px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); animation: pulse-green 2s infinite;"></div>
@@ -278,73 +307,73 @@
 
     <script>
         /* =========================
-           CONFIGURATION
+           CONFIGURATION & PRELOADER
         ========================= */
-        // Koordinat Mloko Sewu (Approx)
         const centerCoord = [-7.7875, 111.7439];
+
+        // Logika Preloader
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const preloader = document.getElementById('preloader');
+                if (preloader) {
+                    preloader.style.opacity = '0';
+                    preloader.style.visibility = 'hidden';
+                    setTimeout(() => preloader.remove(), 600);
+                }
+            }, 1500); // Durasi loading 1.5 detik
+        });
         
         /* =========================
            INIT MAP
         ========================= */
         const map = L.map('map', {
-            zoomControl: false // Kita pindahkan zoomControl bawaan leaflet agar tidak bentrok dengan UI
+            zoomControl: false 
         }).setView(centerCoord, 16);
 
-        // Tambahkan Zoom Control di pojok kanan atas
         L.control.zoom({ position: 'topright' }).addTo(map);
 
-        // Tile Layer (OpenStreetMap)
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        // Gunakan Carto Voyager agar lebih selaras dengan desain elegan
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
             maxZoom: 19,
-            attribution: '© OpenStreetMap'
+            attribution: '© OpenStreetMap & CARTO'
         }).addTo(map);
 
         /* =========================
            LAYERS & MARKERS
         ========================= */
-        
-        // 1. Layer Spot Foto
         const spotLayer = L.layerGroup().addTo(map);
-        // Marker Utama
         L.marker(centerCoord).bindPopup("<b>Mloko Sewu</b><br>Area Utama Wisata").addTo(spotLayer);
-        // Dummy spot foto lain
         L.marker([-7.7885, 111.7449]).bindPopup("Bukit Selfie").addTo(spotLayer);
 
-        // 2. Layer Fasilitas
         const fasilitasLayer = L.layerGroup().addTo(map);
         L.marker([-7.7882, 111.7425]).bindPopup("Toilet Umum").addTo(fasilitasLayer);
         L.marker([-7.7869, 111.7448]).bindPopup("Area Parkir").addTo(fasilitasLayer);
 
-        // 3. Layer User (GPS)
         const userLayer = L.layerGroup().addTo(map);
         let userMarker = null;
 
         /* =========================
-           FUNCTIONS
+           FUNCTIONS (FIXED LOGIC)
         ========================= */
 
-        // Fungsi Toggle Layer
+        // PERBAIKAN: Fungsi toggle yang lebih robust
         function toggleLayer(type) {
-            // Mencegah klik ganda jika user langsung klik checkbox
-            event.stopPropagation();
-
             const checkbox = document.getElementById(`check-${type}`);
-            // Karena event onclick ada di parent div, kita harus reverse logic sedikit
-            // jika user klik checkbox native, jangan toggle manual. Tapi karena div onclick trigger duluan?
-            // Kita handle manual logicnya:
             
-            // Cek apakah event target adalah checkbox itu sendiri
-            if(event.target.classList.contains('toggle-switch')) {
-                // Biarkan native behavior checkbox, update map
-                updateMapLayer(type, checkbox.checked);
-            } else {
-                // Jika klik div/card, toggle manual
+            // Kita cek target event. Jika yang diklik adalah checkbox itu sendiri,
+            // biarkan perilaku default checkbox (checked/unchecked) berjalan,
+            // lalu kita update map sesuai status barunya.
+            // Jika yang diklik adalah div (bukan checkbox), kita toggle manual checkbox-nya.
+            
+            if (event.target !== checkbox) {
+                // User klik area card, bukan di tombol switch
                 checkbox.checked = !checkbox.checked;
-                updateMapLayer(type, checkbox.checked);
             }
+            
+            // Update peta berdasarkan status checkbox (baik itu dari klik card atau klik switch)
+            updateMapLayer(type, checkbox.checked);
         }
 
-        // Update Map berdasarkan status checkbox
         function updateMapLayer(type, isActive) {
             const layerMap = {
                 'spot': spotLayer,
@@ -353,13 +382,19 @@
             }[type];
 
             if (isActive) {
+                // Jika user layer diminta aktif tapi belum ada marker, cek apakah perlu detect GPS?
+                // Untuk simplifikasi di sini, kita toggle layer-nya saja.
+                // Fungsi locateMe akan menangani penambahan marker user.
+                if (type === 'user' && userLayer.getLayers().length === 0) {
+                    locateMe(); // Trigger GPS jika belum ada marker
+                    return; // locateMe akan menangani checkbox & layer
+                }
                 map.addLayer(layerMap);
             } else {
                 map.removeLayer(layerMap);
             }
         }
 
-        // Fungsi Deteksi GPS (Lokasi Saya)
         function locateMe() {
             const checkbox = document.getElementById('check-user');
             
@@ -368,32 +403,24 @@
                 return;
             }
 
-            // Feedback UI loading
-            const btn = event.currentTarget;
+            const btn = document.querySelector('.btn-outline'); // Seleksi tombol yang benar
+            if(!btn) return;
+
             const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mencari...';
+            btn.innerHTML = 'Mendeteksi...'; // Bisa tambah icon spinner jika ada fontawesome
             btn.style.opacity = '0.7';
 
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     const latlng = [position.coords.latitude, position.coords.longitude];
-                    
-                    // Hapus marker lama
                     userLayer.clearLayers();
-                    
-                    // Tambah marker baru
                     userMarker = L.marker(latlng).bindPopup("Posisi Kamu").addTo(userLayer);
                     
-                    // Fly to location
-                    map.flyTo(latlng, 16, {
-                        duration: 1.5
-                    });
+                    map.flyTo(latlng, 16, { duration: 1.5 });
 
-                    // Pastikan layer user aktif
                     checkbox.checked = true;
                     if(!map.hasLayer(userLayer)) map.addLayer(userLayer);
 
-                    // Reset tombol
                     btn.innerHTML = originalText;
                     btn.style.opacity = '1';
                 },
@@ -401,29 +428,19 @@
                     alert("Gagal mengambil lokasi. Pastikan GPS aktif.");
                     btn.innerHTML = originalText;
                     btn.style.opacity = '1';
+                    // Jika gagal, matikan checkbox agar konsisten
+                    if(userLayer.getLayers().length === 0) {
+                        checkbox.checked = false;
+                    }
                     console.error(error);
                 },
                 { enableHighAccuracy: true }
             );
         }
 
-        // Fungsi Buka Route
         function openRoute() {
-            // Google Maps Directions Link
             window.open(`https://www.google.com/maps/dir/?api=1&destination=${centerCoord[0]},${centerCoord[1]}`, '_blank');
         }
-
-        /* Animasi Pulse untuk CSS */
-        const styleSheet = document.createElement("style");
-        styleSheet.innerText = `
-            @keyframes pulse-green {
-                0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
-                70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
-                100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
-            }
-        `;
-        document.head.appendChild(styleSheet);
-
     </script>
 </body>
 </html>
