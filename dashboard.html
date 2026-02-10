@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Dashboard Ringkasan | Ngebel Smart Farm</title>
+    <title>Admin Panel | Ngebel Smart Tourism</title>
     <meta name="theme-color" content="#0f766e">
-    <meta name="description" content="Dashboard Ringkasan Irigasi Cerdas Telaga Ngebel">
+    <meta name="description" content="Pusat Kontrol Admin Ngebel Smart Tourism">
 
     <!-- SUPABASE CLIENT -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -25,8 +25,8 @@
             --glass: rgba(255, 255, 255, 0.7);
             --text-main: #1e293b; --text-muted: #64748b;
             
-            --radius-xl: 32px; --radius-lg: 24px;
-            --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.05);
+            --radius-xl: 32px; --radius-lg: 24px; --radius-md: 12px;
+            --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0,0.05);
             --shadow-hover: 0 20px 50px -12px rgba(15, 118, 110, 0.3);
             --nav-height: 80px;
             --font-mono: 'JetBrains Mono', monospace;
@@ -47,12 +47,11 @@
         h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; letter-spacing: -0.02em; }
         h3 { font-size: 1.25rem; color: var(--text-main); margin-bottom: 0.5rem; }
         
-        /* --- 2. ANIMATIONS --- */
-        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+        /* --- 2. ANIMATIONS & UTILS --- */
         @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes pulse-red { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.5); } 100% { opacity: 1; transform: scale(1); } }
-
+        
         /* --- 3. COMPONENTS --- */
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 2; }
 
@@ -62,7 +61,7 @@
             box-shadow: var(--shadow-soft); margin-bottom: 20px;
             transition: all 0.3s ease; position: relative; overflow: hidden;
         }
-        .card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+        .card:hover { box-shadow: var(--shadow-hover); }
 
         .card-header {
             display: flex; justify-content: space-between; align-items: center;
@@ -73,8 +72,8 @@
         .metric-value { font-family: 'Outfit', sans-serif; font-size: 2.5rem; font-weight: 700; color: var(--primary); line-height: 1; }
         .metric-unit { font-size: 1rem; color: var(--text-muted); font-weight: 500; margin-left: 5px; }
         .metric-sub { font-size: 0.85rem; color: var(--text-muted); margin-top: 5px; }
-
-        /* Grid Dashboard */
+        
+        /* Grid Layout */
         .dashboard-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -82,14 +81,14 @@
             margin-bottom: 20px;
         }
         .col-span-full { grid-column: 1 / -1; }
-
+        
         @media (max-width: 768px) {
             .col-span-full { grid-column: span 1; }
         }
 
         /* Custom UI Elements */
         .status-badge {
-            padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;
+            padding: 4px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 700;
             display: inline-flex; align-items: center; gap: 6px;
         }
         .status-healthy { background: #dcfce7; color: #166534; }
@@ -105,39 +104,29 @@
         .switch-container { display: flex; align-items: center; justify-content: space-between; background: #f8fafc; padding: 15px; border-radius: 16px; }
         .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider {
-            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #cbd5e1; transition: .4s; border-radius: 34px;
-        }
-        .slider:before {
-            position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px;
-            background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         input:checked + .slider { background-color: var(--primary); }
         input:checked + .slider:before { transform: translateX(22px); background-color: white; }
         input:disabled + .slider { opacity: 0.5; cursor: not-allowed; }
 
-        /* Chart */
-        canvas { width: 100% !important; height: 250px !important; }
-
-        /* Device List */
-        .device-row {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 12px 0; border-bottom: 1px solid #f1f5f9;
-        }
-        .device-row:last-child { border-bottom: none; }
-        .device-name { font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 10px; }
-        .device-icon { color: var(--text-muted); }
-
-        /* --- 4. HEADER & NAV --- */
+        /* --- 4. HEADER & NAV (STYLE DINAMIS DARI DASHBOARD) --- */
         header {
-            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            position: sticky; top: 0; left: 0; right: 0; z-index: 100;
             background: rgba(255,255,255,0.8); backdrop-filter: blur(12px);
             border-bottom: 1px solid rgba(255,255,255,0.5); height: 70px; display: flex; align-items: center;
         }
-        .brand { display: flex; align-items: center; gap: 10px; font-family: 'Outfit'; font-weight: 800; font-size: 1.3rem; color: var(--primary); cursor: default; }
+        .brand { display: flex; align-items: center; gap: 10px; font-family: 'Outfit'; font-weight: 800; font-size: 1.3rem; color: var(--primary); cursor: pointer; }
         
-        /* --- PERBAIKAN NAVIGASI --- */
+        /* Admin Badge (Style Dashboard) */
+        .admin-badge { 
+            background: linear-gradient(135deg, #0f766e, #0d5f58); color: white; 
+            padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0,0.1);
+        }
+
+        /* Sidebar Nav (Style Dashboard) */
         .bottom-nav {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
             width: 92%; max-width: 450px; height: auto; min-height: var(--nav-height);
@@ -145,9 +134,10 @@
             border-radius: 40px;
             display: flex; justify-content: space-around; align-items: center;
             box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-            z-index: 1000; padding: 10px; border: 1px solid rgba(255,255,255,0.6);
+            z-index: 1000; padding: 10px;
+            border: 1px solid rgba(255,255,255,0.6);
             overflow-x: auto; 
-            white-space: nowrap;
+            white-space: nowrap; /* Agar menu banyak, bisa discroll horizontal */
             justify-content: flex-start; 
             gap: 8px; 
         }
@@ -164,11 +154,12 @@
             flex: 0 0 auto; 
         }
         .nav-item svg { width: 22px; height: 22px; stroke-width: 2; stroke: currentColor; fill: none; margin-bottom: 4px; transition: all 0.3s; }
+        
         .nav-item.active { color: var(--primary); }
         .nav-item.active svg { transform: scale(1.1); stroke-width: 2.5; }
-        .nav-item.logout-item:hover { color: #ef4444; background: #fef2f2; }
+        .nav-item.logout-item:hover { color: #ef4444; background: #fef2f2; } /* Style Dashboard Admin Merah */
 
-        /* Desktop Nav */
+        /* Desktop Nav (Sidebar) */
         @media (min-width: 768px) {
             body { padding-bottom: 0; padding-left: 280px; }
             .bottom-nav {
@@ -195,7 +186,7 @@
             .nav-item svg { margin-bottom: 0; }
         }
 
-        /* --- 5. PRELOADER --- */
+        /* --- 5. PRELOADER (SAMA SEPERTI DASHBOARD) --- */
         #preloader {
             position: fixed; inset: 0; background: #ffffff; z-index: 9999; 
             display: flex; justify-content: center; align-items: center; flex-direction: column;
@@ -225,21 +216,19 @@
             background: white; padding: 15px 25px; border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-left: 4px solid var(--primary);
             display: flex; align-items: center; gap: 12px; font-weight: 600;
-            transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            font-size: 0.9rem;
+            transform: translateX(120%); transition: transform: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-size: 0.9rem;
         }
         .toast.show { transform: translateX(0); }
 
         /* PERBAIKAN: Loading Overlay yang lebih halus */
         .card-loading {
             position: absolute; inset: 0; background: rgba(255,255,255,0.6); z-index: 10;
-            display: none; /* Default hidden agar tidak ganggu tampilan awal */
+            display: none; /* Default hidden */
             align-items: center; justify-content: center; backdrop-filter: blur(2px);
             border-radius: var(--radius-lg);
         }
         .mini-spinner {
-            width: 30px; height: 30px; border: 3px solid #f3f3f3;
-            border-top: 3px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite;
+            width: 30px; height: 30px; border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite;
         }
 
     </style>
@@ -248,203 +237,42 @@
 
     <!-- PRELOADER -->
     <div id="preloader">
-        <div class="loader-content">
-           
+        <div class="loader-content">            
             <div class="modern-spinner"></div>
         </div>
     </div>
 
-    <!-- HEADER -->
+    <!-- HEADER (Style Dashboard) -->
     <header>
-        <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
-            <div class="brand">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.74 5.88-5.74 5.88-5.74-5.88L12 2.69M12 22a9.97 9.97 0 0 1-7.07-2.93l-1.41 1.41A11.97 11.97 0 0 0 12 24a11.97 11.97 0 0 0 8.49-3.52l-1.41-1.41A9.97 9.97 0 0 1 12 22z"/></svg>
-                Ngebel Smart Farm
-            </div>
-            <div class="user-pill">
-                <div class="blink-dot" style="background: #22c55e;"></div>
-            </div>
-        </div>
-    </header>
-
-    <main class="container" style="padding-top: 90px;">
-        
-        <!-- PAGE TITLE -->
-        <div style="margin-bottom: 30px; animation: fadeInUp 0.6s ease-out;">
-            <h1 style="font-size: 2rem; margin-bottom: 5px;">Ringkasan Farm</h1>
-            <p>Overview cepat status irigasi dan kesehatan tanaman hari ini.</p>
-        </div>
-
-        <!-- DASHBOARD GRID -->
-        <section class="dashboard-grid">
-            
-            <!-- 1. STATUS KESEHATAN FARM -->
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Status Kesehatan</span>
-                    <span id="status-icon">🌱</span>
-                </div>
-                <div style="text-align: center;">
-                    <h2 id="farm-status-text" style="font-size: 2rem; margin-bottom: 10px;">--</h2>
-                    <span id="farm-status-badge" class="status-badge status-healthy">Checking...</span>
-                </div>
-                <div id="loading-status" class="card-loading"><div class="mini-spinner"></div></div>
-            </div>
-
-            <!-- 2. KELEMBABAN TANAH -->
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Kelembaban Tanah</span>
-                    <span style="font-size: 1.2rem;">💧</span>
-                </div>
-                <div>
-                    <span class="metric-value" id="val-moisture">--</span><span class="metric-unit">%</span>
-                    <div class="progress-container">
-                        <div class="progress-bar" id="bar-moisture" style="width: 0%;"></div>
-                    </div>
-                    <p class="metric-sub" id="sub-moisture">Menunggu data sensor...</p>
-                </div>
-                <div id="loading-moisture" class="card-loading"><div class="mini-spinner"></div></div>
-            </div>
-
-            <!-- 3. SUHU & CUACA -->
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Suhu & Cuaca</span>
-                    <span style="font-size: 1.2rem;">🌡️</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <span class="metric-value" id="val-temp">--</span><span class="metric-unit">°C</span>
-                        <p class="metric-sub" id="val-weather">...</p>
-                    </div>
-                    <div id="weather-emoji" style="font-size: 3rem; opacity: 0.8;">🌤️</div>
-                </div>
-                <div id="loading-weather" class="card-loading"><div class="mini-spinner"></div></div>
-            </div>
-
-            <!-- 4. PENGgunaan AIR -->
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Pemakaian Air Hari Ini</span>
-                    <span style="font-size: 1.2rem;">🚰</span>
-                </div>
-                <div>
-                    <span class="metric-value" id="val-water">--</span><span class="metric-unit">Liter</span>
-                    <p class="metric-sub">Efisiensi: <strong style="color: var(--primary);">Optimal</strong></p>
-                </div>
-                <div id="loading-water" class="card-loading"><div class="mini-spinner"></div></div>
-            </div>
-
-            <!-- 5. KONTROL POMPA -->
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Kontrol Pompa</span>
-                    <span style="font-size: 1.2rem;">⚙️</span>
-                </div>
-                <div class="switch-container">
-                    <div>
-                        <div style="font-weight: 700; color: var(--text-main);">Pompa Irigasi Utama</div>
-                        <div style="font-size: 0.8rem; color: var(--text-muted);">Status: <span id="pump-status-text">OFF</span></div>
-                    </div>
-                    <label class="switch">
-                        <input type="checkbox" id="pump-toggle" onchange="togglePump()">
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <div id="loading-pump" class="card-loading"><div class="mini-spinner"></div></div>
-            </div>
-
-            <!-- 6. AI INSIGHT (FULL WIDTH) -->
-            <div class="card col-span-full" style="background: linear-gradient(135deg, #0f766e, #0f5132); color: white; border: none;">
-                <div class="card-header" style="border-bottom: 1px solid rgba(255,255,255,0.2);">
-                    <span class="card-title" style="color: rgba(255,255,255,0.8);">AI Insight & Analisis</span>
-                    <span style="font-size: 1.2rem;">🤖</span>
-                </div>
-                <div style="font-size: 1.1rem; font-style: italic; line-height: 1.6; color: #e2e8f0;">
-                    "<span id="ai-text">Sedang menganalisis data sensor...</span>"
-                </div>
-                <div id="loading-ai" class="card-loading" style="background: rgba(15, 118, 110, 0.8);"><div class="mini-spinner" style="border-color: rgba(255,255,255,0.3); border-top-color: #fff;"></div></div>
-            </div>
-
-            <!-- 7. GRAFIK REALTIME (FULL WIDTH) -->
-            <div class="card col-span-full">
-                <div class="card-header">
-                    <span class="card-title">Grafik Realtime (10 Menit Terakhir)</span>
-                    <div style="display: flex; gap: 10px; font-size: 0.8rem;">
-                        <span style="color: var(--primary);">● Kelembaban</span>
-                        <span style="color: var(--accent);">● Suhu</span>
-                    </div>
-                </div>
-                <div style="position: relative; height: 250px; width: 100%;">
-                    <canvas id="dashboardChart"></canvas>
-                </div>
-            </div>
-
-            <!-- 8. STATUS PERANGKAT -->
-            <div class="card col-span-full">
-                <div class="card-header">
-                    <span class="card-title">Status Perangkat (Online/Offline)</span>
-                    <span style="font-size: 1.2rem;">📡</span>
-                </div>
-                <div id="device-list-container">
-                    <!-- Device list injected by JS -->
-                </div>
-                <div id="loading-devices" class="card-loading"><div class="mini-spinner"></div></div>
-            </div>
-
-        </section>
-    </main>
-
-    <!-- NAVIGATION -->
-    <nav class="bottom-nav" id="main-nav"></nav>
-
-    <!-- TOAST CONTAINER -->
-    <div class="toast-container" id="toast-container"></div>
-
-    <script>
-        // --- 1. KONFIGURASI SUPABASE ---
-        const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
-        
-        const { createClient } = supabase;
-        const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        // --- 2. MENU CONFIGURATION ---
-        const menuItems = [
-            { id: 'dashboard', icon: '<rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>', label: 'Dashboard', active: true },
-            { id: 'monitoring', icon: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>', label: 'Monitoring', link: 'monitoring.html' },
-            { id: 'analytics', icon: '<line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line>', label: 'Analisis', link: 'analytics.html' },
-            { id: 'control', icon: '<path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07L19.07 4.93"/>', label: 'Kontrol', link: 'control.html' },
-            { id: 'automation', icon: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>', label: 'Automation', link: 'automation.html' },
-            { id: 'ai', icon: '<path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"></path><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"></path>', label: 'AI', link: 'ai.html' },
-            { id: 'maps', icon: '<polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21 3 6"></polygon><line x1="9" y1="3" x2="9" y2="18"></line><line x1="15" y1="6" x2="15" y2="21"></line>', label: 'Peta', link: 'maps.html' },
-            { id: 'alerts', icon: '<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path>', label: 'Alerts', link: 'alerts.html' },
-            { id: 'logs', icon: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline>', label: 'Logs', link: 'logs.html' },
-            { id: 'lahan', icon: '<path d="M2 22h20"></path><path d="M12 2v20"></path><path d="m2 12 10-10 10 10"></path>', label: 'Lahan', link: 'lahan.html' },
-            { id: 'subscription', icon: '<rect x="2" y="5" width="20" height="14" rx="2" /><line x1="2" y1="10" x2="22" y2="10" />', label: 'Langganan', link: 'subscription.html' },
-            { id: 'devices', icon: '<rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line>', label: 'Devices', link: 'devices.html' },
-            { id: 'logout', icon: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line>', label: 'Keluar', action: 'logout' },
+        <div class="brand" onclick="window.location.reload()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.74 5.88-5.74 5.88-5.74-5.88L12 2.69M12 22a9.97 9.97 0 0 1-7.07-2.93l-1.41 1.41A11.97 11.97 0 0 0 12 24a11.97 11.97 0 0 0 8.49-3.52l-1.41-1.41A9.97 9.97 0 0 1 12 24a11.97 11.97 0 0 0 8.49-3.52l-1.41-1.41A9.97 9.97 0 0 1-2.83 0 2 2 0 0 1-2.83l.06-.06a1.65 1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1-2 2 2 2 0 0 1 2 2v-.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v-.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 0.33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v-.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82 1.65 1. 0 0 0 1 1.51 1H21a2 2 0 0 1 2 2 2 0 0 1 2 2h-.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v-.09A1.65 1. 65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0 1 1.51 1H21a2 2 0 0 1 2 2 0 0 1 2 2h-.09a1.65 1.65 1. 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v-.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v-.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0 1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v-.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0 1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v-.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2 2h-.09a1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v-.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v-.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v-.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0 1 1.51 1H21a2 2 0 0 1 2 2 2 0 0 1 2 2h-.09a1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0 1.51 1z"></path></svg>  label: 'Dashboard', active: true },
+            { id: 'users', icon: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2</path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>', label: 'User Management' },
+            { id: 'devices', icon: '<rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></rect></svg>', label: 'Monitoring Device' },
+            { id: 'alerts', icon: '<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9-3-9 9h18s-3-2-3-3-9-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>', label: 'Alerts' },
+            { id: 'analytics', icon: '<line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>', label: 'Analitik' },
+            { id: 'settings', icon: '<circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v-.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2 2v-.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0 1.1.51 1H21a2 2 0 0 1 2 2 2 0 0 1 2 2h-.09a1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82 1.65 1.65 0 0 0 1.51 1z"></path></svg>', label: 'Pengaturan', link: 'setting.html' }, // DI SINI KLIK KE HALAMAN KE SETTING KE `setting.html` (karena admin)
+            { id: 'logout', icon: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1-2-2v2"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></line></svg>', label: 'Keluar', action: 'logout' },
         ];
 
         // --- 3. STATE & CHART VARIABLES ---
         let chartData = { labels: [], moisture: [], temp: [] };
         let isPumpToggling = false;
-        let isFirstLoad = true; // Flag untuk mencegah loading berkedip saat load pertama
+        let isFirstLoad = true;
 
         // --- 4. INITIALIZATION ---
         window.addEventListener('load', async () => {
             renderNav();
-            initChart(); 
             
+            // Preloader
             setTimeout(() => {
                 const preloader = document.getElementById('preloader');
                 if(preloader) {
                     preloader.style.opacity = '0';
                     setTimeout(() => preloader.remove(), 600);
                 }
-            }, 1200);
+            }, 1000);
 
+            // Fetch Data
             fetchAllData();
             // Refresh setiap 5 detik
             setInterval(fetchAllData, 5000);
@@ -454,60 +282,72 @@
         function renderNav() {
             const navContainer = document.getElementById('main-nav');
             navContainer.innerHTML = '';
+            
             menuItems.forEach((item) => {
                 const a = document.createElement('div');
+                // Menambahkan kelas 'nav-item' dan kelas 'logout-item' secara spesifik
                 a.className = `nav-item ${item.active ? 'active' : ''} ${item.id === 'logout' ? 'logout-item' : ''}`;
                 
+                // SVG Icon & Label
+                const icon = item.icon;
+                const label = item.label;
+
                 a.innerHTML = `
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">${item.icon}</svg>
-                    <span>${item.label}</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">${icon}</svg>
+                    <span>${label}</span>
                 `;
                 
-                if (item.action === 'logout') {
+                // Logic Klik
+                if (item.id === 'logout') {
                     a.onclick = handleLogout;
+                } else if (item.id === 'settings') {
+                    // PERBAIKAN: Jika diklik menu Settings, arahkan ke setting.html (hanya redirect)
+                    window.location.href = 'setting.html';
                 } else if (item.link) {
                     a.onclick = () => window.location.href = item.link;
                 }
+                
                 navContainer.appendChild(a);
             });
         }
 
         async function handleLogout() {
-            const confirmLogout = confirm("Apakah Anda yakin ingin keluar?");
-            if (!confirmLogout) return;
-            try {
-                const { error } = await sb.auth.signOut();
-                if (error) throw error;
-                showToast("Berhasil keluar", "success");
-                setTimeout(() => window.location.href = 'index.html', 1000);
-            } catch (err) {
-                console.error("Logout Error:", err);
-                showToast("Gagal keluar", "error");
+            const confirmLogout = confirm("Keluar dari Admin Panel?");
+            if(confirmLogout) {
+                try {
+                    const { error } = await sb.auth.signOut();
+                    if (error) throw error;
+                    showToast("Berhasil keluar", "success");
+                    setTimeout(() => window.location.href = 'index.html', 1000);
+                } catch (err) {
+                    console.error("Logout Error:", err);
+                    showToast("Gagal keluar", "error");
+                }
             }
         }
 
-        // --- 6. DATA FETCHING (PERBAIKAN NAMA TABEL & ERROR HANDLING) ---
+        // --- 6. DATA FETCHING (MODERN & MOCK + SUPABASE) ---
         async function fetchAllData() {
-            // PERBAIKAN: Jangan tampilkan loading overlay jika sudah bukan first load (agar tidak kedip-kedip)
+            // Tampilkan loading hanya saat pertama kali agar tidak kedip-kedip
             if (isFirstLoad) {
                 document.querySelectorAll('.card-loading').forEach(el => el.style.display = 'flex');
             }
 
             try {
-                // 1. Sensor Logs (PERBAIKAN: Nama tabel disesuaikan jadi ngebel_iot.sensor_logs)
+                // 1. Sensor Logs
                 const { data: logs, error: errLogs } = await sb
                     .from('ngebel_iot.sensor_logs')
                     .select('moisture, temperature, created_at')
                     .order('created_at', { ascending: false })
                     .limit(1)
-                    .maybeSingle(); // Gunakan maybeSingle agar tidak error jika data kosong
+                    .maybeSingle(); 
 
                 if (logs) {
                     updateSensorUI(logs);
                     updateChartData(logs);
                 }
 
-                // 2. Device State (PERBAIKAN: Nama tabel & kolom disesuaikan)
+                // 2. Device State
                 const { data: state, error: errState } = await sb
                     .from('ngebel_iot.device_state')
                     .select('pump_status, last_updated')
@@ -516,54 +356,36 @@
                     .maybeSingle();
 
                 if (state) {
-                    // Kolom di DB adalah pump_status ('on'/'off'), ubah ke boolean
                     const isActive = state.pump_status === 'on';
                     updatePumpUI(isActive);
                 }
 
-                // 3. Water Usage (Fallback/Dummy jika tabel belum ada)
-                // Kita coba dulu, jika error kita abaikan untuk mencegah reload
-                try {
-                    const { data: water } = await sb
-                        .from('ngebel_iot.water_usage') // Jika tabel ini belum ada, catch akan menangkap
-                        .select('liters')
-                        .order('date', { ascending: false })
-                        .limit(1)
-                        .maybeSingle();
-                    
-                    if(water) document.getElementById('val-water').innerText = water.liters;
-                } catch(e) { console.log("Table water_usage belum ada"); }
+                // 3. Data Mock (Admin View) -> Data User/User/Device di sini (Mock Data)
+                // Kita gunakan data mock untuk Dashboard Admin yang isinya belum terisi data real.
+                const mockUsers = 24; 
+                const mockDevices = 8;   
 
-                // 4. AI Insight (PERBAIKAN: Nama tabel)
-                try {
-                    const { data: ai } = await sb
-                        .from('ngebel_iot.ai_insight')
-                        .select('title, content') // Kolom yg ada di SQL sebelumnya
-                        .order('created_at', { ascending: false })
-                        .limit(1)
-                        .maybeSingle();
+                // Update Metrics
+                updateMetric('total-users', mockUsers);
+                updateMetric('total-devices', mockDevices);
+                updateMetric('total-online', mockDevices - 1); // Satu device offline
 
-                    if(ai) {
-                        document.getElementById('ai-text').innerText = ai.title + ": " + ai.content;
-                    }
-                } catch(e) { console.log("Table ai_insight belum ada"); }
+                // Render Lists
+                renderUserList(mockUsers); 
+                renderDeviceList(mockDevices);
 
-                // 5. Device List (PERBAIKAN: Nama tabel)
-                try {
-                    const { data: devices } = await sb
-                        .from('ngebel_iot.devices')
-                        .select('*');
-                    if(devices) renderDeviceList(devices);
-                } catch(e) { console.log("Table devices belum ada"); }
+                // Alerts (Mock Data Alerts)
+                const mockAlerts = 5;
+                updateMetric('total-alerts', mockAlerts);
+                renderAlerts(mockAlerts);
 
             } catch (err) {
                 console.error("Fetch Error Global:", err);
                 // Jangan alert atau reload, cukup log console agar user tidak terganggu
             } finally {
-                // Hapus loading setelah selesai
                 setTimeout(() => {
                     document.querySelectorAll('.card-loading').forEach(el => el.style.display = 'none');
-                    isFirstLoad = false; // Set flag false setelah load pertama selesai
+                    isFirstLoad = false; 
                 }, 300);
             }
         }
@@ -590,8 +412,8 @@
             
             if (temp > 32) { weatherEmoji.innerText = "🔥"; weatherText.innerText = "Panas Sekali"; }
             else if (temp > 28) { weatherEmoji.innerText = "☀️"; weatherText.innerText = "Cerah Berawan"; }
-            else if (temp > 24) { weatherEmoji.innerText = "⛅"; weatherText.innerText = "Berawan"; }
-            else { weatherEmoji.innerText = "🌧️"; weatherText.innerText = "Hujan/Dingin"; }
+            else if (temp > 24) { weatherEmoji.innerText = "⛅"; weatherText = "Berawan"; }
+            else { weatherEmoji.innerText = "🌧️"; weatherText = "Hujan/Dingin"; }
 
             const statusText = document.getElementById('farm-status-text');
             const statusBadge = document.getElementById('farm-status-badge');
@@ -599,12 +421,12 @@
             if (temp > 35 || moisture < 20) {
                 statusText.innerText = "WARNING";
                 statusText.style.color = "#eab308";
-                statusBadge.className = "status-badge status-warning";
-                statusBadge.innerText = "Perlu Perhatian";
+                statusBadge.className = "status-warning";
+                statusBadge.innerText = "Perlu Perlu Perhatian";
             } else {
-                statusText.innerText = "HEALTHY";
+                statusText.innerText = "SYSTEM ONLINE";
                 statusText.style.color = "var(--primary)";
-                statusBadge.className = "status-badge status-healthy";
+                statusBadge.className = "status-healthy";
                 statusBadge.innerText = "Sistem Normal";
             }
         }
@@ -621,13 +443,41 @@
             text.style.color = isActive ? "var(--primary)" : "var(--text-muted)";
         }
 
+        // --- 8. RENDER MOCK DATA ---
+        function renderUserList(mockUsers) {
+            const container = document.getElementById('user-table tbody');
+            container.innerHTML = '';
+            
+            if(mockUsers.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#aaa; padding:10px;">Belum ada user lain terdaftar</p>';
+                return;
+            }
+
+            mockUsers.forEach(u => {
+                const tr = document.createElement('tr');
+                const roleBadge = u.role === 'admin' ? 'badge-success' : 'badge-info';
+                
+                tr.innerHTML = `
+                    <td>${u.email}</td>
+                    <td>${u.name}</td>
+                    <td><span class="badge ${roleBadge}">${u.role.toUpperCase()}</span></td>
+                    <td>
+                        <button class="btn btn-sm" onclick="alert('Edit User: ${u.email}')">Edit</button>
+                    </td>
+                `;
+                container.appendChild(tr);
+            });
+        }
+
         function renderDeviceList(devices) {
             const container = document.getElementById('device-list-container');
             container.innerHTML = '';
+            
             if(devices.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:#aaa; padding:10px;">Tidak ada perangkat terdaftar</p>';
+                container.innerHTML = '<p style="text-align:center; color:#aaa; padding:10px;">Belum ada perangkat terdaftar</p>';
                 return;
             }
+
             devices.forEach(dev => {
                 const isOnline = dev.status === 'online' || dev.status === true;
                 const color = isOnline ? '#22c55e' : '#94a3b8';
@@ -637,46 +487,35 @@
                     <div class="device-name">
                         <span class="device-icon">📡</span> ${dev.name}
                     </div>
-                    <div style="display:flex; align-items:center; gap:8px;">
+                    <div style="display: flex; align-items:center; gap:8px;">
                         <span style="font-size:0.85rem; color: ${color}; font-weight:600;">${isOnline ? 'Online' : 'Offline'}</span>
-                        <div style="width:8px; height:8px; border-radius:50%; background:${color}; box-shadow: 0 0 5px ${color};"></div>
+                        <div style="width:8px; height: 8px; border-radius:50%; background:${color}; box-shadow: 0 0 5px ${color}; box-shadow: 0 0 5px ${color};"></div>
                     </div>
                 `;
                 container.appendChild(div);
             });
         }
 
-        // --- 8. INTERACTIONS ---
-        async function togglePump() {
-            isPumpToggling = true;
-            const toggle = document.getElementById('pump-toggle');
-            const newState = toggle.checked; // true = on, false = off
-            const loading = document.getElementById('loading-pump');
-            
-            loading.style.display = 'flex'; 
-            
-            showToast(newState ? "Mengaktifkan Pompa..." : "Mematikan Pompa...", "info");
+        function renderAlerts(alerts) {
+            const container = document.getElementById('alerts-table tbody');
+            container.innerHTML = '';
 
-            // PERBAIKAN: Mapping boolean ke string 'on'/'off' sesuai DB
-            const dbStatus = newState ? 'on' : 'off';
-
-            const { error } = await sb
-                .from('ngebel_iot.device_state')
-                .upsert({ id: 1, pump_status: dbStatus, last_updated: new Date().toISOString() });
-
-            if (error) {
-                showToast("Gagal mengubah status pompa!", "error");
-                toggle.checked = !newState; // Revert UI
-            } else {
-                showToast("Status Pompa Berhasil Diubah", "success");
-                setTimeout(() => fetchAllData(), 1000);
-            }
-
-            loading.style.display = 'none';
-            isPumpToggling = false;
+            alerts.forEach(a => {
+                const tr = document.createElement('tr');
+                const badgeClass = a.type === 'ERROR' ? 'badge-danger' : a.type === 'WARNING' ? 'badge-warning' : 'badge-info';
+                
+                tr.innerHTML = `
+                    <td>${a.time}</td>
+                    <td>${a.device}</td>
+                    <td><span class="badge ${badgeClass}">${a.type}</span></td>
+                    <td>${a.msg}</td>
+                    <td>${a.status}</td>
+                `;
+                container.appendChild(tr);
+            });
         }
 
-        // --- 9. CHARTING ENGINE (Vanilla JS) ---
+        // --- 9. CHART ENGINE (SAMA SEPERTI DASHBOARD) ---
         function initChart() {
             const canvas = document.getElementById('dashboardChart');
             const ctx = canvas.getContext('2d');
@@ -717,7 +556,7 @@
             
             ctx.clearRect(0, 0, w, h);
             
-            const padding = 30;
+            const padding = 30px;
             const chartW = w - padding * 2;
             const chartH = h - padding * 2;
             
