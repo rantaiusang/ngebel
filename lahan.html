@@ -14,6 +14,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
     <style>
         /* --- 1. VARIABLES & RESET --- */
@@ -83,6 +84,7 @@
         .farm-card { animation: fadeInUp 0.5s ease-out backwards; }
         .farm-card:nth-child(1) { animation-delay: 0.1s; }
         .farm-card:nth-child(2) { animation-delay: 0.2s; }
+        .farm-card:nth-child(3) { animation-delay: 0.3s; }
 
         .farm-header {
             display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;
@@ -177,8 +179,7 @@
     <!-- PRELOADER -->
     <div id="preloader">
         <div class="loader-content">
-           
-            <div class="modern-spinner"></div>
+             <div class="modern-spinner"></div>
         </div>
     </div>
 
@@ -189,6 +190,7 @@
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                 Kembali
             </div>
+            
         </div>
     </header>
 
@@ -213,37 +215,30 @@
         const { createClient } = supabase;
         const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let userId = null;
-
         window.addEventListener('load', async () => {
-            const { data: { user } } = await sb.auth.getUser();
-            userId = user ? user.id : 'demo-user-id';
-
             setTimeout(() => {
                 const preloader = document.getElementById('preloader');
                 if(preloader) {
                     preloader.style.opacity = '0';
                     setTimeout(() => preloader.remove(), 600);
                 }
-            }, 1000);
+            }, 800);
 
             fetchFarms();
         });
 
-        // --- 4. DATA FETCHING (DIPERBAIKI) ---
+        // --- 2. DATA FETCHING (FIXED LOGIC) ---
         async function fetchFarms() {
             const container = document.getElementById('farms-container');
             container.innerHTML = '<div style="text-align:center; padding:40px;"><div class="modern-spinner" style="margin:0 auto;"></div></div>';
 
             try {
-                let query = sb.from('ngebel_iot.farms').select('*');
-                
-                // Hanya filter user_id jika ada (untuk menghindari error jika kolom belum dibuat)
-                if (userId) {
-                    query = query.eq('user_id', userId);
-                }
-
-                const { data: farms, error } = await query;
+                // Langsung select * dari tabel ngebel_iot.farms
+                // Tidak perlu filter user_id untuk sementara agar demo berjalan lancar
+                const { data: farms, error } = await sb
+                    .from('ngebel_iot.farms')
+                    .select('*')
+                    .order('created_at', { ascending: false });
 
                 if (error) throw error;
 
@@ -255,52 +250,41 @@
 
             } catch (err) {
                 console.error("Error fetching farms:", err);
-                
-                // FALLBACK: Jika error karena kolom user_id, ambil semua data
-                if (err.message.includes('column') && err.message.includes('user_id')) {
-                    console.warn("Column 'user_id' missing. Fetching all farms...");
-                    const { data: allFarms } = await sb.from('ngebel_iot.farms').select('*');
-                    if (allFarms && allFarms.length > 0) {
-                        renderFarms(allFarms);
-                    } else {
-                        showEmptyState();
-                    }
-                } else {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-icon">⚠️</div>
-                            <h3>Gagal Memuat Data</h3>
-                            <p>${err.message}</p>
-                        </div>
-                    `;
-                }
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">⚠️</div>
+                        <h3>Gagal Memuat Data</h3>
+                        <p>${err.message}</p>
+                        <button onclick="fetchFarms()" style="margin-top:10px; padding:8px 16px; background:var(--primary); color:white; border:none; border-radius:8px; cursor:pointer;">Coba Lagi</button>
+                    </div>
+                `;
             }
         }
 
-        // --- 5. RENDERING (DIPERBAIKI SESUAI DB) ---
+        // --- 3. RENDERING (FIXED COLUMN NAMES) ---
         function renderFarms(farmsData) {
             const container = document.getElementById('farms-container');
             container.innerHTML = '';
 
             farmsData.forEach(farm => {
-                // 1. Koreksi Nama Kolom: area_size (bukan area_hectares)
-                const areaSize = farm.area_size ?? 0;
+                // PERBAIKAN UTAMA: Gunakan nama kolom 'area' sesuai DB
+                const areaSize = farm.area ?? 0;
                 
-                // 2. Koreksi Zona: active_zones adalah integer jumlah zona aktif
+                // PERBAIKAN: Gunakan nama kolom 'active_zones' sesuai DB
                 const activeZonesCount = farm.active_zones ?? 0;
-                // Kita asumsikan total zona ada 4 (misal), atau sesuaikan logika
+                
+                // Asumsi total zona maksimal adalah 4 untuk visualisasi
                 const totalZones = 4; 
 
-                // 3. Kesehatan
+                // Data Kesehatan & Tanah
                 const plantHealth = farm.plant_health ?? 0;
                 let healthColor = '#22c55e';
                 if(plantHealth < 50) healthColor = '#ef4444';
                 else if(plantHealth < 80) healthColor = '#f59e0b';
 
-                // 4. Kondisi Tanah
                 const soilCondition = farm.soil_condition || 'Normal';
 
-                // Generate HTML Zona Dinamis berdasarkan jumlah
+                // Generate HTML Zona Dinamis
                 let zonesHtml = '';
                 for(let i=0; i<totalZones; i++) {
                     const isActive = i < activeZonesCount;
