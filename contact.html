@@ -24,7 +24,7 @@
             --radius-xl: 32px; --radius-lg: 24px; --radius-md: 12px;
             --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.05);
             --shadow-hover: 0 20px 50px -12px rgba(15, 118, 110, 0.3);
-            --nav-height: 0px; /* Diubah jadi 0 karena nav bawah dihilangkan */
+            --nav-height: 0px; 
             --font-mono: 'JetBrains Mono', monospace;
         }
 
@@ -35,7 +35,7 @@
             background-color: var(--bg-body);
             color: var(--text-main);
             line-height: 1.6;
-            padding-bottom: 40px; /* Padding bawah dikurangi agar full screen */
+            padding-bottom: 40px; 
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
         }
@@ -45,10 +45,33 @@
         a { text-decoration: none; color: inherit; }
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 2; }
 
-        /* --- 2. ANIMATIONS --- */
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        /* --- 2. PRELOADER STYLE (SAME AS OTHER PAGES) --- */
+        #preloader {
+            position: fixed; inset: 0; background: #ffffff; z-index: 9999; 
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+            transition: opacity 0.6s ease-in-out, visibility 0.6s;
+        }
+        .loader-content { text-align: center; }
+        .brand-logo-loader {
+            font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 2rem;
+            color: var(--primary); margin-bottom: 20px; letter-spacing: -1px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        .modern-spinner {
+            width: 50px; height: 50px;
+            border: 4px solid rgba(15, 118, 110, 0.1);
+            border-left-color: var(--primary); border-radius: 50%;
+            animation: spin 1s linear infinite; position: relative;
+        }
+        .modern-spinner::after {
+            content: ""; position: absolute; top: 6px; left: 6px; right: 6px; bottom: 6px;
+            border: 3px solid transparent; border-top-color: var(--accent);
+            border-radius: 50%; animation: spin 0.8s linear infinite reverse;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- 3. HEADER STYLE (SEPERTI COMMUNITY & ABOUT) --- */
+        /* --- 3. HEADER STYLE --- */
         header {
             position: sticky; top: 0; z-index: 100;
             background: rgba(255,255,255,0.85); backdrop-filter: blur(12px);
@@ -77,11 +100,11 @@
         .btn-primary:hover { transform: translateY(-2px); background: var(--primary-light); }
         .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
 
-        /* --- 5. BOTTOM NAVIGATION (DIHAPUS) --- */
+        /* --- 5. BOTTOM NAV (HIDDEN) --- */
         .bottom-nav { display: none !important; }
 
         /* --- 6. CONTENT --- */
-        .page-section { display: block; animation: fadeInUp 0.6s ease-out; margin-bottom: 40px; }
+        .page-section { display: block; animation: fadeInUp 0.6s ease-out 1.6s backwards; margin-bottom: 40px; /* Delay agar muncul setelah preloader */ }
 
         .hero-contact {
             text-align: center; padding: 40px 20px; margin-bottom: 20px;
@@ -167,6 +190,14 @@
 </head>
 <body>
 
+    <!-- PRELOADER -->
+    <div id="preloader">
+        <div class="loader-content">
+           
+            <div class="modern-spinner"></div>
+        </div>
+    </div>
+
     <!-- HEADER (GAYA BACK BUTTON) -->
     <header>
         <div class="nav-content">
@@ -230,7 +261,7 @@
                     <div class="info-icon">📧</div>
                     <div class="info-text">
                         <h4>Email</h4>
-                        <p>info@ngebelwisata.id</p>
+                        <p>ngebelwebapp@gmail.com</p>
                     </div>
                 </div>
 
@@ -257,13 +288,25 @@
 
     </main>
 
-    <!-- NAVIGATION CONTAINER (DIHAPIS) -->
+    <!-- NAVIGATION CONTAINER (HIDDEN) -->
     <nav class="bottom-nav" id="main-nav" style="display:none;"></nav>
 
     <!-- SCRIPT UPDATE (SUPABASE + LOGIKA KIRIM) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
+        // --- 0. PRELOADER LOGIC ---
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const preloader = document.getElementById('preloader');
+                if(preloader) {
+                    preloader.style.opacity = '0';
+                    preloader.style.visibility = 'hidden';
+                    setTimeout(() => preloader.remove(), 600);
+                }
+            }, 1500); // Durasi animasi 1.5 detik
+        });
+
         // --- 1. KONFIGURASI SUPABASE ---
         const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
