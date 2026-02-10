@@ -343,14 +343,14 @@
                     // Cek Role untuk menentukan halaman tujuan
                     if (userRole === 'admin') {
                         console.log("🚀 Akses Admin. Redirect ke admin.html");
-                        showToast("Login Berhasil! Mengalihkan ke Admin Panel...");
+                        showToast("Login Berhasil");
                         setTimeout(() => {
                             window.location.href = 'admin.html';
                         }, 1500);
                     } else {
                         // Default role adalah 'user'
                         console.log("👤 Akses User Biasa. Redirect ke dashboard.html");
-                        showToast("Login Berhasil! Mengalihkan ke Dashboard...");
+                        showToast("Login Berhasil");
                         setTimeout(() => {
                             window.location.href = 'dashboard.html';
                         }, 1500);
