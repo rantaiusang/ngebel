@@ -14,6 +14,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
     <style>
         /* --- 1. VARIABLES & RESET --- */
@@ -116,6 +117,30 @@
         input:checked + .slider { background-color: var(--primary); }
         input:checked + .slider:before { transform: translateX(22px); background-color: white; }
         input:disabled + .slider { opacity: 0.5; cursor: not-allowed; }
+
+        /* --- MODE TOGGLE SWITCH (DEMO/LIVE) --- */
+        .mode-switch-container {
+            display: flex; align-items: center; gap: 10px; 
+            background: white; padding: 5px 15px 5px 5px; 
+            border-radius: 50px; border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .mode-label { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); min-width: 40px; text-align: center; }
+        .mode-label.active { color: var(--primary); }
+        .mode-toggle {
+            position: relative; display: inline-block; width: 44px; height: 24px;
+        }
+        .mode-toggle input { opacity: 0; width: 0; height: 0; }
+        .mode-slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #e2e8f0; transition: .4s; border-radius: 34px;
+        }
+        .mode-slider:before {
+            position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px;
+            background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        input:checked + .mode-slider { background-color: var(--primary); }
+        input:checked + .mode-slider:before { transform: translateX(20px); }
 
         /* Chart */
         canvas { width: 100% !important; height: 250px !important; }
@@ -242,6 +267,16 @@
             border-top: 3px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite;
         }
 
+        /* --- 7. ALERT BOX --- */
+        .alert-box {
+            background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b;
+            padding: 15px; border-radius: var(--radius-lg); margin-bottom: 20px;
+            display: none; align-items: center; gap: 15px;
+            animation: fadeInUp 0.5s ease-out;
+        }
+        .alert-box.active { display: flex; }
+        .alert-icon { font-size: 1.5rem; }
+
     </style>
 </head>
 <body>
@@ -249,7 +284,7 @@
     <!-- PRELOADER -->
     <div id="preloader">
         <div class="loader-content">
-           
+          
             <div class="modern-spinner"></div>
         </div>
     </div>
@@ -259,10 +294,17 @@
         <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
             <div class="brand">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.74 5.88-5.74 5.88-5.74-5.88L12 2.69M12 22a9.97 9.97 0 0 1-7.07-2.93l-1.41 1.41A11.97 11.97 0 0 0 12 24a11.97 11.97 0 0 0 8.49-3.52l-1.41-1.41A9.97 9.97 0 0 1 12 22z"/></svg>
-                Ngebel Smart Farm
+                Smart Farm
             </div>
-            <div class="user-pill">
-                <div class="blink-dot" style="background: #22c55e;"></div>
+            
+            <!-- MODE SWITCH (DEMO/LIVE) -->
+            <div class="mode-switch-container">
+                <span class="mode-label" id="label-live">Demo</span>
+                <label class="mode-toggle">
+                    <input type="checkbox" id="mode-toggle" onchange="toggleMode()">
+                    <span class="mode-slider"></span>
+                </label>
+                <span class="mode-label active" id="label-demo">Live</span>
             </div>
         </div>
     </header>
@@ -272,7 +314,16 @@
         <!-- PAGE TITLE -->
         <div style="margin-bottom: 30px; animation: fadeInUp 0.6s ease-out;">
             <h1 style="font-size: 2rem; margin-bottom: 5px;">Ringkasan Farm</h1>
-            <p>Overview cepat status irigasi dan kesehatan tanaman hari ini.</p>
+            <p id="mode-subtitle">Demo Mode (aktifkan Live melihat data Asli)</p>
+        </div>
+
+        <!-- ALERT SINGKAT (Muncul jika kritis) -->
+        <div id="alert-box" class="alert-box">
+            <div class="alert-icon">⚠️</div>
+            <div>
+                <h4 style="font-size:1rem; margin-bottom:2px;">Peringatan Sistem!</h4>
+                <p style="font-size:0.9rem;" id="alert-message">Tanah terlalu kering, segera nyalakan pompa.</p>
+            </div>
         </div>
 
         <!-- DASHBOARD GRID -->
@@ -323,7 +374,7 @@
                 <div id="loading-weather" class="card-loading"><div class="mini-spinner"></div></div>
             </div>
 
-            <!-- 4. PENGgunaan AIR -->
+            <!-- 4. PENGGUNAAN AIR -->
             <div class="card">
                 <div class="card-header">
                     <span class="card-title">Pemakaian Air Hari Ini</span>
@@ -410,29 +461,14 @@
         const { createClient } = supabase;
         const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- 2. MENU CONFIGURATION ---
-        const menuItems = [
-            { id: 'dashboard', icon: '<rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>', label: 'Dashboard', active: true },
-            { id: 'monitoring', icon: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>', label: 'Monitoring', link: 'monitoring.html' },
-            { id: 'analytics', icon: '<line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line>', label: 'Analisis', link: 'analytics.html' },
-            { id: 'control', icon: '<path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07L19.07 4.93"/>', label: 'Kontrol', link: 'control.html' },
-            { id: 'automation', icon: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>', label: 'Automation', link: 'automation.html' },
-            { id: 'ai', icon: '<path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"></path><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"></path>', label: 'AI', link: 'ai.html' },
-            { id: 'maps', icon: '<polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21 3 6"></polygon><line x1="9" y1="3" x2="9" y2="18"></line><line x1="15" y1="6" x2="15" y2="21"></line>', label: 'Peta', link: 'maps.html' },
-            { id: 'alerts', icon: '<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path>', label: 'Alerts', link: 'alerts.html' },
-            { id: 'logs', icon: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline>', label: 'Logs', link: 'logs.html' },
-            { id: 'lahan', icon: '<path d="M2 22h20"></path><path d="M12 2v20"></path><path d="m2 12 10-10 10 10"></path>', label: 'Lahan', link: 'lahan.html' },
-            { id: 'subscription', icon: '<rect x="2" y="5" width="20" height="14" rx="2" /><line x1="2" y1="10" x2="22" y2="10" />', label: 'Langganan', link: 'subscription.html' },
-            { id: 'devices', icon: '<rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line>', label: 'Devices', link: 'devices.html' },
-            { id: 'logout', icon: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line>', label: 'Keluar', action: 'logout' },
-        ];
-
-        // --- 3. STATE & CHART VARIABLES ---
+        // --- 2. STATE VARIABLES ---
         let chartData = { labels: [], moisture: [], temp: [] };
         let isPumpToggling = false;
-        let isFirstLoad = true; // Flag untuk mencegah loading berkedip saat load pertama
+        let isDemoMode = true; // Default Demo Mode
+        let demoInterval;
+        let isFirstLoad = true;
 
-        // --- 4. INITIALIZATION ---
+        // --- 3. INITIALIZATION ---
         window.addEventListener('load', async () => {
             renderNav();
             initChart(); 
@@ -445,69 +481,98 @@
                 }
             }, 1200);
 
-            fetchAllData();
-            // Refresh setiap 5 detik
-            setInterval(fetchAllData, 5000);
+            // Start Demo Mode by default
+            startDemoMode();
         });
 
-        // --- 5. NAVIGATION LOGIC ---
-        function renderNav() {
-            const navContainer = document.getElementById('main-nav');
-            navContainer.innerHTML = '';
-            menuItems.forEach((item) => {
-                const a = document.createElement('div');
-                a.className = `nav-item ${item.active ? 'active' : ''} ${item.id === 'logout' ? 'logout-item' : ''}`;
-                
-                a.innerHTML = `
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">${item.icon}</svg>
-                    <span>${item.label}</span>
-                `;
-                
-                if (item.action === 'logout') {
-                    a.onclick = handleLogout;
-                } else if (item.link) {
-                    a.onclick = () => window.location.href = item.link;
-                }
-                navContainer.appendChild(a);
-            });
-        }
+        // --- 4. MODE TOGGLE LOGIC (FITUR BARU) ---
+        function toggleMode() {
+            const toggle = document.getElementById('mode-toggle');
+            const labelLive = document.getElementById('label-live');
+            const labelDemo = document.getElementById('label-demo');
+            const subtitle = document.getElementById('mode-subtitle');
 
-        async function handleLogout() {
-            const confirmLogout = confirm("Apakah Anda yakin ingin keluar?");
-            if (!confirmLogout) return;
-            try {
-                const { error } = await sb.auth.signOut();
-                if (error) throw error;
-                showToast("Berhasil keluar", "success");
-                setTimeout(() => window.location.href = 'index.html', 1000);
-            } catch (err) {
-                console.error("Logout Error:", err);
-                showToast("Gagal keluar", "error");
+            isDemoMode = !toggle.checked; // Toggle Logic: Checked = Live, Unchecked = Demo
+
+            if (isDemoMode) {
+                // Switch to Demo
+                labelLive.classList.remove('active');
+                labelDemo.classList.add('active');
+                subtitle.innerText = "Mode Simulasi Aktif (Data Tidak Nyata)";
+                subtitle.style.color = "var(--text-muted)";
+                startDemoMode();
+                showToast("Masuk Mode Demo", "info");
+            } else {
+                // Switch to Live
+                labelLive.classList.add('active');
+                labelDemo.classList.remove('active');
+                subtitle.innerText = "Terhubung ke Server Ngebel";
+                subtitle.style.color = "var(--primary)";
+                stopDemoMode();
+                fetchAllData(); // Fetch real data immediately
+                showToast("Masuk Mode Live", "success");
             }
         }
 
-        // --- 6. DATA FETCHING (PERBAIKAN NAMA TABEL & ERROR HANDLING) ---
+        function startDemoMode() {
+            stopDemoMode(); // Clear existing interval first
+            // Simulate data change every 2 seconds
+            demoInterval = setInterval(() => {
+                const demoData = generateDemoData();
+                updateSensorUI(demoData);
+                updateChartData(demoData);
+                
+                // Randomly update pump sometimes
+                if(Math.random() > 0.8) {
+                    const pumpState = Math.random() > 0.5;
+                    updatePumpUI(pumpState);
+                }
+            }, 2000);
+            
+            // Fill initial water usage
+            document.getElementById('val-water').innerText = "132";
+            document.getElementById('ai-text').innerText = "Demo: Tanah cukup lembab, sistem berjalan optimal.";
+            document.getElementById('device-list-container').innerHTML = '<div class="device-row"><div class="device-name"><span class="device-icon">📡</span> Sensor Tanah (Simulasi)</div><div><span style="color:#22c55e; font-weight:600;">Online</span></div></div>';
+        }
+
+        function stopDemoMode() {
+            if (demoInterval) clearInterval(demoInterval);
+        }
+
+        function generateDemoData() {
+            // Generate random fluctuation around healthy values
+            const moisture = (60 + (Math.random() * 10 - 5)).toFixed(1); // 55-65%
+            const temp = (28 + (Math.random() * 4 - 2)).toFixed(1); // 26-30°C
+            return { moisture: moisture, temperature: temp };
+        }
+
+        // --- 5. DATA FETCHING (LIVE MODE) ---
         async function fetchAllData() {
-            // PERBAIKAN: Jangan tampilkan loading overlay jika sudah bukan first load (agar tidak kedip-kedip)
+            if (isDemoMode) return; // Jangan fetch jika mode demo
+
             if (isFirstLoad) {
                 document.querySelectorAll('.card-loading').forEach(el => el.style.display = 'flex');
             }
 
             try {
-                // 1. Sensor Logs (PERBAIKAN: Nama tabel disesuaikan jadi ngebel_iot.sensor_logs)
+                // 1. Sensor Logs
                 const { data: logs, error: errLogs } = await sb
                     .from('ngebel_iot.sensor_logs')
                     .select('moisture, temperature, created_at')
                     .order('created_at', { ascending: false })
                     .limit(1)
-                    .maybeSingle(); // Gunakan maybeSingle agar tidak error jika data kosong
+                    .maybeSingle();
 
                 if (logs) {
                     updateSensorUI(logs);
                     updateChartData(logs);
+                } else {
+                    // Handle no data case
+                    document.getElementById('val-moisture').innerText = "--";
+                    document.getElementById('val-temp').innerText = "--";
                 }
 
-                // 2. Device State (PERBAIKAN: Nama tabel & kolom disesuaikan)
+                // 2. Device State
                 const { data: state, error: errState } = await sb
                     .from('ngebel_iot.device_state')
                     .select('pump_status, last_updated')
@@ -516,39 +581,35 @@
                     .maybeSingle();
 
                 if (state) {
-                    // Kolom di DB adalah pump_status ('on'/'off'), ubah ke boolean
                     const isActive = state.pump_status === 'on';
                     updatePumpUI(isActive);
                 }
 
-                // 3. Water Usage (Fallback/Dummy jika tabel belum ada)
-                // Kita coba dulu, jika error kita abaikan untuk mencegah reload
+                // 3. Water Usage
                 try {
                     const { data: water } = await sb
-                        .from('ngebel_iot.water_usage') // Jika tabel ini belum ada, catch akan menangkap
+                        .from('ngebel_iot.water_usage')
                         .select('liters')
                         .order('date', { ascending: false })
                         .limit(1)
                         .maybeSingle();
-                    
                     if(water) document.getElementById('val-water').innerText = water.liters;
                 } catch(e) { console.log("Table water_usage belum ada"); }
 
-                // 4. AI Insight (PERBAIKAN: Nama tabel)
+                // 4. AI Insight
                 try {
                     const { data: ai } = await sb
                         .from('ngebel_iot.ai_insight')
-                        .select('title, content') // Kolom yg ada di SQL sebelumnya
+                        .select('title, content')
                         .order('created_at', { ascending: false })
                         .limit(1)
                         .maybeSingle();
-
                     if(ai) {
                         document.getElementById('ai-text').innerText = ai.title + ": " + ai.content;
                     }
                 } catch(e) { console.log("Table ai_insight belum ada"); }
 
-                // 5. Device List (PERBAIKAN: Nama tabel)
+                // 5. Device List
                 try {
                     const { data: devices } = await sb
                         .from('ngebel_iot.devices')
@@ -558,20 +619,19 @@
 
             } catch (err) {
                 console.error("Fetch Error Global:", err);
-                // Jangan alert atau reload, cukup log console agar user tidak terganggu
+                showToast("Gagal mengambil data dari server", "error");
             } finally {
-                // Hapus loading setelah selesai
                 setTimeout(() => {
                     document.querySelectorAll('.card-loading').forEach(el => el.style.display = 'none');
-                    isFirstLoad = false; // Set flag false setelah load pertama selesai
+                    isFirstLoad = false;
                 }, 300);
             }
         }
 
-        // --- 7. UI UPDATERS ---
+        // --- 6. UI UPDATERS (Dengan Alert Logic) ---
         function updateSensorUI(data) {
-            const moisture = data.moisture;
-            const temp = data.temperature;
+            const moisture = parseFloat(data.moisture);
+            const temp = parseFloat(data.temperature);
 
             document.getElementById('val-moisture').innerText = moisture;
             document.getElementById('bar-moisture').style.width = moisture + '%';
@@ -593,19 +653,30 @@
             else if (temp > 24) { weatherEmoji.innerText = "⛅"; weatherText.innerText = "Berawan"; }
             else { weatherEmoji.innerText = "🌧️"; weatherText.innerText = "Hujan/Dingin"; }
 
+            // --- ALERT LOGIC ---
+            const alertBox = document.getElementById('alert-box');
+            const alertMsg = document.getElementById('alert-message');
             const statusText = document.getElementById('farm-status-text');
             const statusBadge = document.getElementById('farm-status-badge');
             
             if (temp > 35 || moisture < 20) {
+                // Kondisi Kritis
                 statusText.innerText = "WARNING";
                 statusText.style.color = "#eab308";
                 statusBadge.className = "status-badge status-warning";
                 statusBadge.innerText = "Perlu Perhatian";
+                
+                alertBox.classList.add('active');
+                if(moisture < 20) alertMsg.innerText = "Bahaya: Kelembaban tanah sangat rendah (" + moisture + "%). Segera nyalakan pompa!";
+                else alertMsg.innerText = "Peringatan: Suhu tinggi (" + temp + "°C). Risiko penguapan cepat.";
             } else {
-                statusText.innerText = "HEALTHY";
+                // Kondisi Normal
+                statusText.innerText = "SEHAT";
                 statusText.style.color = "var(--primary)";
                 statusBadge.className = "status-badge status-healthy";
                 statusBadge.innerText = "Sistem Normal";
+                
+                alertBox.classList.remove('active');
             }
         }
 
@@ -646,18 +717,29 @@
             });
         }
 
-        // --- 8. INTERACTIONS ---
+        // --- 7. INTERACTIONS ---
         async function togglePump() {
             isPumpToggling = true;
             const toggle = document.getElementById('pump-toggle');
-            const newState = toggle.checked; // true = on, false = off
+            const newState = toggle.checked;
             const loading = document.getElementById('loading-pump');
             
             loading.style.display = 'flex'; 
             
             showToast(newState ? "Mengaktifkan Pompa..." : "Mematikan Pompa...", "info");
 
-            // PERBAIKAN: Mapping boolean ke string 'on'/'off' sesuai DB
+            // Jika Mode Demo, hanya update UI
+            if(isDemoMode) {
+                setTimeout(() => {
+                    updatePumpUI(newState);
+                    loading.style.display = 'none';
+                    isPumpToggling = false;
+                    showToast("Status Pompa Diubah (Demo)", "success");
+                }, 500);
+                return;
+            }
+
+            // Jika Mode Live, update ke Supabase
             const dbStatus = newState ? 'on' : 'off';
 
             const { error } = await sb
@@ -666,7 +748,7 @@
 
             if (error) {
                 showToast("Gagal mengubah status pompa!", "error");
-                toggle.checked = !newState; // Revert UI
+                toggle.checked = !newState; 
             } else {
                 showToast("Status Pompa Berhasil Diubah", "success");
                 setTimeout(() => fetchAllData(), 1000);
@@ -676,7 +758,7 @@
             isPumpToggling = false;
         }
 
-        // --- 9. CHARTING ENGINE (Vanilla JS) ---
+        // --- 8. CHARTING ENGINE ---
         function initChart() {
             const canvas = document.getElementById('dashboardChart');
             const ctx = canvas.getContext('2d');
@@ -764,17 +846,64 @@
             });
         }
 
-        // --- 10. UTILS ---
+        // --- 9. UTILS & NAV ---
+        const menuItems = [
+            { id: 'dashboard', icon: '<rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>', label: 'Dashboard', active: true },
+            { id: 'monitoring', icon: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>', label: 'Monitoring', link: 'monitoring.html' },
+            { id: 'analytics', icon: '<line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line>', label: 'Analisis', link: 'analytics.html' },
+            { id: 'control', icon: '<path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07L19.07 4.93"/>', label: 'Kontrol', link: 'control.html' },
+            { id: 'automation', icon: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>', label: 'Automation', link: 'automation.html' },
+            { id: 'ai', icon: '<path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"></path><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"></path>', label: 'AI', link: 'ai.html' },
+            { id: 'maps', icon: '<polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21 3 6"></polygon><line x1="9" y1="3" x2="9" y2="18"></line><line x1="15" y1="6" x2="15" y2="21"></line>', label: 'Peta', link: 'maps.html' },
+            { id: 'alerts', icon: '<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path>', label: 'Alerts', link: 'alerts.html' },
+            { id: 'logs', icon: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline>', label: 'Logs', link: 'logs.html' },
+            { id: 'lahan', icon: '<path d="M2 22h20"></path><path d="M12 2v20"></path><path d="m2 12 10-10 10 10"></path>', label: 'Lahan', link: 'lahan.html' },
+            { id: 'subscription', icon: '<rect x="2" y="5" width="20" height="14" rx="2" /><line x1="2" y1="10" x2="22" y2="10" />', label: 'Langganan', link: 'subscription.html' },
+            { id: 'devices', icon: '<rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line>', label: 'Devices', link: 'devices.html' },
+            { id: 'logout', icon: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line>', label: 'Keluar', action: 'logout' },
+        ];
+
+        function renderNav() {
+            const navContainer = document.getElementById('main-nav');
+            navContainer.innerHTML = '';
+            menuItems.forEach((item) => {
+                const a = document.createElement('div');
+                a.className = `nav-item ${item.active ? 'active' : ''} ${item.id === 'logout' ? 'logout-item' : ''}`;
+                a.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">${item.icon}</svg>
+                    <span>${item.label}</span>
+                `;
+                if (item.action === 'logout') {
+                    a.onclick = handleLogout;
+                } else if (item.link) {
+                    a.onclick = () => window.location.href = item.link;
+                }
+                navContainer.appendChild(a);
+            });
+        }
+
+        async function handleLogout() {
+            const confirmLogout = confirm("Apakah Anda yakin ingin keluar?");
+            if (!confirmLogout) return;
+            try {
+                const { error } = await sb.auth.signOut();
+                if (error) throw error;
+                showToast("Berhasil keluar", "success");
+                setTimeout(() => window.location.href = 'index.html', 1000);
+            } catch (err) {
+                console.error("Logout Error:", err);
+                showToast("Gagal keluar", "error");
+            }
+        }
+
         function showToast(msg, type='info') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = 'toast';
             let icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
             if(type === 'error') toast.style.borderLeftColor = '#ef4444';
-            
             toast.innerHTML = `<span>${icon}</span> ${msg}`;
             container.appendChild(toast);
-            
             requestAnimationFrame(() => toast.classList.add('show'));
             setTimeout(() => {
                 toast.classList.remove('show');
