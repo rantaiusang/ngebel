@@ -148,7 +148,7 @@
             box-shadow: var(--shadow-soft); border: 1px solid rgba(0,0,0,0.05);
             text-align: center;
         }
-        .stat-label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; min-height: 1.2rem; } /* Skeleton support added */
+        .stat-label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; min-height: 1.2rem; }
         .stat-val { font-size: 1.5rem; font-weight: 700; color: var(--text-main); min-height: 2rem; }
 
         /* History List */
@@ -201,16 +201,10 @@
         /* Dummy Control Items */
         .dummy-controls { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
         .btn-dummy {
-            /* 4. Mobile UX: Responsive width */
-            width: 80px; 
-            height: 80px; 
-            border-radius: 16px; 
-            border: 2px solid #e2e8f0;
-            background: #f8fafc; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            width: 80px; height: 80px; border-radius: 16px; border: 2px solid #e2e8f0;
+            background: #f8fafc; display: flex; flex-direction: column; align-items: center; justify-content: center;
             gap: 5px; font-size: 0.8rem; font-weight: 600; color: var(--text-muted);
-            flex: 1 1 80px; /* Memungkinkan fleksibilitas di mobile */
-            max-width: 120px; /* Batas maksimal lebar */
+            flex: 1 1 80px; max-width: 120px;
         }
         @media (max-width: 480px) {
             .btn-dummy { height: 70px; font-size: 0.75rem; }
@@ -222,7 +216,7 @@
     <!-- PRELOADER -->
     <div id="preloader">
         <div class="loader-content">
-           
+            
             <div class="modern-spinner"></div>
         </div>
     </div>
@@ -263,7 +257,6 @@
                 </div>
             </div>
 
-            <!-- Button Upgrade: Menghapus onclick untuk keamanan -->
             <button class="upgrade-btn" id="upgrade-btn">Upgrade Plan</button>
         </div>
 
@@ -284,7 +277,6 @@
             <div class="control-title">Kontrol Cepat</div>
             
             <div class="dummy-controls">
-                <!-- ARIA Labels untuk Aksesibilitas -->
                 <div class="btn-dummy" role="button" aria-label="Kontrol Pompa 1">
                     <span style="font-size:20px">💧</span>
                     Pompa 1
@@ -324,11 +316,9 @@
         const { createClient } = supabase;
         const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- SECURITY & EVENT LISTENERS ---
         document.addEventListener('DOMContentLoaded', async () => {
             await initDashboard();
 
-            // Event Listener Upgrade Button (Pisahkan dari HTML)
             const upgradeBtn = document.getElementById('upgrade-btn');
             if(upgradeBtn) {
                 upgradeBtn.addEventListener('click', handleUpgradeClick);
@@ -336,13 +326,7 @@
         });
 
         function handleUpgradeClick() {
-            // Jika tombol disabled (Plan Aktif), redirect
-            if (this.disabled) {
-                // Opsi: Redirect ke halaman detail plan atau nothing
-                // window.location.href = 'plan-details.html'; 
-                return;
-            }
-            // Jika enable (butuh upgrade), tampilkan toast
+            if (this.disabled) return;
             showToast("Silakan hubungi admin untuk upgrade", "info");
         }
 
@@ -357,23 +341,46 @@
                     return;
                 }
 
-                const [subscriptionData, deviceCount] = await Promise.all([
+                // 3. FIX FATAL ERROR: Menggunakan Promise.allSettled
+                // Ini memastikan jika salah satu API gagal, yang lain tetap jalan
+                const results = await Promise.allSettled([
                     loadSubscriptionData(user.id),
                     loadDeviceCount(user.id)
                 ]);
 
-                loadPaymentHistory(user.id);
+                // Ambil hasil dari promise
+                const subResult = results[0];
+                const devResult = results[1];
 
-                if (subscriptionData) {
-                    updateUI(subscriptionData, deviceCount);
+                let subscriptionData = null;
+                let deviceCount = 0;
+
+                // Handle Subscription Result
+                if (subResult.status === 'fulfilled') {
+                    subscriptionData = subResult.value;
+                } else {
+                    console.error("Subscription Error (Caught):", subResult.reason);
+                    // Jangan throw error di sini agar tidak fatal
                 }
 
+                // Handle Device Count Result
+                if (devResult.status === 'fulfilled') {
+                    deviceCount = devResult.value;
+                } else {
+                    console.error("Device Count Error (Caught):", devResult.reason);
+                    deviceCount = 0; // Fallback ke 0
+                }
+
+                // Load history (independent)
+                loadPaymentHistory(user.id);
+
+                // Update UI dengan data yang berhasil diambil (atau null)
+                updateUI(subscriptionData, deviceCount);
+
             } catch (err) {
-                console.error("Fatal Error:", err);
+                console.error("Fatal Error di Init:", err);
                 showToast("Gagal memuat dashboard", "error");
-                // 8. Error Handling: Fallback UI jika error total
                 updateUIError("Gagal Memuat Data");
-                removePreloader();
             } finally {
                 removePreloader();
             }
@@ -388,17 +395,21 @@
             }
         }
 
+        // 2. FIX ERROR 400: Perbaikan Query Device Count
         async function loadDeviceCount(userId) {
             try {
-                const { count, error } = await sb
-                    .from("devices")
-                    .select("*", { count: 'exact', head: true })
-                    .eq("user_id", userId);
+                // HAPUS: { head: true } -> PENYEBAB ERROR 400
+                // GANTI MENJADI: Query select biasa dengan count option
+                const { data, error, count } = await sb
+                    .from('devices')
+                    .select('*', { count: 'exact' }) // Hanya ambil count
+                    .eq('user_id', userId);
+
                 if (error) throw error;
                 return count || 0;
             } catch (err) {
-                console.error("Gagal hitung device:", err);
-                return 0;
+                console.error("Gagal menghitung device:", err);
+                return 0; // Fallback aman
             }
         }
 
@@ -409,16 +420,17 @@
                     .select("*")
                     .eq("user_id", userId)
                     .maybeSingle();
+                
                 if (error) throw error;
                 
                 if (!data) {
-                    updateUIError("Belum Berlangganan");
+                    // Return null jika data tidak ditemukan (bukan error fatal)
                     return null;
                 }
                 return data;
             } catch (err) {
                 console.error("Load subscription failed:", err);
-                updateUIError("Gagal Memuat");
+                // Lempar error agar ditangkap oleh Promise.allSettled
                 throw err;
             }
         }
@@ -477,10 +489,22 @@
         }
 
         function updateUI(sub, currentDeviceCount) {
-            // Hapus skeleton
             const skeletonElements = document.querySelectorAll('.skeleton');
             skeletonElements.forEach(el => el.classList.remove('skeleton'));
 
+            // Handle Null Subscription Data (Error 404 / No Data)
+            if (!sub) {
+                document.getElementById('plan-name').textContent = "Data Tidak Ditemukan";
+                document.getElementById('status-badge').className = 'plan-badge badge-error';
+                document.getElementById('status-badge').textContent = 'NO DATA';
+                document.getElementById('device-limit').textContent = '0';
+                document.getElementById('expiry-date').textContent = '-';
+                document.getElementById('limit-device-display').textContent = '0';
+                document.getElementById('lock-overlay').style.display = 'flex';
+                return;
+            }
+
+            // Jika data ada, lanjut render normal
             document.getElementById('plan-name').textContent = sub.plan_name || 'Unknown Plan';
             
             const price = sub.price ? sub.price.toLocaleString('id-ID') : '0';
@@ -490,7 +514,6 @@
             document.getElementById('device-limit').textContent = limit;
             document.getElementById('limit-device-display').textContent = limit === 0 ? 'Unlimited' : limit;
             
-            // Tanggal
             const dateEl = document.getElementById('expiry-date');
             if (sub.expiry_date) {
                 dateEl.textContent = new Date(sub.expiry_date).toLocaleDateString('id-ID', {
@@ -529,13 +552,11 @@
 
                 upgradeBtn.disabled = true;
                 upgradeBtn.textContent = 'Plan Aktif';
-                // ARIA update
                 upgradeBtn.setAttribute('aria-label', 'Paket Anda saat ini aktif');
 
             } else {
                 badge.className = 'plan-badge badge-inactive';
                 
-                // Dinamis Message
                 if (!isActive) {
                     badge.textContent = 'EXPIRED / INACTIVE';
                     document.querySelector('.lock-msg').textContent = "Akses Terkunci";
@@ -578,7 +599,6 @@
             document.getElementById('limit-device-display').textContent = '0';
         }
 
-        // 10. Toast Animasi Lebih Smooth
         function showToast(msg, type = 'info') {
             let container = document.getElementById('toast-container');
             if (!container) {
@@ -603,21 +623,18 @@
                 box-shadow: 0 10px 30px rgba(0,0,0,0.15); 
                 border-left: 4px solid ${borderColor};
                 font-weight: 600; font-size: 0.9rem; color: #1e293b;
-                transform: translateX(120%); 
-                opacity: 0;
+                transform: translateX(120%); opacity: 0;
                 transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
                 min-width: 280px;
             `;
             div.textContent = msg;
             container.appendChild(div);
 
-            // Trigger animasi masuk
             requestAnimationFrame(() => {
                 div.style.transform = 'translateX(0)';
                 div.style.opacity = '1';
             });
 
-            // Trigger animasi keluar
             setTimeout(() => {
                 div.style.transform = 'translateX(120%)';
                 div.style.opacity = '0';
