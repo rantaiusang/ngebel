@@ -18,6 +18,7 @@
         :root {
             --primary: #0f766e;
             --primary-light: #14b8a6;
+            --primary-dark: #0d5f58;
             --accent: #f59e0b;
             --secondary: #3b82f6;
             --bg-body: #f8fafc;
@@ -27,6 +28,8 @@
             --success: #10b981;
             --radius-lg: 24px;
             --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.05);
+            --skeleton-base: #e2e8f0;
+            --skeleton-highlight: #f1f5f9;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -44,12 +47,26 @@
         /* --- ANIMATIONS --- */
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Skeleton Loading Animation */
+        @keyframes shimmer {
+            0% { background-position: -200px 0; }
+            100% { background-position: 200px 0; }
+        }
+        .skeleton {
+            background: linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-highlight) 50%, var(--skeleton-base) 75%);
+            background-size: 200px 100%;
+            animation: shimmer 1.5s infinite linear;
+            border-radius: 6px;
+            color: transparent !important;
+            user-select: none;
+        }
 
-        /* --- PRELOADER (UPDATED STYLE) --- */
+        /* --- PRELOADER --- */
         #preloader {
             position: fixed; inset: 0; background: #ffffff; z-index: 9999; 
             display: flex; justify-content: center; align-items: center; flex-direction: column;
-            transition: opacity 0.6s ease-in-out, visibility 0.6s;
+            transition: opacity 0.5s ease-out, visibility 0.5s;
         }
         .loader-content { text-align: center; }
         .brand-logo-loader {
@@ -103,8 +120,8 @@
         .badge-inactive { background: #fee2e2; color: #991b1b; }
         .badge-error { background: #fee2e2; color: #991b1b; }
         
-        .plan-name { font-size: 1.5rem; font-weight: 800; color: var(--primary); margin-bottom: 5px; }
-        .plan-price { font-size: 2.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 20px; font-family: 'Outfit'; }
+        .plan-name { font-size: 1.5rem; font-weight: 800; color: var(--primary); margin-bottom: 5px; min-height: 1.8rem; }
+        .plan-price { font-size: 2.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 20px; font-family: 'Outfit'; min-height: 3.5rem; }
         .plan-price span { font-size: 1rem; font-weight: 400; color: var(--text-muted); }
         
         .plan-features { text-align: left; margin: 20px 0; padding: 0 10px; }
@@ -114,10 +131,15 @@
         .upgrade-btn {
             background: var(--primary); color: white; border: none;
             padding: 14px 24px; border-radius: 12px; font-weight: 600; font-size: 1rem;
-            width: 100%; cursor: pointer; transition: transform 0.2s;
+            width: 100%; cursor: pointer; transition: all 0.2s;
         }
-        .upgrade-btn:hover { transform: translateY(-2px); background: var(--primary-dark); }
-        .upgrade-btn:disabled { background: var(--text-muted); cursor: not-allowed; }
+        .upgrade-btn:hover:not(:disabled) { transform: translateY(-2px); background: var(--primary-dark); }
+        .upgrade-btn:disabled { 
+            background: var(--text-muted); 
+            cursor: not-allowed; 
+            opacity: 0.7; 
+            transform: none;
+        }
 
         /* Stats Grid */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
@@ -126,8 +148,8 @@
             box-shadow: var(--shadow-soft); border: 1px solid rgba(0,0,0,0.05);
             text-align: center;
         }
-        .stat-label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; }
-        .stat-val { font-size: 1.5rem; font-weight: 700; color: var(--text-main); }
+        .stat-label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; min-height: 1.2rem; } /* Skeleton support added */
+        .stat-val { font-size: 1.5rem; font-weight: 700; color: var(--text-main); min-height: 2rem; }
 
         /* History List */
         .history-card {
@@ -179,18 +201,28 @@
         /* Dummy Control Items */
         .dummy-controls { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
         .btn-dummy {
-            width: 80px; height: 80px; border-radius: 16px; border: 2px solid #e2e8f0;
-            background: #f8fafc; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            /* 4. Mobile UX: Responsive width */
+            width: 80px; 
+            height: 80px; 
+            border-radius: 16px; 
+            border: 2px solid #e2e8f0;
+            background: #f8fafc; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
             gap: 5px; font-size: 0.8rem; font-weight: 600; color: var(--text-muted);
+            flex: 1 1 80px; /* Memungkinkan fleksibilitas di mobile */
+            max-width: 120px; /* Batas maksimal lebar */
+        }
+        @media (max-width: 480px) {
+            .btn-dummy { height: 70px; font-size: 0.75rem; }
         }
     </style>
 </head>
 <body>
 
-    <!-- PRELOADER (UPDATED) -->
+    <!-- PRELOADER -->
     <div id="preloader">
         <div class="loader-content">
-            
+           
             <div class="modern-spinner"></div>
         </div>
     </div>
@@ -201,7 +233,6 @@
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                 Kembali
             </a>
-            
         </div>
     </header>
 
@@ -214,8 +245,8 @@
         <!-- PLAN CARD -->
         <div class="plan-card" id="plan-card">
             <div class="plan-badge badge-inactive" id="status-badge">LOADING</div>
-            <div class="plan-name" id="plan-name">Memuat...</div>
-            <div class="plan-price" id="plan-price">Rp - <span>/ bulan</span></div>
+            <div class="plan-name skeleton" id="plan-name">Memuat...</div>
+            <div class="plan-price skeleton" id="plan-price">Rp - <span>/ bulan</span></div>
             
             <div class="plan-features">
                 <div class="feature-item">
@@ -232,18 +263,19 @@
                 </div>
             </div>
 
-            <button class="upgrade-btn" onclick="showToast('Silakan hubungi admin untuk upgrade', 'info')">Upgrade Plan</button>
+            <!-- Button Upgrade: Menghapus onclick untuk keamanan -->
+            <button class="upgrade-btn" id="upgrade-btn">Upgrade Plan</button>
         </div>
 
         <!-- STATS -->
         <div class="stats-grid">
             <div class="stat-box">
-                <div class="stat-label">Limit Device</div>
-                <div class="stat-val" id="device-limit">-</div>
+                <div class="stat-label skeleton">Limit Device</div>
+                <div class="stat-val skeleton" id="device-limit">-</div>
             </div>
             <div class="stat-box">
-                <div class="stat-label">Berakhir Pada</div>
-                <div class="stat-val" id="expiry-date" style="font-size: 1rem; line-height: 1.5rem;">-</div>
+                <div class="stat-label skeleton">Berakhir Pada</div>
+                <div class="stat-val skeleton" id="expiry-date" style="font-size: 1rem; line-height: 1.5rem;">-</div>
             </div>
         </div>
 
@@ -252,21 +284,22 @@
             <div class="control-title">Kontrol Cepat</div>
             
             <div class="dummy-controls">
-                <div class="btn-dummy">
+                <!-- ARIA Labels untuk Aksesibilitas -->
+                <div class="btn-dummy" role="button" aria-label="Kontrol Pompa 1">
                     <span style="font-size:20px">💧</span>
                     Pompa 1
                 </div>
-                <div class="btn-dummy">
+                <div class="btn-dummy" role="button" aria-label="Kontrol Pompa 2">
                     <span style="font-size:20px">💧</span>
                     Pompa 2
                 </div>
-                <div class="btn-dummy">
+                <div class="btn-dummy" role="button" aria-label="Kontrol Panel Utama">
                     <span style="font-size:20px">🔌</span>
                     Panel
                 </div>
             </div>
 
-            <!-- Overlay Gembok (Muncul jika TIDAK AKTIF) -->
+            <!-- Overlay Gembok -->
             <div class="lock-overlay" id="lock-overlay">
                 <div class="lock-icon">🔒</div>
                 <div class="lock-msg">Akses Terkunci</div>
@@ -278,82 +311,122 @@
         <div class="history-card" style="margin-top: 25px;">
             <div class="history-title">Riwayat Pembayaran</div>
             <ul class="history-list" id="payment-history">
-                <!-- Data akan diisi oleh JS dari Supabase -->
                 <li style="text-align:center; color:var(--text-muted); padding:20px;">Memuat riwayat...</li>
             </ul>
         </div>
     </main>
 
     <script>
-        // --- CONFIG ---
+        // --- KONFIGURASI SUPABASE ---
         const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
         
         const { createClient } = supabase;
         const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        window.addEventListener('load', async () => {
-            // Cek session user
-            const { data: { user }, error: authError } = await sb.auth.getUser();
-            
-            if (authError || !user) {
-                showToast("Anda harus login terlebih dahulu", "error");
-                // Hapus preloader
-                const preloader = document.getElementById('preloader');
-                if(preloader) preloader.remove();
-                return; // Stop proses
+        // --- SECURITY & EVENT LISTENERS ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            await initDashboard();
+
+            // Event Listener Upgrade Button (Pisahkan dari HTML)
+            const upgradeBtn = document.getElementById('upgrade-btn');
+            if(upgradeBtn) {
+                upgradeBtn.addEventListener('click', handleUpgradeClick);
             }
-
-            // Lanjut load data
-            await Promise.all([
-                loadSubscriptionData(user.id),
-                loadPaymentHistory(user.id)
-            ]);
-
-            // Logika Preloader (UPDATED TIMER)
-            setTimeout(() => {
-                const preloader = document.getElementById('preloader');
-                if(preloader) {
-                    preloader.style.opacity = '0';
-                    setTimeout(() => preloader.remove(), 600);
-                }
-            }, 800); // Dipercepat sedikit karena tidak ada delay demo
         });
 
-        async function loadSubscriptionData(userId) {
-            try {
-                // Ambil Data Langganan REAL (NO DEMO MODE)
-                const { data, error } = await sb
-                    .from("ngebel_iot.subscriptions")
-                    .select("*")
-                    .eq("user_id", userId)
-                    .single();
+        function handleUpgradeClick() {
+            // Jika tombol disabled (Plan Aktif), redirect
+            if (this.disabled) {
+                // Opsi: Redirect ke halaman detail plan atau nothing
+                // window.location.href = 'plan-details.html'; 
+                return;
+            }
+            // Jika enable (butuh upgrade), tampilkan toast
+            showToast("Silakan hubungi admin untuk upgrade", "info");
+        }
 
-                if (error) {
-                    console.error("Error Supabase:", error);
-                    // Jika data tidak ditemukan, tampilkan pesan error di UI
-                    if (error.code === 'PGRST116') {
-                        showToast("Data langganan tidak ditemukan", "error");
-                        updateUIError("Data Tidak Ditemukan");
-                    } else {
-                        showToast("Gagal memuat data langganan", "error");
-                        updateUIError("Gagal Memuat");
-                    }
-                    throw error;
+        async function initDashboard() {
+            try {
+                const { data: { user }, error: authError } = await sb.auth.getUser();
+                
+                if (authError || !user) {
+                    console.warn("Auth Error:", authError);
+                    showToast("Sesi habis, silakan login ulang", "error");
+                    removePreloader();
+                    return;
                 }
 
-                updateUI(data);
+                const [subscriptionData, deviceCount] = await Promise.all([
+                    loadSubscriptionData(user.id),
+                    loadDeviceCount(user.id)
+                ]);
+
+                loadPaymentHistory(user.id);
+
+                if (subscriptionData) {
+                    updateUI(subscriptionData, deviceCount);
+                }
 
             } catch (err) {
-                console.error("Fatal error loadSubscriptionData:", err);
+                console.error("Fatal Error:", err);
+                showToast("Gagal memuat dashboard", "error");
+                // 8. Error Handling: Fallback UI jika error total
+                updateUIError("Gagal Memuat Data");
+                removePreloader();
+            } finally {
+                removePreloader();
             }
         }
 
-        // Fungsi untuk mengambil Riwayat Pembayaran (REAL DATA)
+        function removePreloader() {
+            const preloader = document.getElementById('preloader');
+            if (preloader) {
+                preloader.style.opacity = '0';
+                preloader.style.visibility = 'hidden';
+                setTimeout(() => { preloader.style.display = 'none'; }, 500); 
+            }
+        }
+
+        async function loadDeviceCount(userId) {
+            try {
+                const { count, error } = await sb
+                    .from("devices")
+                    .select("*", { count: 'exact', head: true })
+                    .eq("user_id", userId);
+                if (error) throw error;
+                return count || 0;
+            } catch (err) {
+                console.error("Gagal hitung device:", err);
+                return 0;
+            }
+        }
+
+        async function loadSubscriptionData(userId) {
+            try {
+                const { data, error } = await sb
+                    .from("subscriptions") 
+                    .select("*")
+                    .eq("user_id", userId)
+                    .maybeSingle();
+                if (error) throw error;
+                
+                if (!data) {
+                    updateUIError("Belum Berlangganan");
+                    return null;
+                }
+                return data;
+            } catch (err) {
+                console.error("Load subscription failed:", err);
+                updateUIError("Gagal Memuat");
+                throw err;
+            }
+        }
+
         async function loadPaymentHistory(userId) {
             try {
                 const { data, error } = await sb
-                    .from("ngebel_iot.payment_history") // Pastikan nama tabel ini sesuai di DB
+                    .from("payment_history")
                     .select("*")
                     .eq("user_id", userId)
                     .order("payment_date", { ascending: false })
@@ -362,110 +435,193 @@
                 if (error) throw error;
 
                 const listEl = document.getElementById('payment-history');
-                listEl.innerHTML = ''; // Bersihkan loading text
+                listEl.innerHTML = ''; 
 
                 if (!data || data.length === 0) {
                     listEl.innerHTML = '<li style="text-align:center; color:var(--text-muted); padding:20px;">Belum ada riwayat pembayaran.</li>';
                     return;
                 }
 
-                // Render Data
                 data.forEach(item => {
                     const li = document.createElement('li');
                     li.className = 'history-item';
                     
-                    // Format Rupiah
-                    const amount = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(item.amount);
+                    const amountFormatted = new Intl.NumberFormat('id-ID', { 
+                        style: 'currency', currency: 'IDR', minimumFractionDigits: 0 
+                    }).format(item.amount || 0);
                     
-                    // Format Tanggal
-                    const dateStr = new Date(item.payment_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+                    const dateFormatted = item.payment_date 
+                        ? new Date(item.payment_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) 
+                        : '-';
+
+                    const isSuccess = (item.status || '').toLowerCase() === 'success';
 
                     li.innerHTML = `
                         <div class="h-left">
                             <h4>${item.plan_name || 'Paket'}</h4>
-                            <p>${dateStr}</p>
+                            <p>${dateFormatted}</p>
                         </div>
                         <div class="h-right">
-                            <div class="h-amount">${amount}</div>
-                            <div class="h-status" style="color:${item.status === 'success' ? 'var(--success)' : 'var(--danger)'}">
-                                ${item.status === 'success' ? 'Sukses' : 'Gagal'}
+                            <div class="h-amount">${amountFormatted}</div>
+                            <div class="h-status" style="color:${isSuccess ? 'var(--success)' : 'var(--danger)'}; background: ${isSuccess ? '#dcfce7' : '#fee2e2'}">
+                                ${isSuccess ? 'Sukses' : 'Gagal'}
                             </div>
                         </div>
                     `;
                     listEl.appendChild(li);
                 });
-
             } catch (err) {
-                console.error("Error load payment history:", err);
+                console.error("Error load history:", err);
                 document.getElementById('payment-history').innerHTML = '<li style="text-align:center; color:var(--danger); padding:20px;">Gagal memuat riwayat.</li>';
             }
         }
 
-        function updateUIError(msg) {
-            document.getElementById('plan-name').innerText = msg;
-            document.getElementById('plan-price').innerHTML = '-';
-            document.getElementById('status-badge').className = 'plan-badge badge-error';
-            document.getElementById('status-badge').innerText = 'ERROR';
-        }
+        function updateUI(sub, currentDeviceCount) {
+            // Hapus skeleton
+            const skeletonElements = document.querySelectorAll('.skeleton');
+            skeletonElements.forEach(el => el.classList.remove('skeleton'));
 
-        function updateUI(sub) {
-            document.getElementById('plan-name').innerText = sub.plan_name || 'Unknown Plan';
-            document.getElementById('plan-price').innerHTML = sub.price ? `Rp ${sub.price.toLocaleString('id-ID')} <span>/ bulan</span>` : 'Rp 0 <span>/ bulan</span>';
-            document.getElementById('device-limit').innerText = sub.device_limit || 0;
-            document.getElementById('limit-device-display').innerText = sub.device_limit || 0;
+            document.getElementById('plan-name').textContent = sub.plan_name || 'Unknown Plan';
             
+            const price = sub.price ? sub.price.toLocaleString('id-ID') : '0';
+            document.getElementById('plan-price').innerHTML = `Rp ${price} <span>/ bulan</span>`;
+            
+            const limit = sub.device_limit || 0;
+            document.getElementById('device-limit').textContent = limit;
+            document.getElementById('limit-device-display').textContent = limit === 0 ? 'Unlimited' : limit;
+            
+            // Tanggal
             const dateEl = document.getElementById('expiry-date');
             if (sub.expiry_date) {
-                dateEl.innerText = new Date(sub.expiry_date).toLocaleDateString('id-ID');
+                dateEl.textContent = new Date(sub.expiry_date).toLocaleDateString('id-ID', {
+                    day: 'numeric', month: 'long', year: 'numeric'
+                });
             } else {
-                dateEl.innerText = "Selamanya";
+                dateEl.textContent = "Selamanya";
             }
 
+            // --- LOGIKA UTAMA ---
             const badge = document.getElementById('status-badge');
             const lockOverlay = document.getElementById('lock-overlay');
             const planCard = document.getElementById('plan-card');
             const lockFeature = document.getElementById('lock-feature');
+            const upgradeBtn = document.getElementById('upgrade-btn');
 
-            const isActive = sub.status === 'active' || sub.status === 'trial';
+            const status = (sub.status || '').toLowerCase();
+            const isActive = status === 'active' || status === 'trial';
+            const isDeviceLimitReached = limit > 0 && currentDeviceCount >= limit;
+            const isUnlocked = isActive && !isDeviceLimitReached;
 
-            if (isActive) {
+            if (isUnlocked) {
                 badge.className = 'plan-badge badge-active';
-                badge.innerText = 'ACTIVE';
+                badge.textContent = 'ACTIVE';
                 lockOverlay.style.display = 'none';
-                planCard.style.border = '2px solid var(--primary)';
+                planCard.style.borderColor = 'var(--primary)';
                 
-                // Ubah fitur jadi aktif
-                lockFeature.innerHTML = `<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg> Kontrol Pompa (Aktif)`;
+                lockFeature.innerHTML = `
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg> Kontrol Pompa (Aktif)
+                `;
                 lockFeature.style.opacity = '1';
-                lockFeature.querySelector('svg').style.color = 'var(--success)';
+                const svgIcon = lockFeature.querySelector('svg');
+                if(svgIcon) svgIcon.style.color = 'var(--success)';
+
+                upgradeBtn.disabled = true;
+                upgradeBtn.textContent = 'Plan Aktif';
+                // ARIA update
+                upgradeBtn.setAttribute('aria-label', 'Paket Anda saat ini aktif');
+
             } else {
                 badge.className = 'plan-badge badge-inactive';
-                badge.innerText = 'INACTIVE / EXPIRED';
-                lockOverlay.style.display = 'flex';
-                planCard.style.border = '2px solid var(--danger)';
                 
-                // Kembalikan ke style terkunci
-                lockFeature.innerHTML = `<svg fill="none" stroke="#ef4444" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Kontrol Pompa (Terkunci)`;
+                // Dinamis Message
+                if (!isActive) {
+                    badge.textContent = 'EXPIRED / INACTIVE';
+                    document.querySelector('.lock-msg').textContent = "Akses Terkunci";
+                    document.querySelector('.lock-sub').textContent = "Upgrade paket untuk mengaktifkan kontrol perangkat.";
+                } else if (isDeviceLimitReached) {
+                    badge.textContent = 'LIMIT DEVICE PENUH';
+                    document.querySelector('.lock-msg').textContent = "Limit Device Habis";
+                    document.querySelector('.lock-sub').textContent = `Anda memiliki ${currentDeviceCount} dari ${limit} device.`;
+                }
+
+                lockOverlay.style.display = 'flex';
+                planCard.style.borderColor = 'var(--danger)';
+                
+                lockFeature.innerHTML = `
+                    <svg fill="none" stroke="#ef4444" stroke-width="2" viewBox="0 0 24 24">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg> Kontrol Pompa (Terkunci)
+                `;
                 lockFeature.style.opacity = '0.5';
+
+                upgradeBtn.disabled = false;
+                upgradeBtn.textContent = 'Upgrade Plan';
+                upgradeBtn.setAttribute('aria-label', 'Upgrade paket langganan Anda');
             }
         }
 
+        function updateUIError(msg) {
+            const skeletonElements = document.querySelectorAll('.skeleton');
+            skeletonElements.forEach(el => el.classList.remove('skeleton'));
+
+            document.getElementById('plan-name').textContent = msg;
+            document.getElementById('plan-price').innerHTML = 'Rp - <span>/ bulan</span>';
+            document.getElementById('status-badge').className = 'plan-badge badge-error';
+            document.getElementById('status-badge').textContent = 'ERROR';
+            
+            document.getElementById('lock-overlay').style.display = 'flex';
+            document.getElementById('device-limit').textContent = '0';
+            document.getElementById('expiry-date').textContent = '-';
+            document.getElementById('limit-device-display').textContent = '0';
+        }
+
+        // 10. Toast Animasi Lebih Smooth
         function showToast(msg, type = 'info') {
+            let container = document.getElementById('toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                container.style.cssText = `
+                    position: fixed; bottom: 20px; right: 20px; z-index: 10000;
+                    display: flex; flex-direction: column; gap: 10px;
+                `;
+                document.body.appendChild(container);
+            }
+
+            if(container.children.length >= 3){
+                container.children[0].remove();
+            }
+
             const div = document.createElement('div');
+            const borderColor = type === 'error' ? '#ef4444' : '#0f766e';
+            
             div.style.cssText = `
-                position: fixed; bottom: 20px; right: 20px; 
                 background: white; padding: 12px 20px; border-radius: 12px;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
-                border-left: 4px solid ${type === 'error' ? '#ef4444' : '#0f766e'};
-                z-index: 9999; font-weight: 600; font-size: 0.9rem;
-                transform: translateX(120%); transition: transform 0.3s ease;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.15); 
+                border-left: 4px solid ${borderColor};
+                font-weight: 600; font-size: 0.9rem; color: #1e293b;
+                transform: translateX(120%); 
+                opacity: 0;
+                transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                min-width: 280px;
             `;
-            div.innerText = msg;
-            document.body.appendChild(div);
-            requestAnimationFrame(() => div.style.transform = 'translateX(0)');
+            div.textContent = msg;
+            container.appendChild(div);
+
+            // Trigger animasi masuk
+            requestAnimationFrame(() => {
+                div.style.transform = 'translateX(0)';
+                div.style.opacity = '1';
+            });
+
+            // Trigger animasi keluar
             setTimeout(() => {
                 div.style.transform = 'translateX(120%)';
-                setTimeout(() => div.remove(), 300);
+                div.style.opacity = '0';
+                setTimeout(() => div.remove(), 400);
             }, 3000);
         }
     </script>
