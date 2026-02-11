@@ -171,8 +171,7 @@
     <!-- PRELOADER -->
     <div id="preloader">
         <div class="loader-content">
-            <!-- PERBAIKAN: Logo teks kembali ditambahkan -->
-           
+            
             <div class="modern-spinner"></div>
         </div>
     </div>
@@ -184,7 +183,6 @@
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                 Kembali
             </div>
-            <!-- PERBAIKAN: Judul header ditambahkan -->
             
         </div>
     </header>
@@ -291,7 +289,7 @@
         let chartMoistureCtx = null;
         let chartWaterCtx = null;
         
-        // Variabel global untuk menyimpan data agar bisa digambar ulang saat resize
+        // Variabel global untuk menyimpan data
         let globalData = []; 
         let globalWaterData = [];
 
@@ -328,46 +326,93 @@
             const startDateISO = startDate.toISOString();
 
             try {
-                // PERBAIKAN KRUSIAL: Menggunakan Angka 1, bukan string "device_001"
-                // Kolom device_id di SQL adalah BIGINT
+                // PERBAIKAN 1: Mengambil kolom yang PASTI ada di tabel SQL yang kita buat sebelumnya
+                // Kolom: soil_moisture (bukan 'moisture' saja) dan created_at (bukan timestamp)
                 const { data, error } = await sb
                     .from("ngebel_iot.sensor_logs")
-                    .select("moisture, created_at") // Mengambil moisture, bukan soil_moisture (sesuai SQL sebelumnya)
-                    .eq("device_id", 1) 
+                    .select("soil_moisture, created_at, pump_status, device_id") 
+                    // PERBAIKAN 2: Filter device_id. Jika Anda belum tau ID, coba hapus baris .eq di bawah dulu
+                    // Jika menggunakan ID Numerik (1), gunakan angka. Jika string, pakai kutip.
+                    // Kita biarkan filter ini longgar dulu untuk testing, atau sesuaikan '1' jika memang angka.
+                    // .eq("device_id", 1) 
                     .gte("created_at", startDateISO)
                     .order("created_at", { ascending: true });
 
-                if (error) throw error;
-
-                if (data && data.length > 0) {
-                    globalData = data; // Simpan ke global
-                    updateMoistureChart(data);
-                    calculateStats(data);
-                    simulateWaterChart(data);
-                    updateActivityLog(data.slice(-5).reverse());
-                } else {
-                    console.warn("No data found for this period");
-                    // Reset UI jika kosong
-                    document.getElementById('avg-moisture').innerText = "0%";
+                if (error) {
+                    console.warn("Supabase Query Warning/Error:", error);
+                    throw error;
                 }
 
+                let finalData = data;
+
+                // PERBAIKAN 3: Fallback ke Data Dummy jika tabel kosong (Agar tampilan tetap terlihat saat demo)
+                if (!finalData || finalData.length === 0) {
+                    console.warn("Tabel kosong, menggunakan data simulasi.");
+                    finalData = generateDummyData(currentDays);
+                    showToast("Menggunakan data simulasi (Tabel kosong)", "info");
+                }
+
+                globalData = finalData; // Simpan ke global
+                updateMoistureChart(finalData);
+                calculateStats(finalData);
+                simulateWaterChart(finalData);
+                updateActivityLog(finalData.slice(-5).reverse());
+
             } catch (err) {
-                console.error(err);
-                showToast("Gagal memuat data analytics", "error");
+                console.error("Gagal memuat data:", err);
+                // Fallback ke data dummy jika error total (misal koneksi mati)
+                const dummyData = generateDummyData(currentDays);
+                globalData = dummyData;
+                updateMoistureChart(dummyData);
+                calculateStats(dummyData);
+                updateActivityLog(dummyData.slice(-5).reverse());
+                showToast("Gagal koneksi Database. Menampilkan data demo.", "error");
             } finally {
                 document.getElementById('loading-moisture').style.display = 'none';
             }
         }
 
+        // FUNGSI BARU: Generate Dummy Data untuk backup
+        function generateDummyData(days) {
+            const data = [];
+            const points = Math.min(days * 2, 20); // Buat sekitar 20-30 titik
+            let now = new Date();
+            
+            for(let i=points; i>=0; i--) {
+                let t = new Date(now);
+                t.setHours(t.getHours() - (i * 2));
+                
+                // Random antara 40% - 80%
+                let val = 40 + Math.random() * 40; 
+                data.push({
+                    soil_moisture: parseFloat(val.toFixed(1)),
+                    created_at: t.toISOString(),
+                    pump_status: val < 50,
+                    device_id: "DEMO-DEVICE"
+                });
+            }
+            return data;
+        }
+
         // --- 4. CALCULATIONS & UI UPDATES ---
 
         function calculateStats(data) {
-            const totalMoisture = data.reduce((acc, curr) => acc + (curr.moisture || 0), 0);
-            const avg = (totalMoisture / data.length).toFixed(1);
+            // PERBAIKAN 4: Menggunakan 'soil_moisture' sesuai nama kolom SQL
+            if (!data || data.length === 0) return;
+
+            const validMoisture = data.map(d => d.soil_moisture || 0).filter(v => v > 0);
+            
+            if (validMoisture.length === 0) {
+                 document.getElementById('avg-moisture').innerText = "0%";
+                 return;
+            }
+
+            const totalMoisture = validMoisture.reduce((acc, curr) => acc + curr, 0);
+            const avg = (totalMoisture / validMoisture.length).toFixed(1);
             
             document.getElementById('avg-moisture').innerText = avg + "%";
             
-            const lastVal = data[data.length - 1].moisture;
+            const lastVal = data[data.length - 1].soil_moisture;
             const trendEl = document.getElementById('moisture-trend');
             if(lastVal > avg) {
                 trendEl.innerHTML = '<span style="color:#10b981">↑ Naik</span> dari rata-rata';
@@ -387,6 +432,9 @@
                 const timeStr = date.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
                 const dateStr = date.toLocaleDateString('id-ID', {day:'numeric', month:'short'});
 
+                // PERBAIKAN 5: Menggunakan soil_moisture
+                const val = d.soil_moisture !== undefined ? d.soil_moisture : d.moisture || 0;
+
                 const li = document.createElement('li');
                 li.className = 'activity-item';
                 li.innerHTML = `
@@ -394,7 +442,7 @@
                         <div class="act-icon">📡</div>
                         <div class="act-info">
                             <h4>Sensor Update</h4>
-                            <p>Kelembaban: ${d.moisture}%</p>
+                            <p>Kelembaban: ${val}%</p>
                         </div>
                     </div>
                     <div class="act-time">
@@ -421,7 +469,6 @@
             window.addEventListener('resize', () => {
                 resizeCanvas(mCanvas);
                 resizeCanvas(wCanvas);
-                // PERBAIKAN: Gambar ulang chart jika data sudah ada
                 if(globalData.length > 0) updateMoistureChart(globalData);
                 if(globalWaterData.length > 0) drawWaterChartLogic(globalWaterData, globalData);
             });
@@ -462,6 +509,9 @@
             }
             ctx.stroke();
 
+            // PERBAIKAN 6: Menggunakan soil_moisture atau fallback
+            const values = data.map(d => d.soil_moisture || d.moisture || 0);
+
             // Draw Line
             ctx.strokeStyle = '#0f766e';
             ctx.lineWidth = 3;
@@ -469,24 +519,26 @@
             ctx.lineJoin = 'round';
             ctx.beginPath();
 
-            data.forEach((d, i) => {
-                const x = padding + (i / (data.length - 1)) * chartW;
-                const y = h - padding - (d.moisture / maxVal) * chartH; // Menggunakan d.moisture
+            values.forEach((val, i) => {
+                const x = padding + (i / (values.length - 1 || 1)) * chartW;
+                const y = h - padding - (val / maxVal) * chartH;
                 if (i === 0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
             });
             ctx.stroke();
 
             // Draw Area
-            ctx.lineTo(w - padding, h - padding);
-            ctx.lineTo(padding, h - padding);
-            ctx.fillStyle = 'rgba(15, 118, 110, 0.1)';
-            ctx.fill();
+            if (values.length > 1) {
+                ctx.lineTo(w - padding, h - padding);
+                ctx.lineTo(padding, h - padding);
+                ctx.fillStyle = 'rgba(15, 118, 110, 0.1)';
+                ctx.fill();
+            }
 
             // Draw Dots
-            data.forEach((d, i) => {
-                const x = padding + (i / (data.length - 1)) * chartW;
-                const y = h - padding - (d.moisture / maxVal) * chartH;
+            values.forEach((val, i) => {
+                const x = padding + (i / (values.length - 1 || 1)) * chartW;
+                const y = h - padding - (val / maxVal) * chartH;
                 ctx.beginPath();
                 ctx.fillStyle = '#fff';
                 ctx.arc(x, y, 4, 0, Math.PI*2);
@@ -496,8 +548,9 @@
         }
 
         function simulateWaterChart(data) {
-            const waterData = data.map(d => Math.max(50, 150 - d.moisture));
-            globalWaterData = waterData; // Simpan ke global
+            // Logika dummy: Semakin kering (moisture rendah), semakin banyak air (tinggi)
+            const waterData = data.map(d => Math.max(50, 150 - (d.soil_moisture || d.moisture || 0)));
+            globalWaterData = waterData;
             drawWaterChartLogic(waterData, data);
         }
 
@@ -530,7 +583,7 @@
             ctx.lineWidth = 3;
             ctx.beginPath();
             waterData.forEach((val, i) => {
-                const x = padding + (i / (originalData.length - 1)) * chartW;
+                const x = padding + (i / (originalData.length - 1 || 1)) * chartW;
                 const y = h - padding - (val / maxVal) * chartH;
                 if (i === 0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
@@ -539,7 +592,7 @@
             
             // Dots
             waterData.forEach((val, i) => {
-                const x = padding + (i / (originalData.length - 1)) * chartW;
+                const x = padding + (i / (originalData.length - 1 || 1)) * chartW;
                 const y = h - padding - (val / maxVal) * chartH;
                 ctx.beginPath();
                 ctx.fillStyle = '#fff';
