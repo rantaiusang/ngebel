@@ -216,7 +216,7 @@
     <!-- PRELOADER -->
     <div id="preloader">
         <div class="loader-content">
-           
+         
             <div class="modern-spinner"></div>
         </div>
     </div>
@@ -316,6 +316,9 @@
         const { createClient } = supabase;
         const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        // CONFIG: MODE DEV (Untuk testing tanpa backend)
+        const isDev = false; 
+
         document.addEventListener('DOMContentLoaded', async () => {
             await initDashboard();
 
@@ -332,6 +335,7 @@
 
         async function initDashboard() {
             try {
+                // 1. Cek Auth User
                 const { data: { user }, error: authError } = await sb.auth.getUser();
                 
                 if (authError || !user) {
@@ -341,10 +345,10 @@
                     return;
                 }
 
-                // Menggunakan Promise.allSettled untuk keamanan
+                // 2. Load Data (Production: RLS Auto, Dev: Dummy)
                 const results = await Promise.allSettled([
-                    loadSubscriptionData(user.id),
-                    loadDeviceCount(user.id)
+                    isDev ? loadSubscriptionDataDummy() : loadSubscriptionData(),
+                    isDev ? loadDeviceCountDummy() : loadDeviceCount()
                 ]);
 
                 const subResult = results[0];
@@ -366,7 +370,7 @@
                     deviceCount = 0; 
                 }
 
-                loadPaymentHistory(user.id);
+                loadPaymentHistory();
 
                 updateUI(subscriptionData, deviceCount);
 
@@ -388,34 +392,29 @@
             }
         }
 
-        // --- PERBAIKAN 1: LOAD SUBSCRIPTION DENGAN SCHEMA ---
-        async function loadSubscriptionData(userId) {
+        // --- 1. LOAD SUBSCRIPTION (RLS MODE) ---
+        async function loadSubscriptionData() {
             try {
+                // TANPA .eq("user_id", ...). RLS akan filter otomatis di server.
                 const { data, error } = await sb
-                    .from("ngebel_iot.subscriptions") // TAMBAHKAN SCHEMA DI SINI
+                    .from("ngebel_iot.subscriptions")
                     .select("*")
-                    .eq("user_id", userId)
-                    .maybeSingle();
+                    .maybeSingle(); 
                 
                 if (error) throw error;
-                
-                if (!data) {
-                    return null;
-                }
-                return data;
+                return data || null;
             } catch (err) {
                 console.error("Load subscription failed:", err);
                 throw err;
             }
         }
 
-        // --- PERBAIKAN 2: LOAD DEVICE COUNT DENGAN SCHEMA ---
-        async function loadDeviceCount(userId) {
+        // --- 2. LOAD DEVICE COUNT (RLS MODE) ---
+        async function loadDeviceCount() {
             try {
                 const { data, error, count } = await sb
-                    .from('ngebel_iot.devices') // TAMBAHKAN SCHEMA DI SINI
-                    .select('*', { count: 'exact' })
-                    .eq('user_id', userId);
+                    .from('ngebel_iot.devices')
+                    .select('*', { count: 'exact' });
 
                 if (error) throw error;
                 return count || 0;
@@ -425,13 +424,12 @@
             }
         }
 
-        // --- PERBAIKAN 3: LOAD PAYMENT HISTORY DENGAN SCHEMA ---
-        async function loadPaymentHistory(userId) {
+        // --- 3. LOAD PAYMENT HISTORY (RLS MODE) ---
+        async function loadPaymentHistory() {
             try {
                 const { data, error } = await sb
-                    .from("ngebel_iot.payment_history") // TAMBAHKAN SCHEMA DI SINI
+                    .from("ngebel_iot.payment_history")
                     .select("*")
-                    .eq("user_id", userId)
                     .order("payment_date", { ascending: false })
                     .limit(5);
 
@@ -479,21 +477,53 @@
             }
         }
 
+        // --- DUMMY DATA FUNCTIONS (Untuk Testing) ---
+        async function loadSubscriptionDataDummy() {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve({
+                        plan_name: "Plan Starter (Dev)",
+                        price: 0,
+                        device_limit: 5,
+                        status: "active",
+                        expiry_date: "2025-12-31"
+                    });
+                }, 800);
+            });
+        }
+        
+        async function loadDeviceCountDummy() {
+            return new Promise(resolve => {
+                setTimeout(() => resolve(2), 800);
+            });
+        }
+
         function updateUI(sub, currentDeviceCount) {
             const skeletonElements = document.querySelectorAll('.skeleton');
             skeletonElements.forEach(el => el.classList.remove('skeleton'));
 
             if (!sub) {
-                document.getElementById('plan-name').textContent = "Data Tidak Ditemukan";
-                document.getElementById('status-badge').className = 'plan-badge badge-error';
-                document.getElementById('status-badge').textContent = 'NO DATA';
+                // CASE: User Login tapi BELUM punya subscription di DB
+                document.getElementById('plan-name').textContent = "Belum Berlangganan";
+                document.getElementById('plan-price').innerHTML = 'Rp - <span>/ bulan</span>';
+                document.getElementById('status-badge').className = 'plan-badge badge-inactive';
+                document.getElementById('status-badge').textContent = 'INACTIVE';
+                
                 document.getElementById('device-limit').textContent = '0';
                 document.getElementById('expiry-date').textContent = '-';
                 document.getElementById('limit-device-display').textContent = '0';
+                
+                // Tampilkan tombol upgrade
+                const upgradeBtn = document.getElementById('upgrade-btn');
+                upgradeBtn.disabled = false;
+                upgradeBtn.textContent = 'Mulai Berlangganan';
+                
+                // Lock overlay muncul
                 document.getElementById('lock-overlay').style.display = 'flex';
                 return;
             }
 
+            // CASE: Data ditemukan
             document.getElementById('plan-name').textContent = sub.plan_name || 'Unknown Plan';
             
             const price = sub.price ? sub.price.toLocaleString('id-ID') : '0';
@@ -540,7 +570,6 @@
 
                 upgradeBtn.disabled = true;
                 upgradeBtn.textContent = 'Plan Aktif';
-                upgradeBtn.setAttribute('aria-label', 'Paket Anda saat ini aktif');
 
             } else {
                 badge.className = 'plan-badge badge-inactive';
@@ -568,7 +597,6 @@
 
                 upgradeBtn.disabled = false;
                 upgradeBtn.textContent = 'Upgrade Plan';
-                upgradeBtn.setAttribute('aria-label', 'Upgrade paket langganan Anda');
             }
         }
 
@@ -630,5 +658,47 @@
             }, 3000);
         }
     </script>
+    
+    <!-- 
+    ================================================================
+    PANDUAN PENGATURAN RLS (ROW LEVEL SECURITY) DI SUPABASE
+    ================================================================
+    
+    Agar kode di atas bekerja aman dan hanya menampilkan data user login,
+    Anda WAJIB mengatur Policy di SQL Editor Supabase:
+
+    1. Buat Tabel Tenant Members (Jika belum ada):
+       CREATE TABLE ngebel_iot.tenant_members (
+           id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+           user_id uuid REFERENCES auth.users(id),
+           tenant_id uuid, -- ID tenant/farm
+           role text,
+           created_at timestamp with time zone DEFAULT now()
+       );
+
+    2. Enable RLS:
+       ALTER TABLE ngebel_iot.subscriptions ENABLE ROW LEVEL SECURITY;
+       ALTER TABLE ngebel_iot.devices ENABLE ROW LEVEL SECURITY;
+       ALTER TABLE ngebel_iot.payment_history ENABLE ROW LEVEL SECURITY;
+
+    3. Buat Policy untuk Subscriptions:
+       create policy "User can view own subscription"
+       on ngebel_iot.subscriptions
+       for select
+       using (
+           auth.uid() IN (
+               select user_id from ngebel_iot.tenant_members 
+               where user_id = auth.uid()
+           )
+       );
+       -- CATATAN: Jika kolom user_id langsung ada di tabel subscriptions:
+       -- using ( auth.uid() = user_id );
+
+    4. Buat Policy untuk Devices & History (Sama konsepnya):
+       create policy "User can view own devices"
+       on ngebel_iot.devices
+       for select
+       using ( auth.uid() = user_id );
+    -->
 </body>
 </html>
