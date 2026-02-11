@@ -216,7 +216,7 @@
     <!-- PRELOADER -->
     <div id="preloader">
         <div class="loader-content">
-            
+           
             <div class="modern-spinner"></div>
         </div>
     </div>
@@ -341,40 +341,33 @@
                     return;
                 }
 
-                // 3. FIX FATAL ERROR: Menggunakan Promise.allSettled
-                // Ini memastikan jika salah satu API gagal, yang lain tetap jalan
+                // Menggunakan Promise.allSettled untuk keamanan
                 const results = await Promise.allSettled([
                     loadSubscriptionData(user.id),
                     loadDeviceCount(user.id)
                 ]);
 
-                // Ambil hasil dari promise
                 const subResult = results[0];
                 const devResult = results[1];
 
                 let subscriptionData = null;
                 let deviceCount = 0;
 
-                // Handle Subscription Result
                 if (subResult.status === 'fulfilled') {
                     subscriptionData = subResult.value;
                 } else {
-                    console.error("Subscription Error (Caught):", subResult.reason);
-                    // Jangan throw error di sini agar tidak fatal
+                    console.error("Subscription Error:", subResult.reason);
                 }
 
-                // Handle Device Count Result
                 if (devResult.status === 'fulfilled') {
                     deviceCount = devResult.value;
                 } else {
-                    console.error("Device Count Error (Caught):", devResult.reason);
-                    deviceCount = 0; // Fallback ke 0
+                    console.error("Device Error:", devResult.reason);
+                    deviceCount = 0; 
                 }
 
-                // Load history (independent)
                 loadPaymentHistory(user.id);
 
-                // Update UI dengan data yang berhasil diambil (atau null)
                 updateUI(subscriptionData, deviceCount);
 
             } catch (err) {
@@ -395,28 +388,11 @@
             }
         }
 
-        // 2. FIX ERROR 400: Perbaikan Query Device Count
-        async function loadDeviceCount(userId) {
-            try {
-                // HAPUS: { head: true } -> PENYEBAB ERROR 400
-                // GANTI MENJADI: Query select biasa dengan count option
-                const { data, error, count } = await sb
-                    .from('devices')
-                    .select('*', { count: 'exact' }) // Hanya ambil count
-                    .eq('user_id', userId);
-
-                if (error) throw error;
-                return count || 0;
-            } catch (err) {
-                console.error("Gagal menghitung device:", err);
-                return 0; // Fallback aman
-            }
-        }
-
+        // --- PERBAIKAN 1: LOAD SUBSCRIPTION DENGAN SCHEMA ---
         async function loadSubscriptionData(userId) {
             try {
                 const { data, error } = await sb
-                    .from("subscriptions") 
+                    .from("ngebel_iot.subscriptions") // TAMBAHKAN SCHEMA DI SINI
                     .select("*")
                     .eq("user_id", userId)
                     .maybeSingle();
@@ -424,21 +400,36 @@
                 if (error) throw error;
                 
                 if (!data) {
-                    // Return null jika data tidak ditemukan (bukan error fatal)
                     return null;
                 }
                 return data;
             } catch (err) {
                 console.error("Load subscription failed:", err);
-                // Lempar error agar ditangkap oleh Promise.allSettled
                 throw err;
             }
         }
 
+        // --- PERBAIKAN 2: LOAD DEVICE COUNT DENGAN SCHEMA ---
+        async function loadDeviceCount(userId) {
+            try {
+                const { data, error, count } = await sb
+                    .from('ngebel_iot.devices') // TAMBAHKAN SCHEMA DI SINI
+                    .select('*', { count: 'exact' })
+                    .eq('user_id', userId);
+
+                if (error) throw error;
+                return count || 0;
+            } catch (err) {
+                console.error("Gagal menghitung device:", err);
+                return 0; 
+            }
+        }
+
+        // --- PERBAIKAN 3: LOAD PAYMENT HISTORY DENGAN SCHEMA ---
         async function loadPaymentHistory(userId) {
             try {
                 const { data, error } = await sb
-                    .from("payment_history")
+                    .from("ngebel_iot.payment_history") // TAMBAHKAN SCHEMA DI SINI
                     .select("*")
                     .eq("user_id", userId)
                     .order("payment_date", { ascending: false })
@@ -492,7 +483,6 @@
             const skeletonElements = document.querySelectorAll('.skeleton');
             skeletonElements.forEach(el => el.classList.remove('skeleton'));
 
-            // Handle Null Subscription Data (Error 404 / No Data)
             if (!sub) {
                 document.getElementById('plan-name').textContent = "Data Tidak Ditemukan";
                 document.getElementById('status-badge').className = 'plan-badge badge-error';
@@ -504,7 +494,6 @@
                 return;
             }
 
-            // Jika data ada, lanjut render normal
             document.getElementById('plan-name').textContent = sub.plan_name || 'Unknown Plan';
             
             const price = sub.price ? sub.price.toLocaleString('id-ID') : '0';
@@ -523,7 +512,6 @@
                 dateEl.textContent = "Selamanya";
             }
 
-            // --- LOGIKA UTAMA ---
             const badge = document.getElementById('status-badge');
             const lockOverlay = document.getElementById('lock-overlay');
             const planCard = document.getElementById('plan-card');
