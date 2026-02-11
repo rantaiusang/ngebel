@@ -269,6 +269,7 @@
             </div>
             <ul class="activity-list" id="activity-list">
                 <!-- Injected via JS -->
+                <li style="text-align:center; color:var(--text-muted); padding:20px;">Menunggu data sensor...</li>
             </ul>
         </div>
 
@@ -307,7 +308,7 @@
                     preloader.style.opacity = '0';
                     setTimeout(() => preloader.remove(), 600);
                 }
-            }, 1200);
+            }, 800);
         });
 
         // --- 3. LOGIC ---
@@ -326,78 +327,62 @@
             const startDateISO = startDate.toISOString();
 
             try {
-                // PERBAIKAN 1: Mengambil kolom yang PASTI ada di tabel SQL yang kita buat sebelumnya
-                // Kolom: soil_moisture (bukan 'moisture' saja) dan created_at (bukan timestamp)
+                // AMBIL DATA SUPABASE
                 const { data, error } = await sb
                     .from("ngebel_iot.sensor_logs")
                     .select("soil_moisture, created_at, pump_status, device_id") 
-                    // PERBAIKAN 2: Filter device_id. Jika Anda belum tau ID, coba hapus baris .eq di bawah dulu
-                    // Jika menggunakan ID Numerik (1), gunakan angka. Jika string, pakai kutip.
-                    // Kita biarkan filter ini longgar dulu untuk testing, atau sesuaikan '1' jika memang angka.
-                    // .eq("device_id", 1) 
                     .gte("created_at", startDateISO)
                     .order("created_at", { ascending: true });
 
                 if (error) {
-                    console.warn("Supabase Query Warning/Error:", error);
+                    console.warn("Supabase Query Error:", error);
                     throw error;
                 }
 
-                let finalData = data;
-
-                // PERBAIKAN 3: Fallback ke Data Dummy jika tabel kosong (Agar tampilan tetap terlihat saat demo)
-                if (!finalData || finalData.length === 0) {
-                    console.warn("Tabel kosong, menggunakan data simulasi.");
-                    finalData = generateDummyData(currentDays);
-                    showToast("Menggunakan data simulasi (Tabel kosong)", "info");
+                // HILANGKAN MODE DEMO: Jika data kosong, beri error UI
+                if (!data || data.length === 0) {
+                    console.warn("Tabel kosong. Tidak ada data untuk ditampilkan.");
+                    showToast("Tidak ada data sensor dalam periode ini.", "error");
+                    updateUIEmptyState();
+                    return;
                 }
 
-                globalData = finalData; // Simpan ke global
-                updateMoistureChart(finalData);
-                calculateStats(finalData);
-                simulateWaterChart(finalData);
-                updateActivityLog(finalData.slice(-5).reverse());
+                // Update UI dengan data asli
+                globalData = data; 
+                updateMoistureChart(data);
+                calculateStats(data);
+                simulateWaterChart(data);
+                updateActivityLog(data.slice(-5).reverse());
 
             } catch (err) {
                 console.error("Gagal memuat data:", err);
-                // Fallback ke data dummy jika error total (misal koneksi mati)
-                const dummyData = generateDummyData(currentDays);
-                globalData = dummyData;
-                updateMoistureChart(dummyData);
-                calculateStats(dummyData);
-                updateActivityLog(dummyData.slice(-5).reverse());
-                showToast("Gagal koneksi Database. Menampilkan data demo.", "error");
+                showToast("Gagal memuat data database.", "error");
+                updateUIEmptyState();
             } finally {
                 document.getElementById('loading-moisture').style.display = 'none';
             }
         }
 
-        // FUNGSI BARU: Generate Dummy Data untuk backup
-        function generateDummyData(days) {
-            const data = [];
-            const points = Math.min(days * 2, 20); // Buat sekitar 20-30 titik
-            let now = new Date();
+        // Fungsi bantuan untuk menampilkan UI kosong
+        function updateUIEmptyState() {
+            document.getElementById('avg-moisture').innerText = "0%";
+            document.getElementById('moisture-trend').innerText = "-";
+            document.getElementById('activity-list').innerHTML = '<li style="text-align:center; color:var(--text-muted); padding:20px;">Tidak ada data aktivitas.</li>';
             
-            for(let i=points; i>=0; i--) {
-                let t = new Date(now);
-                t.setHours(t.getHours() - (i * 2));
-                
-                // Random antara 40% - 80%
-                let val = 40 + Math.random() * 40; 
-                data.push({
-                    soil_moisture: parseFloat(val.toFixed(1)),
-                    created_at: t.toISOString(),
-                    pump_status: val < 50,
-                    device_id: "DEMO-DEVICE"
-                });
-            }
-            return data;
+            // Bersihkan Chart
+            const ctx1 = chartMoistureCtx;
+            const canvas1 = document.getElementById('moistureChart');
+            if(ctx1 && canvas1) ctx1.clearRect(0, 0, canvas1.width, canvas1.height);
+            
+            const ctx2 = chartWaterCtx;
+            const canvas2 = document.getElementById('waterChart');
+            if(ctx2 && canvas2) ctx2.clearRect(0, 0, canvas2.width, canvas2.height);
         }
 
         // --- 4. CALCULATIONS & UI UPDATES ---
 
         function calculateStats(data) {
-            // PERBAIKAN 4: Menggunakan 'soil_moisture' sesuai nama kolom SQL
+            // Menggunakan 'soil_moisture' sesuai nama kolom SQL
             if (!data || data.length === 0) return;
 
             const validMoisture = data.map(d => d.soil_moisture || 0).filter(v => v > 0);
@@ -432,8 +417,7 @@
                 const timeStr = date.toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'});
                 const dateStr = date.toLocaleDateString('id-ID', {day:'numeric', month:'short'});
 
-                // PERBAIKAN 5: Menggunakan soil_moisture
-                const val = d.soil_moisture !== undefined ? d.soil_moisture : d.moisture || 0;
+                const val = d.soil_moisture !== undefined ? d.soil_moisture : 0;
 
                 const li = document.createElement('li');
                 li.className = 'activity-item';
@@ -509,8 +493,7 @@
             }
             ctx.stroke();
 
-            // PERBAIKAN 6: Menggunakan soil_moisture atau fallback
-            const values = data.map(d => d.soil_moisture || d.moisture || 0);
+            const values = data.map(d => d.soil_moisture || 0);
 
             // Draw Line
             ctx.strokeStyle = '#0f766e';
@@ -548,8 +531,7 @@
         }
 
         function simulateWaterChart(data) {
-            // Logika dummy: Semakin kering (moisture rendah), semakin banyak air (tinggi)
-            const waterData = data.map(d => Math.max(50, 150 - (d.soil_moisture || d.moisture || 0)));
+            const waterData = data.map(d => Math.max(50, 150 - (d.soil_moisture || 0)));
             globalWaterData = waterData;
             drawWaterChartLogic(waterData, data);
         }
