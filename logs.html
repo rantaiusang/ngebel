@@ -53,7 +53,7 @@
         }
         .loader-content { text-align: center; }
         .brand-logo-loader {
-            font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 2rem;
+            font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.5rem;
             color: var(--primary); margin-bottom: 20px; letter-spacing: -1px;
             animation: fadeInUp 0.8s ease-out;
         }
@@ -158,8 +158,7 @@
     <!-- PRELOADER -->
     <div id="preloader">
         <div class="loader-content">
-            <!-- PERBAIKAN: Menambahkan teks Brand -->
-            
+        
             <div class="modern-spinner"></div>
         </div>
     </div>
@@ -171,8 +170,7 @@
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                 Kembali
             </div>
-            <!-- PERBAIKAN: Menambahkan judul di header -->
-            
+          
         </div>
     </header>
 
@@ -194,7 +192,8 @@
 
         <!-- LOGS LIST -->
         <div id="logs-container" style="animation: fadeInUp 0.7s ease-out;">
-            <!-- Injected via JS -->
+            <!-- Logs akan dimuat di sini -->
+            <div style="text-align:center; padding: 20px; color:var(--text-muted);">Memuat data...</div>
         </div>
 
     </main>
@@ -207,8 +206,10 @@
         const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
         
-        const { createClient } = supabase;
-        const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+        // ✅ PERBAIKAN: Init Client dengan Schema 'ngebel_iot'
+        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+            db: { schema: 'ngebel_iot' }
+        });
 
         let allLogsData = []; // Menyimpan semua data untuk filter lokal
         let currentFilter = 'all';
@@ -223,18 +224,18 @@
                     preloader.style.opacity = '0';
                     setTimeout(() => preloader.remove(), 600);
                 }
-            }, 1200);
+            }, 800);
         });
 
         // --- 3. DATA FETCHING ---
         async function fetchLogs() {
             try {
-                // Ambil semua log, urutkan dari yang terbaru
+                // ✅ PERBAIKAN: Mengambil dari tabel 'logs' (karena schema sudah diset)
                 const { data, error } = await sb
-                    .from("ngebel_iot.logs")
+                    .from("logs")
                     .select("*")
                     .order("created_at", { ascending: false })
-                    .limit(50); // Batasi 50 log terakhir
+                    .limit(50); // Batasi 50 log terakhir agar ringan
 
                 if (error) throw error;
 
@@ -244,7 +245,11 @@
             } catch (err) {
                 console.error("Gagal mengambil logs:", err);
                 showToast("Gagal memuat data logs", "error");
-                document.getElementById('logs-container').innerHTML = '<div class="empty-state">Gagal memuat data.</div>';
+                document.getElementById('logs-container').innerHTML = `
+                    <div class="empty-state">
+                        <p>Gagal memuat data.</p>
+                        <small>${err.message}</small>
+                    </div>`;
             }
         }
 
@@ -256,7 +261,7 @@
 
             currentFilter = type;
 
-            // Filter Data
+            // Filter Data (Client-side)
             if (type === 'all') {
                 renderLogs(allLogsData);
             } else {
@@ -271,7 +276,7 @@
             container.innerHTML = '';
 
             if (logs.length === 0) {
-                container.innerHTML = '<div class="empty-state">Tidak ada aktivitas ditemukan.</div>';
+                container.innerHTML = '<div class="empty-state">Tidak ada aktivitas ditemukan untuk filter ini.</div>';
                 return;
             }
 
@@ -279,7 +284,8 @@
                 const card = document.createElement('div');
                 
                 // Tentukan tipe log dan styling
-                const type = log.event_type || 'system';
+                // Pastikan kolom di DB Anda bernama 'event_type'. Jika beda, ganti di sini.
+                const type = log.event_type || 'system'; 
                 let logClass = '';
                 let icon = 'ℹ️';
                 let badgeClass = '';
@@ -291,7 +297,7 @@
                         icon = '⚠️';
                         badgeClass = 'badge-error';
                         break;
-                    case 'pump': // Sesuai filter tombol
+                    case 'pump': 
                         logClass = 'log-type-pump';
                         icon = '⚙️';
                         badgeClass = 'badge-pump';
@@ -318,12 +324,11 @@
                     <div class="log-icon">${icon}</div>
                     <div class="log-content">
                         <div class="log-header">
-                            <!-- PERBAIKAN: Menggunakan kolom 'title' dari DB -->
+                            <!-- Mengambil kolom 'title' dan 'message' -->
                             <div class="log-title">${log.title || 'Aktivitas Sistem'}</div>
                             <span class="log-badge ${badgeClass}">${badgeText}</span>
                         </div>
-                        <!-- PERBAIKAN: Menggunakan kolom 'message' dari DB -->
-                        <div class="log-desc">${log.message || 'Tidak ada deskripsi.'}</div>
+                        <div class="log-desc">${log.message || 'Tidak ada deskripsi detail.'}</div>
                         <div class="log-time">${dateStr} • ${timeStr}</div>
                     </div>
                 `;
