@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Katalog Produk | Ngebel Smart Agri</title>
+    <meta name="theme-color" content="#0f766e">
+    <meta name="description" content="Katalog Parfum Premium.">
+
+    <!-- Google Fonts (Sesuai halaman lain) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel untuk JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        :root {
+            /* Palette Konsisten dengan desain Ngebel */
+            --primary: #0f766e; --primary-dark: #0d5f58; --primary-light: #14b8a6;
+            --accent: #f59e0b; 
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #1e293b; --text-muted: #64748b;
+            
+            --radius-xl: 24px; --radius-lg: 20px; --radius-md: 12px;
+            --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.05);
+            --shadow-hover: 0 20px 50px -12px rgba(15, 118, 110, 0.3);
+            --nav-height: 70px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 40px; 
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3 { font-family: 'Outfit', sans-serif; letter-spacing: -0.02em; }
+        a { text-decoration: none; color: inherit; }
+        
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 2; }
+
+        /* --- SCROLL REVEAL ANIMATION --- */
+        .reveal-on-scroll {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        
+        .reveal-on-scroll.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- Scrollbar Styling --- */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* --- HEADER STYLE --- */
+        header {
+            position: sticky; top: 0; z-index: 1000;
+            background: rgba(255,255,255,0.85); backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0,0,0,0.05); height: 70px;
+            display: flex; align-items: center;
+        }
+        .nav-content { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; gap: 20px; }
+        
+        .back-btn {
+            display: flex; align-items: center; gap: 8px;
+            color: var(--text-muted); font-weight: 600; font-size: 0.9rem;
+            padding: 8px 16px; border-radius: 50px;
+            background: rgba(255,255,255,0.6); border: 1px solid rgba(0,0,0,0.05);
+            transition: all 0.2s ease; flex-shrink: 0; cursor: pointer;
+        }
+        .back-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+        .back-btn svg { width: 18px; height: 18px; stroke-width: 2.5; }
+
+        .page-title { font-weight: 700; color: var(--primary); font-size: 1.1rem; }
+
+        /* --- Button Styles --- */
+        .btn-primary {
+            background: var(--primary); color: white; padding: 10px 20px;
+            border-radius: 50px; font-weight: 600; font-size: 0.9rem;
+            box-shadow: 0 4px 12px rgba(15, 118, 110, 0.3); transition: transform 0.2s;
+            border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); }
+        
+        .btn-outline {
+            background: white; color: var(--text-muted); padding: 8px 16px;
+            border-radius: 50px; font-weight: 600; font-size: 0.85rem;
+            border: 1px solid #e2e8f0; transition: all 0.2s;
+        }
+        .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* --- BUBBLE SEARCH UI --- */
+        .search-wrapper {
+            position: relative;
+            max-width: 500px;
+            margin: 30px auto 0;
+            width: 100%;
+            padding: 0 10px;
+            z-index: 10;
+        }
+
+        .bubble-search {
+            width: 100%;
+            padding: 16px 24px 16px 56px;
+            font-size: 1rem;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--text-main);
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 50px;
+            border: 1px solid rgba(255,255,255,0.6);
+            box-shadow: 
+                0 10px 40px -10px rgba(0, 0, 0, 0.1),
+                0 4px 10px rgba(0, 0, 0, 0.02),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            outline: none;
+        }
+
+        .bubble-search::placeholder { color: #94a3b8; font-weight: 500; }
+
+        .bubble-search:focus {
+            background: white;
+            transform: translateY(-2px) scale(1.01);
+            box-shadow: 
+                0 20px 50px -12px rgba(15, 118, 110, 0.25),
+                0 4px 12px rgba(0, 0, 0, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 1);
+            border-color: rgba(15, 118, 110, 0.2);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 22px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary);
+            pointer-events: none;
+            transition: color 0.3s ease;
+        }
+
+        .bubble-search:focus + .search-icon { color: var(--accent); }
+
+        /* --- PRODUCT CARD STYLE (PERBAIKAN: RATA & SERAGAM) --- */
+        .product-card {
+            background: white; border-radius: var(--radius-xl); overflow: hidden;
+            box-shadow: var(--shadow-soft); border: 1px solid #f1f5f9;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex; flex-direction: column;
+            height: 100%; /* PERBAIKAN: Paksa kartu memenuhi tinggi baris grid */
+        }
+        .product-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-hover); }
+        
+        /* PERBAIKAN: Aspek Rasio Gambar Dikunci 1:1 (Kotak) */
+        .card-img-wrapper { 
+            position: relative; 
+            width: 100%; 
+            aspect-ratio: 1 / 1; /* Memaksa rasio kotak sempurna */
+            overflow: hidden; 
+            background: #f1f5f9; 
+        }
+        .card-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+        .product-card:hover .card-img { transform: scale(1.05); }
+        
+        .card-badge {
+            position: absolute; top: 12px; right: 12px;
+            padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700;
+            backdrop-filter: blur(4px); box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 2;
+        }
+        .badge-ready { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+        .badge-preorder { background: #ffedd5; color: #9a3412; border: 1px solid #fdba74; }
+        
+        .card-body { padding: 20px; display: flex; flex-direction: column; flex: 1; height: 100%; }
+        .card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; color: var(--text-main); }
+        
+        /* PERBAIKAN: Batasi deskripsi max 2 baris agar judul & harga rata bawah */
+        .card-desc { 
+            font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; 
+            line-height: 1.5; 
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; 
+            overflow: hidden; 
+            flex-grow: 0; /* Mencegah deskripsi memakan ruang berlebih */
+        }
+        
+        .card-footer { margin-top: auto; padding-top: 16px; border-top: 1px dashed #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+        .price { font-size: 1rem; font-weight: 700; color: var(--primary); }
+        
+        .btn-card {
+            padding: 8px 16px; border-radius: 12px; font-size: 0.8rem; font-weight: 600;
+            border: none; cursor: pointer; transition: background 0.2s;
+            white-space: nowrap; /* Mencegah teks tombol turun baris */
+        }
+        .btn-card-wa { background: #25D366; color: white; }
+        .btn-card-wa:hover { background: #128C7E; }
+        .btn-card-po { background: var(--accent); color: white; }
+        .btn-card-po:hover { background: #d97706; }
+
+        /* --- GRID RESPONSIVE --- */
+        .grid-products { 
+            display: grid; 
+            gap: 24px; 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            align-items: stretch; /* PERBAIKAN: Paksa baris grid sejajar */
+        }
+
+        /* --- Modal Style --- */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
+            display: flex; align-items: center; justify-content: center; z-index: 2000;
+            opacity: 0; visibility: hidden; transition: all 0.3s ease;
+        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-content {
+            background: white; width: 90%; max-width: 400px; padding: 30px;
+            border-radius: 24px; box-shadow: var(--shadow-hover);
+            transform: translateY(20px); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .modal-overlay.active .modal-content { transform: translateY(0); }
+        .quantity-input { 
+            width: 60px; text-align: center; border: none; background: transparent; 
+            font-weight: 700; font-size: 1.1rem; color: var(--text-main);
+        }
+
+        /* Animasi Loading */
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* --- PRELOADER STYLE --- */
+        #preloader {
+            position: fixed; inset: 0; background: #ffffff; z-index: 9999; 
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+            transition: opacity 0.6s ease-in-out, visibility 0.6s;
+        }
+        .loader-content { text-align: center; }
+        .brand-logo-loader {
+            font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 2rem;
+            color: var(--primary); margin-bottom: 20px; letter-spacing: -1px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        .modern-spinner {
+            width: 50px; height: 50px;
+            border: 4px solid rgba(15, 118, 110, 0.1);
+            border-left-color: var(--primary); border-radius: 50%;
+            animation: spin 1s linear infinite; position: relative;
+        }
+        .modern-spinner::after {
+            content: ""; position: absolute; top: 6px; left: 6px; right: 6px; bottom: 6px;
+            border: 3px solid transparent; border-top-color: var(--accent);
+            border-radius: 50%; animation: spin 0.8s linear infinite reverse;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    </style>
+</head>
+<body class="bg-[#f8fafc] text-[#1e293b] antialiased selection:bg-emerald-100 selection:text-[#0f766e]">
+
+    <!-- PRELOADER -->
+    <div id="preloader">
+        <div class="loader-content">
+           <div class="modern-spinner"></div>
+        </div>
+    </div>
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+        const { createClient } = supabase;
+
+        // --- KONFIGURASI SUPABASE ---
+        const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
+
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // --- NOMOR ADMIN WHATSAPP ---
+        const ADMIN_WA = '628133039866';
+
+        // --- ICONS COMPONENTS (Lucide) ---
+        const Icon = ({ name, size = 20, className }) => {
+            useEffect(() => { lucide.createIcons(); }, [name]);
+            return <i data-lucide={name} width={size} height={size} className={className}></i>;
+        };
+
+        // --- MODAL PRE-ORDER COMPONENT ---
+        const PreOrderModal = ({ isOpen, onClose, product }) => {
+            const [quantity, setQuantity] = useState(1);
+
+            if (!isOpen || !product) return null;
+
+            const handleConfirm = () => {
+                const message = `Halo Admin, saya ingin *Pre-Order*:\n\n📦 Produk: ${product.name}\n💰 Harga: Rp ${product.price?.toLocaleString('id-ID')}\n📅 Stok: ${product.stock} unit\n🔢 Jumlah: ${quantity} unit\n\nMohon info ketersediaan dan pembayaran.`;
+                const url = `https://wa.me/${ADMIN_WA}?text=${encodeURIComponent(message)}`;
+                window.open(url, '_blank');
+                onClose();
+            };
+
+            return (
+                <div className={`modal-overlay ${isOpen ? 'active' : ''}`}>
+                    <div className="modal-content">
+                        <button onClick={onClose} style={{position:'absolute', top:'20px', right:'20px', background:'none', border:'none', cursor:'pointer', color:'#94a3b8'}}>
+                            <Icon name="x" size={24} />
+                        </button>
+                        <div style={{display:'flex', gap:'16px', marginBottom:'24px'}}>
+                            <div style={{width:'80px', height:'80px', borderRadius:'16px', background:'#f1f5f9', display:'flex', alignItems:'center', justifyContent:'center'}}>
+                                <span style={{fontSize:'24px'}}>📦</span>
+                            </div>
+                            <div>
+                                <h3 style={{fontSize:'1.25rem', fontWeight:'700', marginBottom:'4px'}}>{product.name}</h3>
+                                <div style={{color:'#d97706', fontSize:'0.85rem', fontWeight:'600', display:'flex', alignItems:'center', gap:'6px'}}>
+                                    <Icon name="dollar-sign" size={14} /> Harga: Rp {product.price ? product.price.toLocaleString('id-ID') : 'Hubungi Admin'}
+                                </div>
+                            </div>
+                        </div>
+                        <div style={{marginBottom:'24px'}}>
+                            <label style={{display:'block', fontSize:'0.85rem', color:'#64748b', marginBottom:'8px', fontWeight:'600'}}>Jumlah</label>
+                            <div style={{display:'flex', alignItems:'center', background:'#f8fafc', border:'1px solid #e2e8f0', borderRadius:'12px', overflow:'hidden'}}>
+                                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} style={{padding:'12px 16px', background:'white', border:'none', color:'#0f766e', fontWeight:'700', cursor:'pointer'}}>-</button>
+                                <input type="number" value={quantity} onChange={(e) => setQuantity(parseInt(e.target.value))} className="quantity-input" />
+                                <button onClick={() => setQuantity(quantity + 1)} style={{padding:'12px 16px', background:'white', border:'none', color:'#0f766e', fontWeight:'700', cursor:'pointer'}}>+</button>
+                            </div>
+                        </div>
+                        <button onClick={handleConfirm} className="btn-primary" style={{width:'100%', justifyContent:'center', background:'#25D366'}}>
+                            <Icon name="message-circle" /> Kirim ke WhatsApp
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        function CatalogPage() {
+            const [loading, setLoading] = useState(true);
+            const [products, setProducts] = useState([]);
+            const [selectedProduct, setSelectedProduct] = useState(null);
+            
+            // --- STATE SEARCH BARU ---
+            const [searchQuery, setSearchQuery] = useState('');
+
+            // --- HOOK UNTUK SCROLL ANIMATION ---
+            const useOnScreen = (ref, rootMargin = "0px") => {
+                const [isIntersecting, setIntersecting] = useState(false);
+                useEffect(() => {
+                    const observer = new IntersectionObserver(
+                        ([entry]) => { setIntersecting(entry.isIntersecting); },
+                        { rootMargin, threshold: 0.1 }
+                    );
+                    if (ref.current) observer.observe(ref.current);
+                    return () => { if (ref.current) observer.unobserve(ref.current); };
+                }, [ref, rootMargin]);
+                return isIntersecting;
+            };
+
+            // --- FETCH PRODUCTS DARI TABEL `products` ---
+            useEffect(() => {
+                const fetchProducts = async () => {
+                    try {
+                        // Mengambil data dari tabel 'products'
+                        const { data, error } = await supabaseClient
+                            .from('products') 
+                            .select('*')
+                            .order('created_at', { ascending: false });
+
+                        if (error) console.error("Error fetching:", error);
+                        else setProducts(data || []);
+                    } catch (err) {
+                        console.error("Error system:", err);
+                    } finally {
+                        setLoading(false);
+                    }
+                };
+                fetchProducts();
+                
+                // Realtime Subscription
+                const channel = supabaseClient
+                    .channel('public:products')
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, (payload) => {
+                        if (payload.eventType === 'INSERT') setProducts((prev) => [payload.new, ...prev]);
+                        else if (payload.eventType === 'UPDATE') setProducts((prev) => prev.map((prod) => prod.id === payload.new.id ? payload.new : prod));
+                        else if (payload.eventType === 'DELETE') setProducts((prev) => prev.filter((prod) => prod.id !== payload.old.id));
+                    })
+                    .subscribe();
+                return () => { supabaseClient.removeChannel(channel); };
+            }, []);
+
+            // --- LOGIKA PENCARIAN ---
+            const filteredProducts = products.filter(product => {
+                if (!searchQuery) return true;
+                const query = searchQuery.toLowerCase();
+                const matchName = product.name && product.name.toLowerCase().includes(query);
+                const matchDesc = product.description && product.description.toLowerCase().includes(query);
+                return matchName || matchDesc;
+            });
+
+            const handleOrderClick = (product) => {
+                const isPreOrder = !product.is_available || (product.stock !== null && product.stock === 0);
+                if (isPreOrder) {
+                    setSelectedProduct(product);
+                } else {
+                    const message = `Halo TaniPro, saya ingin memesan ${product.name}.`;
+                    const url = `https://wa.me/${ADMIN_WA}?text=${encodeURIComponent(message)}`;
+                    window.open(url, '_blank');
+                }
+            };
+
+            useEffect(() => { lucide.createIcons(); });
+
+            if (loading) return (
+                <div style={{minHeight:'100vh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', color:'#64748b'}}>
+                    <div style={{width:'40px', height:'40px', border:'3px solid #e2e8f0', borderTopColor:'#0f766e', borderRadius:'50%', animation:'spin 1s linear infinite'}}></div>
+                    <span style={{marginTop:'16px', fontWeight:'500'}}>Memuat Katalog...</span>
+                </div>
+            );
+
+            return (
+                <div style={{minHeight:'100vh', backgroundColor:'var(--bg-body)'}}>
+                    
+                    <PreOrderModal isOpen={!!selectedProduct} onClose={() => setSelectedProduct(null)} product={selectedProduct} />
+
+                    {/* --- HEADER --- */}
+                    <header>
+                        <div className="nav-content">
+                            <div className="back-btn" onClick={() => window.location.href = 'index.html'}>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                                Kembali
+                            </div>
+                            <div className="page-title">Katalog Produk</div>
+                        </div>
+                    </header>
+
+                    {/* --- HERO --- */}
+                    <section className="container reveal-on-scroll" style={{padding:'60px 20px 40px', textAlign:'center'}}>
+                        <span style={{display:'inline-block', padding:'6px 16px', borderRadius:'50px', background:'#dcfce7', color:'#166534', fontSize:'0.8rem', fontWeight:'700', marginBottom:'16px'}}>100% Premium Parfum</span>
+                        <h1 style={{fontSize:'clamp(2rem, 5vw, 3rem)', color:'var(--primary-dark)', marginBottom:'16px'}}>Katalog Produk</h1>
+                        <p style={{color:'var(--text-muted)', maxWidth:'600px', margin:'0 auto'}}>
+                            Pilih Parfum Premium .
+                        </p>
+                        
+                        {/* --- SEARCH BUBBLE UI --- */}
+                        <div className="search-wrapper reveal-on-scroll">
+                            <input 
+                                type="text" 
+                                className="bubble-search" 
+                                placeholder="Cari produk parfum..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                            <div className="search-icon">
+                                <Icon name="search" size={20} />
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* --- GRID --- */}
+                    <section className="container">
+                        {filteredProducts.length === 0 ? (
+                            <div style={{textAlign:'center', padding:'60px 20px', color:'#94a3b8'}}>
+                                {searchQuery ? 'Tidak ditemukan produk yang sesuai dengan pencarian.' : 'Belum ada produk.'}
+                            </div>
+                        ) : (
+                            <div className="grid-products">
+                                {filteredProducts.map((product, index) => {
+                                    // Logika Status Stock
+                                    const isReady = product.is_available === true && (product.stock === null || product.stock > 0);
+                                    const imageFilter = !isReady ? "grayscale(1) opacity(0.6)" : "";
+                                    
+                                    return (
+                                        <div key={product.id} className={`product-card reveal-on-scroll`} style={{ transitionDelay: `${index * 100}ms` }}>
+                                            <div className="card-img-wrapper">
+                                                {/* Menampilkan gambar jika ada, jika tidak pakai placeholder */}
+                                                {product.image_url ? (
+                                                    <img src={product.image_url} alt={product.name} className={`card-img ${imageFilter}`} />
+                                                ) : (
+                                                    <div style={{width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', background:'#e2e8f0', color:'#94a3b8'}}>
+                                                        🚜
+                                                    </div>
+                                                )}
+                                                <div className={`card-badge ${isReady ? 'badge-ready' : 'badge-preorder'}`}>
+                                                    {isReady ? 'Ready Stock' : 'Pre-Order'}
+                                                </div>
+                                            </div>
+                                            <div className="card-body">
+                                                <h3 className="card-title">{product.name}</h3>
+                                                <p className="card-desc">{product.description}</p>
+                                                
+                                                <div className="card-footer">
+                                                    <div>
+                                                        <div className="price" style={{fontSize:'0.9rem'}}>
+                                                            {/* Menampilkan stok jika ready, jika preorder tampilkan harga */}
+                                                            {isReady 
+                                                                ? `Stok: ${product.stock} Unit` 
+                                                                : `Harga: Rp ${product.price ? product.price.toLocaleString('id-ID') : 'Hubungi Admin'}`
+                                                            }
+                                                        </div>
+                                                        {/* Menampilkan estimasi panen untuk preorder */}
+                                                        {!isReady && (
+                                                            <div style={{fontSize:'0.75rem', color:'#94a3b8'}}>
+                                                                Estimasi 7-14 Hari
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    
+                                                    <button 
+                                                        onClick={() => handleOrderClick(product)} 
+                                                        className={`btn-card ${isReady ? 'btn-card-wa' : 'btn-card-po'}`}
+                                                    >
+                                                        {isReady ? 'Beli' : 'Pre-Order'} <Icon name={isReady ? "shopping-cart" : "clock"} size={14}/>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        )}
+                    </section>
+
+                    {/* --- FOOTER --- */}
+                    <footer className="reveal-on-scroll" style={{marginTop:'80px', padding:'40px 20px', borderTop:'1px solid #e2e8f0', textAlign:'center'}}>
+                        <p style={{color:'#64748b', marginBottom:'16px'}}>Butuh bantuan memilih produk?</p>
+                        <a 
+                            href={`https://wa.me/${ADMIN_WA}`} 
+                            target="_blank"
+                            className="btn-primary"
+                            style={{display:'inline-flex'}}
+                        >
+                            <Icon name="message-circle" /> Hubungi Admin
+                        </a>
+                        <p style={{marginTop:'24px', fontSize:'0.8rem', color:'#cbd5e1'}}>© {new Date().getFullYear()} Ngebel Smart Agri</p>
+                    </footer>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<CatalogPage />);
+    </script>
+
+    <!-- SCRIPT GLOBAL UNTUK MENANGANI KELAS REVEAL & PRELOADER -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Observer Logic
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.1
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                    }
+                });
+            }, observerOptions);
+
+            const observeElements = () => {
+                document.querySelectorAll('.reveal-on-scroll:not(.is-visible)').forEach(el => {
+                    observer.observe(el);
+                });
+            };
+
+            observeElements();
+            
+            const mutationObserver = new MutationObserver(observeElements);
+            mutationObserver.observe(document.body, { childList: true, subtree: true });
+        });
+
+        // 2. Preloader Logic (Global Window Load)
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const preloader = document.getElementById('preloader');
+                if (preloader) {
+                    preloader.style.opacity = '0';
+                    preloader.style.visibility = 'hidden';
+                    setTimeout(() => preloader.remove(), 600);
+                }
+            }, 1500);
+        });
+    </script>
+</body>
+</html>
