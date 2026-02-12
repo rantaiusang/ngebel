@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Menu Utama | Ngebel Smart Agri</title>
+    <meta name="theme-color" content="#0f766e">
+    <meta name="description" content="Pilih katalog produk yang Anda butuhkan.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        :root {
+            /* Palette Konsisten */
+            --primary: #0f766e; --primary-dark: #0d5f58; --primary-light: #14b8a6;
+            --accent: #f59e0b; 
+            --bg-body: #f8fafc;
+            --text-main: #1e293b; --text-muted: #64748b;
+            --radius-xl: 24px; --radius-lg: 20px;
+            --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.05);
+            --shadow-hover: 0 20px 50px -12px rgba(15, 118, 110, 0.3);
+            --nav-height: 70px;
+            
+            /* Palette Blockchain Theme */
+            --tech-bg-start: #0f172a;
+            --tech-bg-end: #1e293b;
+            --tech-glow: rgba(20, 184, 166, 0.5);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3 { font-family: 'Outfit', sans-serif; letter-spacing: -0.02em; }
+        a { text-decoration: none; color: inherit; }
+
+        .container {
+            max-width: 1000px; margin: 0 auto; padding: 0 20px; flex: 1; 
+            display: flex; flex-direction: column; justify-content: center;
+            padding-top: var(--nav-height); 
+        }
+
+        /* --- HEADER STYLE --- */
+        header {
+            position: sticky; top: 0; z-index: 1000;
+            background: rgba(255,255,255,0.85); backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0,0,0,0.05); height: 70px;
+            display: flex; align-items: center;
+        }
+        .nav-content { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; gap: 20px; }
+        
+        .back-btn {
+            display: flex; align-items: center; gap: 8px;
+            color: var(--text-muted); font-weight: 600; font-size: 0.9rem;
+            padding: 8px 16px; border-radius: 50px;
+            background: rgba(255,255,255,0.6); border: 1px solid rgba(0,0,0,0.05);
+            transition: all 0.2s ease; flex-shrink: 0; cursor: pointer;
+        }
+        .back-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+        .back-btn svg { width: 18px; height: 18px; stroke-width: 2.5; }
+
+        .page-title { font-weight: 700; color: var(--primary); font-size: 1.1rem; }
+
+        /* --- BLOCKCHAIN HERO SECTION --- */
+        .hero-blockchain {
+            position: relative;
+            margin-bottom: 40px;
+            border-radius: 32px;
+            overflow: hidden;
+            padding: 80px 20px;
+            text-align: center;
+            /* Gradient Background Dark */
+            background: linear-gradient(135deg, var(--tech-bg-start) 0%, var(--tech-bg-end) 100%);
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        }
+
+        /* Pola Background Dot/Node */
+        .blockchain-bg-pattern {
+            position: absolute; inset: 0;
+            background-image: 
+                radial-gradient(rgba(255,255,255,0.15) 1.5px, transparent 1.5px),
+                radial-gradient(rgba(20, 184, 166, 0.1) 1px, transparent 1px);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
+            opacity: 0.4;
+        }
+
+        /* Glass Container untuk Judul */
+        .glass-content {
+            position: relative;
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            padding: 40px 30px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.2), inset 0 0 20px rgba(255,255,255,0.05);
+            z-index: 1;
+        }
+
+        .brand-title-glow {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 12px;
+            /* Efek Glow Text */
+            text-shadow: 0 0 30px var(--tech-glow);
+            letter-spacing: -1px;
+        }
+
+        .brand-desc-tech {
+            font-size: 1rem;
+            color: #cbd5e1;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* --- SYSTEM LOGS SECTION (BARU) --- */
+        .logs-section {
+            background: #0f172a; /* Dark Blue Background */
+            border-radius: 16px;
+            border: 1px solid #1e293b;
+            padding: 20px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.2);
+            font-family: 'JetBrains Mono', monospace;
+            overflow: hidden; /* Untuk membatasi tinggi jika log panjang */
+        }
+
+        .logs-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            color: #94a3b8;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .status-indicator {
+            display: flex; align-items: center; gap: 6px;
+        }
+        
+        .pulse {
+            color: #10b981; /* Green */
+            animation: pulse-dot 1.5s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0% { opacity: 0.4; }
+            50% { opacity: 1; }
+            100% { opacity: 0.4; }
+        }
+
+        .logs-container {
+            max-height: 250px; /* Membatasi tinggi scrollable */
+            overflow-y: auto;
+            /* Scrollbar kustom untuk logs */
+            scrollbar-width: 6px;
+            scrollbar-track: #1e293b;
+        }
+        .logs-container::-webkit-scrollbar { width: 6px; }
+        .logs-container::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+
+        .log-item {
+            display: grid;
+            grid-template-columns: 80px 1fr auto;
+            align-items: center;
+            gap: 15px;
+            font-size: 0.8rem;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: background 0.2s;
+        }
+
+        .log-item:hover {
+            background: rgba(255,255,255,0.08);
+        }
+
+        .log-time { color: #64748b; font-weight: 500; }
+        .log-hash { color: #38bdf8; font-size: 0.75rem; }
+        .log-msg { color: #e2e8f0; }
+        .log-status {
+            font-weight: 700;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .log-success { color: #22c55e; background: rgba(34, 197, 94, 0.1); }
+        .log-pending { color: #fbbf24; background: rgba(251, 191, 36, 0.1); }
+        .log-error { color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+
+        /* --- MENU GRID --- */
+        .menu-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+            margin-top: 0; /* Karena ada logs section di bawah */
+        }
+
+        /* --- MENU CARD STYLE --- */
+        .menu-card {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: 40px 30px;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid #f1f5f9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .menu-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--primary-light);
+        }
+
+        /* Background Icon Hover */
+        .menu-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(15, 118, 110, 0.05) 0%, rgba(255,255,255,0) 70%);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+        }
+        .menu-card:hover::before { opacity: 1; }
+
+        .icon-wrapper {
+            width: 80px; height: 80px;
+            background: #f0fdfa;
+            border-radius: 20px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--primary);
+            margin-bottom: 24px;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border: 2px solid transparent;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+
+        /* Warna Spesifik Per Kategori */
+        .card-pertanian:hover .icon-wrapper {
+            transform: scale(1.1) rotate(-10deg);
+            background: #dcfce7;
+            color: #166534;
+            border-color: #86efac;
+            box-shadow: 0 10px 20px rgba(22, 163, 74, 0.2);
+        }
+
+        .card-parfum:hover .icon-wrapper {
+            transform: scale(1.1) rotate(10deg);
+            background: #ffedd5;
+            color: #9a3412;
+            border-color: #fdba74;
+            box-shadow: 0 10px 20px rgba(249, 115, 22, 0.2);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        .card-desc {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            max-width: 300px;
+        }
+
+        .card-action {
+            padding: 10px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex; align-items: center; gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-pertanian {
+            background: var(--primary);
+            color: white;
+        }
+        .card-pertanian:hover .btn-pertanian {
+            background: var(--primary-dark);
+            box-shadow: 0 10px 20px rgba(15, 118, 110, 0.3);
+        }
+
+        .btn-parfum {
+            background: var(--accent);
+            color: white;
+        }
+        .card-parfum:hover .btn-parfum {
+            background: #d97706;
+            box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3);
+        }
+
+        /* --- FOOTER --- */
+        footer {
+            margin-top: auto;
+            padding: 30px 20px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #cbd5e1;
+        }
+
+        /* Responsiveness */
+        @media (min-width: 640px) {
+            .menu-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        /* --- PRELOADER STYLE --- */
+        #preloader {
+            position: fixed; inset: 0; background: #ffffff; z-index: 9999; 
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+            transition: opacity 0.6s ease-in-out, visibility 0.6s;
+        }
+        .loader-content { text-align: center; }
+        .brand-logo-loader {
+            font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 2rem;
+            color: var(--primary); margin-bottom: 20px; letter-spacing: -1px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        .modern-spinner {
+            width: 50px; height: 50px;
+            border: 4px solid rgba(15, 118, 110, 0.1);
+            border-left-color: var(--primary); border-radius: 50%;
+            animation: spin 1s linear infinite; position: relative;
+        }
+        .modern-spinner::after {
+            content: ""; position: absolute; top: 6px; left: 6px; right: 6px; bottom: 6px;
+            border: 3px solid transparent; border-top-color: var(--accent);
+            border-radius: 50%; animation: spin 0.8s linear infinite reverse;
+        }
+
+        /* Animasi Keyframes */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    </style>
+</head>
+<body class="bg-[#f8fafc] text-[#1e293b] antialiased selection:bg-emerald-100 selection:text-[#0f766e]">
+
+    <!-- PRELOADER -->
+    <div id="preloader">
+        <div class="loader-content">
+           
+           <div class="modern-spinner"></div>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header>
+        <div class="nav-content">
+            <a href="dashboard.html" class="back-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                Kembali
+            </a>
+            
+    </header>
+
+    <div class="container">
+        
+        <!-- BLOCKCHAIN HERO SECTION -->
+        <div class="hero-blockchain">
+            <div class="blockchain-bg-pattern"></div>
+            <div class="glass-content">
+                <h1 class="brand-title-glow">Ngebel Smart Agri</h1>
+                <p class="brand-desc-tech">Solusi Pertanian & Produk Premium</p>
+            </div>
+        </div>
+
+        <main class="menu-grid">
+            <!-- LINK 1: KATALOG PERTANIAN -->
+            <a href="katalogpertanian.html" class="menu-card card-pertanian">
+                <div class="icon-wrapper">
+                    <i data-lucide="sprout" width="40" height="40"></i>
+                </div>
+                <h2 class="card-title">Katalog Pertanian</h2>
+                <p class="card-desc">Lihat hasil panen segar, bibit unggul, dan kebutuhan tani.</p>
+                <div class="card-action btn-pertanian">
+                    Lihat Katalog <i data-lucide="arrow-right" width="18" height="18"></i>
+                </div>
+            </a>
+
+            <!-- LINK 2: KATALOG PARFUM -->
+            <a href="katalogparfum.html" class="menu-card card-parfum">
+                <div class="icon-wrapper">
+                    <i data-lucide="droplets" width="40" height="40"></i>
+                </div>
+                <h2 class="card-title">Katalog Parfum</h2>
+                <p class="card-desc">Temukan koleksi parfum premium berkualitas tinggi.</p>
+                <div class="card-action btn-parfum">
+                    Lihat Katalog <i data-lucide="arrow-right" width="18" height="18"></i>
+                </div>
+            </a>
+        </main>
+
+        <!-- SYSTEM LOGS SECTION (BARU) -->
+        <section class="logs-section">
+            <div class="logs-header">
+                <div class="status-indicator">
+                    <i data-lucide="activity" width="16" height="16"></i>
+                    <span>Live System Logs</span>
+                    <span class="pulse">● Live</span>
+                </div>
+            </div>
+            <div class="logs-container">
+                <!-- Log Item 1 -->
+                <div class="log-item">
+                    <div class="log-time">10:42:05</div>
+                    <div class="log-hash">0x3f...a2b1</div>
+                    <div class="log-msg">Order #8821: Parfum "Flora" purchased</div>
+                    <div class="log-status log-success">CONFIRMED</div>
+                </div>
+                <!-- Log Item 2 -->
+                <div class="log-item">
+                    <div class="log-time">10:41:32</div>
+                    <div class="log-hash">0x8a...4c12</div>
+                    <div class="log-msg">New stock "Padi Sawah" added</div>
+                    <div class="log-status log-success">SUCCESS</div>
+                </div>
+                <!-- Log Item 3 -->
+                <div class="log-item">
+                    <div class="log-time">10:30:15</div>
+                    <div class="log-hash">0x1b...99ff</div>
+                    <div class="log-msg">Payment gateway connected</div>
+                    <div class="log-status log-pending">PENDING</div>
+                </div>
+                <!-- Log Item 4 -->
+                <div class="log-item">
+                    <div class="log-time">09:15:44</div>
+                    <div class="log-hash">0x5d...11bb</div>
+                    <div class="log-msg">User verification started</div>
+                    <div class="log-status log-success">VERIFIED</div>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            &copy; {new Date().getFullYear()} Ngebel Smart Agri. All Rights Reserved.
+        </footer>
+    </div>
+
+    <!-- SCRIPT GLOBAL UNTUK MENANGANI PRELOADER -->
+    <script>
+        // 1. Render Icons
+        lucide.createIcons();
+
+        // 2. Preloader Logic
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const preloader = document.getElementById('preloader');
+                if (preloader) {
+                    preloader.style.opacity = '0';
+                    preloader.style.visibility = 'hidden';
+                    setTimeout(() => preloader.remove(), 600);
+                }
+            }, 1500);
+        });
+    </script>
+</body>
+</html>
