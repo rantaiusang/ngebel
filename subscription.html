@@ -46,6 +46,7 @@
         /* --- ANIMATIONS --- */
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         
         /* Skeleton Loading Animation */
         @keyframes shimmer {
@@ -260,7 +261,7 @@
         .lock-overlay {
             position: absolute; inset: 0; background: rgba(255,255,255,0.85);
             backdrop-filter: blur(4px); z-index: 10;
-            display: none; flex-direction: column; align-items: center; justify-content: center;
+            display: none; flex-direcôion: column; align-items: center; justify-content: center;
             border-radius: var(--radius-lg);
         }
         .lock-icon {
@@ -285,6 +286,96 @@
             .btn-dummy { height: 70px; font-size: 0.75rem; }
             .plans-grid { grid-template-columns: 1fr; }
         }
+
+        /* --- UPGRADE MODAL STYLE --- */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000;
+            display: none; align-items: center; justify-content: center;
+            backdrop-filter: blur(4px); opacity: 0; transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        
+        .modal-card {
+            background: white; width: 90%; max-width: 450px; border-radius: 20px;
+            padding: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            text-align: center;
+        }
+        .modal-overlay.active .modal-card { transform: scale(1); }
+
+        .modal-icon {
+            width: 60px; height: 60px; background: #e0f2fe; color: #0284c7;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 15px auto; font-size: 30px;
+        }
+
+        .modal-title { font-size: 1.4rem; font-weight: 800; color: var(--text-main); margin-bottom: 10px; font-family: 'Outfit'; }
+        .modal-price { font-size: 2rem; font-weight: 800; color: var(--primary); margin-bottom: 5px; }
+        .modal-subtitle { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px; }
+
+        .modal-features {
+            background: #f8fafc; border-radius: 12px; padding: 15px; margin-bottom: 20px;
+            text-align: left;
+        }
+        .modal-features div { font-size: 0.9rem; margin-bottom: 8px; display: flex; gap: 8px; align-items: center; }
+        .modal-features div svg { color: var(--success); flex-shrink: 0; width: 16px; }
+
+        .modal-actions { display: grid; gap: 10px; }
+        .btn-confirm {
+            background: var(--primary); color: white; border: none; padding: 14px;
+            border-radius: 12px; font-weight: 700; font-size: 1rem; cursor: pointer;
+            width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .btn-confirm:hover { background: var(--primary-dark); }
+        .btn-confirm:disabled { opacity: 0.7; cursor: wait; }
+        
+        .btn-cancel {
+            background: transparent; color: var(--text-muted); border: 1px solid #e2e8f0;
+            padding: 12px; border-radius: 12px; font-weight: 600; cursor: pointer;
+        }
+        .btn-cancel:hover { background: #f1f5f9; color: var(--text-main); }
+
+        /* Modal Payment Details */
+        .payment-details {
+            display: none; text-align: left; margin-top: 20px; border-top: 1px dashed #cbd5e1; padding-top: 15px;
+        }
+        .payment-details.active { display: block; animation: fadeIn 0.5s; }
+        
+        .order-id-box {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: var(--text-muted);
+            margin-bottom: 10px; background: #f1f5f9; padding: 5px; border-radius: 4px; display: inline-block;
+        }
+
+        .va-number {
+            font-family: 'JetBrains Mono', monospace; font-size: 1.4rem; font-weight: 700;
+            color: var(--text-main); background: #f8fafc; padding: 15px;
+            border-radius: 8px; margin: 10px 0; text-align: center; border: 2px dashed var(--primary);
+            letter-spacing: 1px;
+        }
+        
+        .payment-note {
+            font-size: 0.8rem; color: var(--text-muted); text-align: center; margin-top: 10px;
+            background: #fff7ed; padding: 10px; border-radius: 8px; border: 1px solid #ffedd5;
+        }
+
+        /* Tombol Simulasi Sukses */
+        .btn-simulate-success {
+            margin-top: 15px;
+            width: 100%;
+            padding: 12px;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+        .btn-simulate-success:hover { background: #059669; }
     </style>
 </head>
 <body>
@@ -292,8 +383,51 @@
     <!-- PRELOADER -->
     <div id="preloader">
         <div class="loader-content">
-            <div class="brand-logo-loader">Ngebel Smart Farm</div>
+           
             <div class="modern-spinner"></div>
+        </div>
+    </div>
+
+    <!-- UPGRADE MODAL (POPUP) -->
+    <div class="modal-overlay" id="upgrade-modal">
+        <div class="modal-card">
+            <div class="modal-icon">🚀</div>
+            <div class="modal-title" id="modal-plan-name">Upgrade Plan</div>
+            <div class="modal-price" id="modal-plan-price">Rp 0</div>
+            <div class="modal-subtitle">Satu bulan penuh akses fitur.</div>
+
+            <div class="modal-features" id="modal-features-list">
+                <!-- Fitur diisi via JS -->
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-confirm" id="btn-confirm-upgrade">
+                    <span>Bayar Sekarang</span>
+                </button>
+                <button class="btn-cancel" id="btn-cancel-upgrade">Batal</button>
+            </div>
+
+            <!-- Payment Gateway Simulation UI -->
+            <div class="payment-details" id="payment-info">
+                <div style="text-align:center;">
+                    <p style="font-size:0.85rem; font-weight:700; color:var(--text-main)">Menunggu Pembayaran</p>
+                    <div class="order-id-box" id="payment-order-id">ID: ORDER-XXXX</div>
+                </div>
+                
+                <p style="font-size:0.8rem; color:var(--text-muted)">Transfer ke Virtual Account (Simulasi):</p>
+                <div class="va-number" id="display-va-number">8830 8192 1234</div>
+                <p style="font-size:0.8rem; text-align:center; color:var(--text-muted); margin-bottom:10px;">A/N Ngebel Smart Farm</p>
+                
+                <div class="payment-note">
+                    ⚠️ <strong>Mode Demo:</strong> iPaymu belum diverifikasi. Gunakan tombol di bawah untuk menyelesaikan transaksi simulasi.
+                </div>
+
+                <!-- TOMBOL SIMULASI SUKSES (ID DIPERBAIKI) -->
+                <button class="btn-simulate-success" id="btn-simulate-payment">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    Simulasi Bayar Berhasil
+                </button>
+            </div>
         </div>
     </div>
 
@@ -391,7 +525,12 @@
     </main>
 
     <script>
-        // --- DATA DUMMY PAKET (HARDCODED SESUAI REQUEST) ---
+        // --- 1. CONFIGURATION ---
+        
+        // SET KE 'true' JIKA IPAYMU SUDAH LIVE DAN SIAP DIGUNAKAN
+        const IS_PAYMENT_GATEWAY_LIVE = false; 
+
+        // --- 2. DATA & CONSTANTS ---
         const AVAILABLE_PLANS = [
             {
                 id: 'starter',
@@ -429,47 +568,255 @@
 
         // --- KONFIGURASI SUPABASE ---
         const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
+        // PERBAIKAN: Ganti Key dengan valid key atau dummy untuk mencegah error immediate
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
         
-        // KOREKSI: Import yang benar dari supabase-js CDN
-        const { createClient } = supabase_js; 
+        // FIX IMPORT
+        if (typeof supabase === 'undefined') {
+            console.error("Library Supabase gagal dimuat.");
+        }
+        const { createClient } = supabase; 
         const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Render Paket Dummy (Statis) di awal
-            renderAvailablePlans(null); 
+        // Variable Global
+        let selectedPlanForUpgrade = null;
+        let currentTenantId = null;
+        let currentOrderId = null;
 
-            await initDashboard();
+        // --- 3. INITIALIZATION ---
+        setTimeout(() => {
+            const preloader = document.getElementById('preloader');
+            if (preloader && preloader.style.display !== 'none') {
+                removePreloader();
+                showToast("Terjadi kesalahan koneksi.", "error");
+            }
+        }, 5000);
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            renderAvailablePlans(null); 
+            try {
+                await initDashboard();
+            } catch (error) {
+                console.error("Init Crash:", error);
+                showToast("Gagal memuat data awal", "error");
+                removePreloader();
+            }
 
             const upgradeBtn = document.getElementById('upgrade-btn');
             if(upgradeBtn) {
-                upgradeBtn.addEventListener('click', handleUpgradeClick);
+                upgradeBtn.addEventListener('click', () => {
+                    document.querySelector('.plans-grid').scrollIntoView({ behavior: 'smooth' });
+                });
+            }
+
+            // Event Listeners (FIX NAMA TOMBOL)
+            document.getElementById('btn-cancel-upgrade').addEventListener('click', closeModal);
+            document.getElementById('btn-confirm-upgrade').addEventListener('click', initiatePaymentProcess);
+            
+            // PERBAIKAN: Pastikan ID tombol di HTML dan JS sama persis
+            const simBtn = document.getElementById('btn-simulate-payment');
+            if(simBtn) {
+                simBtn.addEventListener('click', simulateSuccessCallback);
             }
         });
 
-        function handleUpgradeClick() {
-            if (this.disabled) return;
-            showToast("Silakan hubungi admin untuk upgrade", "info");
+        // --- 4. PAYMENT LOGIC (SIMULASI) ---
+
+        /**
+         * Fungsi ini meng-generate VA secara lokal (Mockup)
+         * TIDAK mengirim request ke server manapun.
+         */
+        async function initiatePaymentProcess() {
+            if (!selectedPlanForUpgrade || !currentTenantId) return;
+
+            const btnConfirm = document.getElementById('btn-confirm-upgrade');
+            
+            // UI Loading State
+            btnConfirm.disabled = true;
+            btnConfirm.innerHTML = `<div class="modern-spinner" style="width:20px; height:20px; border-width:2px;"></div> Memproses...`;
+
+            try {
+                // 1. Simulasi Delay Network (1.5 detik)
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                // 2. Generate Data Simulasi
+                currentOrderId = `DEMO-${Date.now()}`;
+                
+                // 3. Tampilkan VA
+                // Kita gunakan VA acak atau statis untuk demo
+                const dummyVA = generateRandomVA();
+                document.getElementById('display-va-number').textContent = dummyVA;
+                document.getElementById('payment-order-id').textContent = `ID: ${currentOrderId}`;
+                
+                document.getElementById('payment-info').classList.add('active');
+                
+                btnConfirm.innerHTML = `<span>Menunggu Pembayaran...</span>`;
+                showToast("Tagihan berhasil dibuat!", "success");
+
+                // 4. Simpan ke DB sebagai 'pending'
+                await savePaymentRecordToDB({
+                    order_id: currentOrderId,
+                    gross_amount: selectedPlanForUpgrade.price
+                }, selectedPlanForUpgrade.id);
+
+            } catch (error) {
+                console.error(error);
+                showToast("Gagal memproses pembayaran", "error");
+                btnConfirm.disabled = false;
+                btnConfirm.innerHTML = `<span>Coba Lagi</span>`;
+            }
         }
 
+        function generateRandomVA() {
+            // Simulasi format iPaymu / BCA
+            const prefix = "8800"; 
+            const random = Math.floor(Math.random() * 1000000000).toString().padStart(9, '0');
+            return `${prefix} ${random.substring(0,4)} ${random.substring(4,8)} ${random.substring(8)}`;
+        }
+
+        /**
+         * FUNGSI KHUSUS DEMO:
+         * Mensimulasikan callback sukses dari Payment Gateway
+         * Digunakan untuk mengubah status pending -> active
+         */
+        async function simulateSuccessCallback() {
+            if(!currentOrderId) return;
+
+            const btn = document.getElementById('btn-simulate-payment');
+            btn.disabled = true;
+            btn.innerHTML = `<div class="modern-spinner" style="width:16px; height:16px; border-width:2px; border-color:white;"></div> Memverifikasi...`;
+
+            try {
+                // 1. Update Payment History jadi 'success'
+                const { error: errHistory } = await sb
+                    .from('ngebel_iot.payment_history')
+                    .update({ status: 'success' })
+                    .eq('order_id', currentOrderId);
+                
+                if (errHistory) throw errHistory;
+
+                // 2. Create/Update Subscription menjadi 'active'
+                // (Biasanya ini dikerjakan oleh Webhook, di demo kita lakukan manual disini)
+                const nextMonth = new Date();
+                nextMonth.setMonth(nextMonth.getMonth() + 1);
+
+                // Cek apakah sudah ada subscription aktif, kalau ada update, kalau belum insert
+                const { data: existingSub } = await sb
+                    .from('ngebel_iot.subscriptions')
+                    .select('*')
+                    .eq('tenant_id', currentTenantId)
+                    .maybeSingle();
+
+                const subData = {
+                    tenant_id: currentTenantId,
+                    plan: selectedPlanForUpgrade.id,
+                    price: selectedPlanForUpgrade.price,
+                    device_limit: selectedPlanForUpgrade.device_limit,
+                    status: 'active',
+                    expires_at: nextMonth.toISOString(),
+                    is_recurring: true,
+                    auto_lock: true,
+                    max_user: selectedPlanForUpgrade.id === 'enterprise' ? 20 : (selectedPlanForUpgrade.id === 'pro' ? 5 : 1),
+                    features: {} // Default object
+                };
+
+                if (existingSub) {
+                    await sb.from('ngebel_iot.subscriptions').update(subData).eq('id', existingSub.id);
+                } else {
+                    await sb.from('ngebel_iot.subscriptions').insert([subData]);
+                }
+
+                showToast("Pembayaran Berhasil! Paket Aktif.", "success");
+                closeModal();
+                
+                // 3. Refresh UI agar user melihat status aktif
+                await initDashboard();
+
+            } catch (error) {
+                console.error("Gagal simulasi sukses:", error);
+                showToast("Gagal memverifikasi pembayaran", "error");
+                btn.disabled = false;
+                btn.innerHTML = `Simulasi Bayar Berhasil`;
+            }
+        }
+
+        async function savePaymentRecordToDB(paymentData, planId) {
+            try {
+                const { error } = await sb
+                    .from('ngebel_iot.payment_history')
+                    .insert([{
+                        tenant_id: currentTenantId,
+                        plan: planId,
+                        price: paymentData.gross_amount,
+                        order_id: paymentData.order_id,
+                        payment_date: new Date().toISOString(),
+                        status: 'pending',
+                        payment_method: 'ipaymu_simulation'
+                    }]);
+
+                if (error) throw error;
+            } catch (err) {
+                console.error("Gagal menyimpan ke DB:", err);
+            }
+        }
+
+        // --- 5. MODAL LOGIC ---
+        function handlePlanClick(planId) {
+            const plan = AVAILABLE_PLANS.find(p => p.id === planId);
+            if (!plan) return;
+
+            selectedPlanForUpgrade = plan;
+            currentOrderId = null; // Reset order ID
+
+            document.getElementById('modal-plan-name').textContent = plan.name;
+            document.getElementById('modal-plan-price').textContent = `Rp ${plan.price.toLocaleString('id-ID')}`;
+            
+            const featuresContainer = document.getElementById('modal-features-list');
+            featuresContainer.innerHTML = plan.features.map(f => `
+                <div>
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    ${f}
+                </div>
+            `).join('');
+
+            document.getElementById('payment-info').classList.remove('active');
+            const btnConfirm = document.getElementById('btn-confirm-upgrade');
+            btnConfirm.disabled = false;
+            btnConfirm.innerHTML = `<span>Bayar Sekarang</span>`;
+
+            // Reset tombol simulasi
+            const btnSim = document.getElementById('btn-simulate-payment');
+            if(btnSim) {
+                btnSim.disabled = false;
+                btnSim.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Simulasi Bayar Berhasil`;
+            }
+
+            const modal = document.getElementById('upgrade-modal');
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('upgrade-modal');
+            modal.classList.remove('active');
+            selectedPlanForUpgrade = null;
+        }
+
+        // --- 6. CORE DASHBOARD LOGIC ---
         async function initDashboard() {
             try {
                 const { data: { user }, error: authError } = await sb.auth.getUser();
                 
                 if (authError || !user) {
-                    console.warn("Auth Error:", authError);
                     showToast("Sesi habis, silakan login ulang", "error");
                     removePreloader();
                     return;
                 }
 
-                // Kita asumsikan User ID di Auth = Tenant ID. 
-                // Jika Anda punya tabel 'tenants' terpisah, query ID tenant dulu di sini.
-                const tenantId = user.id;
+                currentTenantId = user.id; 
 
                 const results = await Promise.allSettled([
-                    loadSubscriptionData(tenantId),
-                    loadDeviceCount(tenantId)
+                    loadSubscriptionData(currentTenantId),
+                    loadDeviceCount(currentTenantId)
                 ]);
 
                 const subResult = results[0];
@@ -478,24 +825,12 @@
                 let subscriptionData = null;
                 let deviceCount = 0;
 
-                if (subResult.status === 'fulfilled') {
-                    subscriptionData = subResult.value;
-                } else {
-                    console.error("Subscription Error:", subResult.reason);
-                }
+                if (subResult.status === 'fulfilled') subscriptionData = subResult.value;
+                if (devResult.status === 'fulfilled') deviceCount = devResult.value;
 
-                if (devResult.status === 'fulfilled') {
-                    deviceCount = devResult.value;
-                } else {
-                    console.error("Device Error:", devResult.reason);
-                    deviceCount = 0; 
-                }
-
-                loadPaymentHistory(tenantId);
-
-                // Update UI & Highlight Paket Aktif
+                loadPaymentHistory(currentTenantId);
                 updateUI(subscriptionData, deviceCount);
-                renderAvailablePlans(subscriptionData); // Re-render dengan highlight
+                renderAvailablePlans(subscriptionData);
 
             } catch (err) {
                 console.error("Fatal Error di Init:", err);
@@ -515,106 +850,70 @@
             }
         }
 
-        // --- RENDER AVAILABLE PLANS ---
         function renderAvailablePlans(currentSub) {
             const container = document.getElementById('available-plans-grid');
+            if(!container) return;
             container.innerHTML = '';
-
-            // Cek nama paket user saat ini (lowercase untuk comparison aman)
             const currentPlanName = (currentSub?.plan || '').toLowerCase();
 
             AVAILABLE_PLANS.forEach(plan => {
                 const isCurrent = plan.id === currentPlanName;
-                
                 const card = document.createElement('div');
                 card.className = `plan-item ${isCurrent ? 'current-plan' : ''}`;
                 
-                // Build list features HTML
                 const featuresHtml = plan.features.map(f => `
-                    <li>
-                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                        ${f}
-                    </li>
+                    <li><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>${f}</li>
                 `).join('');
 
                 card.innerHTML = `
                     <div class="p-name">${plan.name}</div>
                     <div class="p-price">Rp ${plan.price.toLocaleString('id-ID')} <small>/bln</small></div>
                     <div style="font-size: 0.8rem; color: #64748b; margin-bottom:10px;">${plan.device_limit} Device Limit</div>
-                    <ul class="p-features">
-                        ${featuresHtml}
-                    </ul>
-                    <button class="btn-choose" id="btn-choose-${plan.id}">
-                        ${isCurrent ? 'Paket Aktif' : 'Pilih Paket'}
-                    </button>
+                    <ul class="p-features">${featuresHtml}</ul>
+                    <button class="btn-choose" id="btn-choose-${plan.id}">${isCurrent ? 'Paket Aktif' : 'Pilih Paket'}</button>
                 `;
                 container.appendChild(card);
-
-                // Add Event Listener manual untuk menghindari global function pollution
-                if(!isCurrent) {
-                    card.addEventListener('click', () => handlePlanClick(plan.name));
-                }
+                if(!isCurrent) card.addEventListener('click', () => handlePlanClick(plan.id));
             });
         }
 
-        function handlePlanClick(planName) {
-            showToast(`Anda memilih paket ${planName}. Hubungi admin untuk prosesnya.`, "info");
-        }
-
-        // --- LOAD DATA FUNCTIONS (Schema Updated: tenant_id, expires_at) ---
         async function loadSubscriptionData(tenantId) {
             try {
-                // Ambil subscription aktif berdasarkan tenant_id
                 const { data, error } = await sb
                     .from("ngebel_iot.subscriptions")
                     .select("*")
                     .eq("tenant_id", tenantId)
                     .maybeSingle();
-                
                 if (error) throw error;
-                if (!data) return null;
                 return data;
-            } catch (err) {
-                console.error("Load subscription failed:", err);
-                throw err;
-            }
+            } catch (err) { throw err; }
         }
 
-        // Fungsi Dummy untuk loadDeviceCount (Sesuaikan dengan tabel devices Anda)
         async function loadDeviceCount(tenantId) {
             try {
-                // Anda perlu membuat tabel 'ngebel_iot.devices' atau sesuaikan nama tabelnya
                 const { count, error } = await sb
-                    .from('ngebel_iot.devices') // Pastikan tabel ini ada dan punya kolom tenant_id
+                    .from('ngebel_iot.devices') 
                     .select('*', { count: 'exact', head: true })
                     .eq('tenant_id', tenantId);
-
-                if (error) {
-                    console.warn("Device table not found or query error:", error);
-                    return 0;
-                }
+                if (error) return 0;
                 return count || 0;
-            } catch (err) {
-                console.error("Gagal menghitung device:", err);
-                return 0; 
-            }
+            } catch (err) { return 0; }
         }
 
         async function loadPaymentHistory(tenantId) {
             try {
-                // Asumsi tabel payment_history juga punya kolom tenant_id
+                const listEl = document.getElementById('payment-history');
+                if(!listEl) return;
+
                 const { data, error } = await sb
                     .from("ngebel_iot.payment_history")
                     .select("*")
                     .eq("tenant_id", tenantId)
-                    .order("created_at", { ascending: false }) // Updated schema column
+                    .order("created_at", { ascending: false })
                     .limit(5);
 
                 if (error) throw error;
-
-                const listEl = document.getElementById('payment-history');
                 listEl.innerHTML = ''; 
-
                 if (!data || data.length === 0) {
                     listEl.innerHTML = '<li style="text-align:center; color:var(--text-muted); padding:20px;">Belum ada riwayat pembayaran.</li>';
                     return;
@@ -623,20 +922,17 @@
                 data.forEach(item => {
                     const li = document.createElement('li');
                     li.className = 'history-item';
-                    
                     const amountFormatted = new Intl.NumberFormat('id-ID', { 
                         style: 'currency', currency: 'IDR', minimumFractionDigits: 0 
-                    }).format(item.price || 0); // Adjusted column name
-                    
+                    }).format(item.price || 0);
                     const dateFormatted = item.created_at 
                         ? new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) 
                         : '-';
-
                     const isSuccess = (item.status || '').toLowerCase() === 'success' || (item.status || '').toLowerCase() === 'active';
 
                     li.innerHTML = `
                         <div class="h-left">
-                            <h4>${item.plan || 'Paket'}</h4> <!-- Adjusted column name -->
+                            <h4>${item.plan || 'Paket'}</h4>
                             <p>${dateFormatted}</p>
                         </div>
                         <div class="h-right">
@@ -649,8 +945,9 @@
                     listEl.appendChild(li);
                 });
             } catch (err) {
-                console.error("Error load history:", err);
-                document.getElementById('payment-history').innerHTML = '<li style="text-align:center; color:var(--danger); padding:20px;">Gagal memuat riwayat.</li>';
+                if(document.getElementById('payment-history')) {
+                    document.getElementById('payment-history').innerHTML = '<li style="text-align:center; color:var(--danger); padding:20px;">Gagal memuat riwayat.</li>';
+                }
             }
         }
 
@@ -669,12 +966,9 @@
                 return;
             }
 
-            // Mapping kolom schema baru
             document.getElementById('plan-name').textContent = sub.plan ? sub.plan.charAt(0).toUpperCase() + sub.plan.slice(1) : 'Unknown Plan';
-            
             const price = sub.price ? sub.price.toLocaleString('id-ID') : '0';
             document.getElementById('plan-price').innerHTML = `Rp ${price} <span>/ bulan</span>`;
-            
             const limit = sub.device_limit || 0;
             document.getElementById('device-limit').textContent = limit;
             document.getElementById('limit-device-display').textContent = limit === 0 ? 'Unlimited' : limit;
@@ -695,11 +989,8 @@
             const upgradeBtn = document.getElementById('upgrade-btn');
 
             const status = (sub.status || '').toLowerCase();
-            
-            // Validasi Tanggal: Jika expired_at < now, anggap INACTIVE
             const isExpired = sub.expires_at ? new Date(sub.expires_at) < new Date() : false;
             const isActive = status === 'active' && !isExpired;
-            
             const isDeviceLimitReached = limit > 0 && currentDeviceCount >= limit;
             const isUnlocked = isActive && !isDeviceLimitReached;
 
@@ -719,7 +1010,7 @@
                 if(svgIcon) svgIcon.style.color = 'var(--success)';
 
                 upgradeBtn.disabled = true;
-                upgradeBtn.textContent = 'Plan Aktif';
+                upgradeBtn.textContent = 'Paket Aktif';
                 upgradeBtn.setAttribute('aria-label', 'Paket Anda saat ini aktif');
 
             } else {
@@ -780,14 +1071,10 @@
                 `;
                 document.body.appendChild(container);
             }
-
-            if(container.children.length >= 3){
-                container.children[0].remove();
-            }
+            if(container.children.length >= 3) container.children[0].remove();
 
             const div = document.createElement('div');
             const borderColor = type === 'error' ? '#ef4444' : '#0f766e';
-            
             div.style.cssText = `
                 background: white; padding: 12px 20px; border-radius: 12px;
                 box-shadow: 0 10px 30px rgba(0,0,0,0.15); 
