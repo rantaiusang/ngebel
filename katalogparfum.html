@@ -165,21 +165,20 @@
 
         .bubble-search:focus + .search-icon { color: var(--accent); }
 
-        /* --- PRODUCT CARD STYLE (PERBAIKAN: RATA & SERAGAM) --- */
+        /* --- PRODUCT CARD STYLE (TIDAK DIUBAH) --- */
         .product-card {
             background: white; border-radius: var(--radius-xl); overflow: hidden;
             box-shadow: var(--shadow-soft); border: 1px solid #f1f5f9;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             display: flex; flex-direction: column;
-            height: 100%; /* PERBAIKAN: Paksa kartu memenuhi tinggi baris grid */
+            height: 100%;
         }
         .product-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-hover); }
         
-        /* PERBAIKAN: Aspek Rasio Gambar Dikunci 1:1 (Kotak) */
         .card-img-wrapper { 
             position: relative; 
             width: 100%; 
-            aspect-ratio: 1 / 1; /* Memaksa rasio kotak sempurna */
+            aspect-ratio: 1 / 1; 
             overflow: hidden; 
             background: #f1f5f9; 
         }
@@ -193,18 +192,18 @@
             z-index: 2;
         }
         .badge-ready { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
-        .badge-preorder { background: #ffedd5; color: #9a3412; border: 1px solid #fdba74; }
+        /* Perubahan Style Badge Kosong (Merah/Abu) */
+        .badge-empty { background: #f1f5f9; color: #94a3b8; border: 1px solid #e2e8f0; }
         
         .card-body { padding: 20px; display: flex; flex-direction: column; flex: 1; height: 100%; }
         .card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; color: var(--text-main); }
         
-        /* PERBAIKAN: Batasi deskripsi max 2 baris agar judul & harga rata bawah */
         .card-desc { 
             font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; 
             line-height: 1.5; 
             display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; 
             overflow: hidden; 
-            flex-grow: 0; /* Mencegah deskripsi memakan ruang berlebih */
+            flex-grow: 0; 
         }
         
         .card-footer { margin-top: auto; padding-top: 16px; border-top: 1px dashed #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
@@ -213,37 +212,24 @@
         .btn-card {
             padding: 8px 16px; border-radius: 12px; font-size: 0.8rem; font-weight: 600;
             border: none; cursor: pointer; transition: background 0.2s;
-            white-space: nowrap; /* Mencegah teks tombol turun baris */
+            white-space: nowrap;
         }
         .btn-card-wa { background: #25D366; color: white; }
         .btn-card-wa:hover { background: #128C7E; }
-        .btn-card-po { background: var(--accent); color: white; }
-        .btn-card-po:hover { background: #d97706; }
+        /* Style tombol saat stok kosong */
+        .btn-card-disabled { 
+            background: #cbd5e1; 
+            color: #64748b; 
+            cursor: not-allowed; 
+        }
+        .btn-card-disabled:hover { background: #cbd5e1; }
 
         /* --- GRID RESPONSIVE --- */
         .grid-products { 
             display: grid; 
             gap: 24px; 
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
-            align-items: stretch; /* PERBAIKAN: Paksa baris grid sejajar */
-        }
-
-        /* --- Modal Style --- */
-        .modal-overlay {
-            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
-            display: flex; align-items: center; justify-content: center; z-index: 2000;
-            opacity: 0; visibility: hidden; transition: all 0.3s ease;
-        }
-        .modal-overlay.active { opacity: 1; visibility: visible; }
-        .modal-content {
-            background: white; width: 90%; max-width: 400px; padding: 30px;
-            border-radius: 24px; box-shadow: var(--shadow-hover);
-            transform: translateY(20px); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .modal-overlay.active .modal-content { transform: translateY(0); }
-        .quantity-input { 
-            width: 60px; text-align: center; border: none; background: transparent; 
-            font-weight: 700; font-size: 1.1rem; color: var(--text-main);
+            align-items: stretch; 
         }
 
         /* Animasi Loading */
@@ -272,7 +258,6 @@
             border: 3px solid transparent; border-top-color: var(--accent);
             border-radius: 50%; animation: spin 0.8s linear infinite reverse;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
     </style>
@@ -307,46 +292,22 @@
             return <i data-lucide={name} width={size} height={size} className={className}></i>;
         };
 
-        // --- MODAL PRE-ORDER COMPONENT ---
-        const PreOrderModal = ({ isOpen, onClose, product }) => {
-            const [quantity, setQuantity] = useState(1);
-
-            if (!isOpen || !product) return null;
-
-            const handleConfirm = () => {
-                const message = `Halo Admin, saya ingin *Pre-Order*:\n\n📦 Produk: ${product.name}\n💰 Harga: Rp ${product.price?.toLocaleString('id-ID')}\n📅 Stok: ${product.stock} unit\n🔢 Jumlah: ${quantity} unit\n\nMohon info ketersediaan dan pembayaran.`;
-                const url = `https://wa.me/${ADMIN_WA}?text=${encodeURIComponent(message)}`;
-                window.open(url, '_blank');
-                onClose();
-            };
+        // --- MODAL NOTIFIKASI STOCK KOSONG (PENGGANTI PRE-ORDER MODAL) ---
+        const StockEmptyModal = ({ isOpen, onClose, productName }) => {
+            if (!isOpen) return null;
 
             return (
-                <div className={`modal-overlay ${isOpen ? 'active' : ''}`}>
-                    <div className="modal-content">
-                        <button onClick={onClose} style={{position:'absolute', top:'20px', right:'20px', background:'none', border:'none', cursor:'pointer', color:'#94a3b8'}}>
-                            <Icon name="x" size={24} />
-                        </button>
-                        <div style={{display:'flex', gap:'16px', marginBottom:'24px'}}>
-                            <div style={{width:'80px', height:'80px', borderRadius:'16px', background:'#f1f5f9', display:'flex', alignItems:'center', justifyContent:'center'}}>
-                                <span style={{fontSize:'24px'}}>📦</span>
-                            </div>
-                            <div>
-                                <h3 style={{fontSize:'1.25rem', fontWeight:'700', marginBottom:'4px'}}>{product.name}</h3>
-                                <div style={{color:'#d97706', fontSize:'0.85rem', fontWeight:'600', display:'flex', alignItems:'center', gap:'6px'}}>
-                                    <Icon name="dollar-sign" size={14} /> Harga: Rp {product.price ? product.price.toLocaleString('id-ID') : 'Hubungi Admin'}
-                                </div>
-                            </div>
+                <div className={`modal-overlay ${isOpen ? 'active' : ''}`} onClick={onClose}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()} style={{textAlign: 'center'}}>
+                        <div style={{width:'60px', height:'60px', borderRadius:'50%', background:'#fee2e2', color:'#ef4444', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 20px'}}>
+                            <Icon name="alert-octagon" size={32} />
                         </div>
-                        <div style={{marginBottom:'24px'}}>
-                            <label style={{display:'block', fontSize:'0.85rem', color:'#64748b', marginBottom:'8px', fontWeight:'600'}}>Jumlah</label>
-                            <div style={{display:'flex', alignItems:'center', background:'#f8fafc', border:'1px solid #e2e8f0', borderRadius:'12px', overflow:'hidden'}}>
-                                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} style={{padding:'12px 16px', background:'white', border:'none', color:'#0f766e', fontWeight:'700', cursor:'pointer'}}>-</button>
-                                <input type="number" value={quantity} onChange={(e) => setQuantity(parseInt(e.target.value))} className="quantity-input" />
-                                <button onClick={() => setQuantity(quantity + 1)} style={{padding:'12px 16px', background:'white', border:'none', color:'#0f766e', fontWeight:'700', cursor:'pointer'}}>+</button>
-                            </div>
-                        </div>
-                        <button onClick={handleConfirm} className="btn-primary" style={{width:'100%', justifyContent:'center', background:'#25D366'}}>
-                            <Icon name="message-circle" /> Kirim ke WhatsApp
+                        <h3 style={{fontSize:'1.25rem', fontWeight:'700', marginBottom:'10px', color:'#1e293b'}}>Stok Habis!</h3>
+                        <p style={{color:'#64748b', marginBottom:'24px'}}>
+                            Maaf, produk <strong>{productName}</strong> saat ini sedang habis. Silakan hubungi admin untuk info restock.
+                        </p>
+                        <button onClick={onClose} className="btn-primary" style={{width:'100%', justifyContent:'center'}}>
+                            Mengerti
                         </button>
                     </div>
                 </div>
@@ -356,30 +317,16 @@
         function CatalogPage() {
             const [loading, setLoading] = useState(true);
             const [products, setProducts] = useState([]);
-            const [selectedProduct, setSelectedProduct] = useState(null);
             
-            // --- STATE SEARCH BARU ---
+            // State untuk menangani modal notifikasi
+            const [emptyStockProduct, setEmptyStockProduct] = useState(null);
+            
             const [searchQuery, setSearchQuery] = useState('');
-
-            // --- HOOK UNTUK SCROLL ANIMATION ---
-            const useOnScreen = (ref, rootMargin = "0px") => {
-                const [isIntersecting, setIntersecting] = useState(false);
-                useEffect(() => {
-                    const observer = new IntersectionObserver(
-                        ([entry]) => { setIntersecting(entry.isIntersecting); },
-                        { rootMargin, threshold: 0.1 }
-                    );
-                    if (ref.current) observer.observe(ref.current);
-                    return () => { if (ref.current) observer.unobserve(ref.current); };
-                }, [ref, rootMargin]);
-                return isIntersecting;
-            };
 
             // --- FETCH PRODUCTS DARI TABEL `products` ---
             useEffect(() => {
                 const fetchProducts = async () => {
                     try {
-                        // Mengambil data dari tabel 'products'
                         const { data, error } = await supabaseClient
                             .from('products') 
                             .select('*')
@@ -416,12 +363,18 @@
                 return matchName || matchDesc;
             });
 
-            const handleOrderClick = (product) => {
-                const isPreOrder = !product.is_available || (product.stock !== null && product.stock === 0);
-                if (isPreOrder) {
-                    setSelectedProduct(product);
+            // --- FUNGSI KLIK TOMBOL ---
+            const handleActionClick = (product) => {
+                // Cek stok dari Supabase (anggap field 'stock' adalah angka)
+                // Jika stock null atau 0, dianggap kosong.
+                const currentStock = product.stock;
+                
+                if (!currentStock || currentStock <= 0) {
+                    // Jika stok kosong, tampilkan notifikasi modal
+                    setEmptyStockProduct(product);
                 } else {
-                    const message = `Halo TaniPro, saya ingin memesan ${product.name}.`;
+                    // Jika ready stock, langsung ke WhatsApp
+                    const message = `Halo Admin, saya ingin memesan *${product.name}*.\n\nStok tersedia: ${currentStock}.\nMohon info total pembayaran.`;
                     const url = `https://wa.me/${ADMIN_WA}?text=${encodeURIComponent(message)}`;
                     window.open(url, '_blank');
                 }
@@ -439,7 +392,12 @@
             return (
                 <div style={{minHeight:'100vh', backgroundColor:'var(--bg-body)'}}>
                     
-                    <PreOrderModal isOpen={!!selectedProduct} onClose={() => setSelectedProduct(null)} product={selectedProduct} />
+                    {/* Modal Notifikasi Stok Kosong */}
+                    <StockEmptyModal 
+                        isOpen={!!emptyStockProduct} 
+                        onClose={() => setEmptyStockProduct(null)} 
+                        productName={emptyStockProduct?.name} 
+                    />
 
                     {/* --- HEADER --- */}
                     <header>
@@ -448,7 +406,6 @@
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                                 Kembali
                             </div>
-                          
                         </div>
                     </header>
 
@@ -460,7 +417,6 @@
                             Pilih Parfum Premium .
                         </p>
                         
-                        {/* --- SEARCH BUBBLE UI --- */}
                         <div className="search-wrapper reveal-on-scroll">
                             <input 
                                 type="text" 
@@ -484,23 +440,22 @@
                         ) : (
                             <div className="grid-products">
                                 {filteredProducts.map((product, index) => {
-                                    // Logika Status Stock
-                                    const isReady = product.is_available === true && (product.stock === null || product.stock > 0);
-                                    const imageFilter = !isReady ? "grayscale(1) opacity(0.6)" : "";
+                                    // LOGIKA BARU: Cek Stok
+                                    const isAvailable = product.stock && product.stock > 0;
                                     
                                     return (
                                         <div key={product.id} className={`product-card reveal-on-scroll`} style={{ transitionDelay: `${index * 100}ms` }}>
                                             <div className="card-img-wrapper">
-                                                {/* Menampilkan gambar jika ada, jika tidak pakai placeholder */}
                                                 {product.image_url ? (
-                                                    <img src={product.image_url} alt={product.name} className={`card-img ${imageFilter}`} />
+                                                    <img src={product.image_url} alt={product.name} className="card-img" />
                                                 ) : (
                                                     <div style={{width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', background:'#e2e8f0', color:'#94a3b8'}}>
                                                         🚜
                                                     </div>
                                                 )}
-                                                <div className={`card-badge ${isReady ? 'badge-ready' : 'badge-preorder'}`}>
-                                                    {isReady ? 'Ready Stock' : 'Pre-Order'}
+                                                {/* Badge berubah berdasarkan stok */}
+                                                <div className={`card-badge ${isAvailable ? 'badge-ready' : 'badge-empty'}`}>
+                                                    {isAvailable ? 'Ready Stock' : 'Habis'}
                                                 </div>
                                             </div>
                                             <div className="card-body">
@@ -509,26 +464,21 @@
                                                 
                                                 <div className="card-footer">
                                                     <div>
+                                                        {/* Menampilkan Harga (Jika ada) atau Stok */}
                                                         <div className="price" style={{fontSize:'0.9rem'}}>
-                                                            {/* Menampilkan stok jika ready, jika preorder tampilkan harga */}
-                                                            {isReady 
-                                                                ? `Stok: ${product.stock} Unit` 
-                                                                : `Harga: Rp ${product.price ? product.price.toLocaleString('id-ID') : 'Hubungi Admin'}`
-                                                            }
+                                                            Rp {product.price ? product.price.toLocaleString('id-ID') : '-'}
                                                         </div>
-                                                        {/* Menampilkan estimasi panen untuk preorder */}
-                                                        {!isReady && (
-                                                            <div style={{fontSize:'0.75rem', color:'#94a3b8'}}>
-                                                                Estimasi 7-14 Hari
-                                                            </div>
-                                                        )}
+                                                        {/* Menampilkan info stok kecil di bawah harga */}
+                                                        <div style={{fontSize:'0.75rem', color: isAvailable ? '#10b981' : '#ef4444', fontWeight: '600'}}>
+                                                            {isAvailable ? `Tersisa ${product.stock}` : 'Stok Kosong'}
+                                                        </div>
                                                     </div>
                                                     
                                                     <button 
-                                                        onClick={() => handleOrderClick(product)} 
-                                                        className={`btn-card ${isReady ? 'btn-card-wa' : 'btn-card-po'}`}
+                                                        onClick={() => handleActionClick(product)} 
+                                                        className={`btn-card ${isAvailable ? 'btn-card-wa' : 'btn-card-disabled'}`}
                                                     >
-                                                        {isReady ? 'Beli' : 'Pre-Order'} <Icon name={isReady ? "shopping-cart" : "clock"} size={14}/>
+                                                        {isAvailable ? 'Beli' : 'Habis'} <Icon name={isAvailable ? "shopping-cart" : "x-circle"} size={14}/>
                                                     </button>
                                                 </div>
                                             </div>
@@ -563,34 +513,21 @@
     <!-- SCRIPT GLOBAL UNTUK MENANGANI KELAS REVEAL & PRELOADER -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // 1. Observer Logic
-            const observerOptions = {
-                root: null,
-                rootMargin: '0px',
-                threshold: 0.1
-            };
-
+            const observerOptions = { root: null, rootMargin: '0px', threshold: 0.1 };
             const observer = new IntersectionObserver((entries, observer) => {
                 entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('is-visible');
-                    }
+                    if (entry.isIntersecting) entry.target.classList.add('is-visible');
                 });
             }, observerOptions);
 
             const observeElements = () => {
-                document.querySelectorAll('.reveal-on-scroll:not(.is-visible)').forEach(el => {
-                    observer.observe(el);
-                });
+                document.querySelectorAll('.reveal-on-scroll:not(.is-visible)').forEach(el => observer.observe(el));
             };
-
             observeElements();
-            
             const mutationObserver = new MutationObserver(observeElements);
             mutationObserver.observe(document.body, { childList: true, subtree: true });
         });
 
-        // 2. Preloader Logic (Global Window Load)
         window.addEventListener('load', () => {
             setTimeout(() => {
                 const preloader = document.getElementById('preloader');
