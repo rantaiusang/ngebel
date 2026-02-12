@@ -133,6 +133,7 @@
             background: var(--primary); color: white; border: none;
             padding: 14px 24px; border-radius: 12px; font-weight: 600; font-size: 1rem;
             width: 100%; cursor: pointer; transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
         }
         .upgrade-btn:hover:not(:disabled) { transform: translateY(-2px); background: var(--primary-dark); }
         .upgrade-btn:disabled { 
@@ -325,10 +326,23 @@
             background: var(--primary); color: white; border: none; padding: 14px;
             border-radius: 12px; font-weight: 700; font-size: 1rem; cursor: pointer;
             width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
+            position: relative; overflow: hidden;
+            transition: background 0.2s;
         }
-        .btn-confirm:hover { background: var(--primary-dark); }
-        .btn-confirm:disabled { opacity: 0.7; cursor: wait; }
+        .btn-confirm:hover:not(:disabled) { background: var(--primary-dark); }
+        .btn-confirm:disabled { 
+            opacity: 0.7; 
+            cursor: wait; 
+        }
         
+        /* Loading Spinner Kecil untuk Tombol */
+        .btn-spinner {
+            width: 20px; height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-left-color: white; border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
         .btn-cancel {
             background: transparent; color: var(--text-muted); border: 1px solid #e2e8f0;
             padding: 12px; border-radius: 12px; font-weight: 600; cursor: pointer;
@@ -374,7 +388,9 @@
             justify-content: center;
             gap: 8px;
             box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+            transition: transform 0.1s, background 0.2s;
         }
+        .btn-simulate-success:active { transform: scale(0.98); }
         .btn-simulate-success:hover { background: #059669; }
     </style>
 </head>
@@ -568,7 +584,6 @@
 
         // --- KONFIGURASI SUPABASE ---
         const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
-        // PERBAIKAN: Ganti Key dengan valid key atau dummy untuk mencegah error immediate
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRpa2FwcXVodXNid2pjY2JxY3NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkxNjQ1NTQsImV4cCI6MjA4NDc0MDU1NH0.X278oHDF0be7oa25484eliSukSYAYvDbJyU6ysz83zA';
         
         // FIX IMPORT
@@ -609,11 +624,10 @@
                 });
             }
 
-            // Event Listeners (FIX NAMA TOMBOL)
+            // Event Listeners
             document.getElementById('btn-cancel-upgrade').addEventListener('click', closeModal);
             document.getElementById('btn-confirm-upgrade').addEventListener('click', initiatePaymentProcess);
             
-            // PERBAIKAN: Pastikan ID tombol di HTML dan JS sama persis
             const simBtn = document.getElementById('btn-simulate-payment');
             if(simBtn) {
                 simBtn.addEventListener('click', simulateSuccessCallback);
@@ -624,36 +638,38 @@
 
         /**
          * Fungsi ini meng-generate VA secara lokal (Mockup)
-         * TIDAK mengirim request ke server manapun.
          */
         async function initiatePaymentProcess() {
             if (!selectedPlanForUpgrade || !currentTenantId) return;
 
             const btnConfirm = document.getElementById('btn-confirm-upgrade');
             
-            // UI Loading State
+            // UI Loading State (MEMPERBAIKI "KAKU")
+            // Kita ganti text dengan spinner agar terlihat sedang memproses
             btnConfirm.disabled = true;
-            btnConfirm.innerHTML = `<div class="modern-spinner" style="width:20px; height:20px; border-width:2px;"></div> Memproses...`;
+            btnConfirm.innerHTML = `<div class="btn-spinner"></div>`; // Gunakan class CSS spinner kecil
 
             try {
-                // 1. Simulasi Delay Network (1.5 detik)
+                // 1. Simulasi Delay Network (1.5 detik) agar user sadar ada proses
                 await new Promise(resolve => setTimeout(resolve, 1500));
 
                 // 2. Generate Data Simulasi
                 currentOrderId = `DEMO-${Date.now()}`;
                 
                 // 3. Tampilkan VA
-                // Kita gunakan VA acak atau statis untuk demo
                 const dummyVA = generateRandomVA();
                 document.getElementById('display-va-number').textContent = dummyVA;
                 document.getElementById('payment-order-id').textContent = `ID: ${currentOrderId}`;
                 
+                // 4. Tampilkan section pembayaran dengan animasi fade
                 document.getElementById('payment-info').classList.add('active');
                 
+                // 5. Ubah tombol jadi status "Menunggu" (disabled tapi bukan abu-abu total)
                 btnConfirm.innerHTML = `<span>Menunggu Pembayaran...</span>`;
+                
                 showToast("Tagihan berhasil dibuat!", "success");
 
-                // 4. Simpan ke DB sebagai 'pending'
+                // 6. Simpan ke DB sebagai 'pending'
                 await savePaymentRecordToDB({
                     order_id: currentOrderId,
                     gross_amount: selectedPlanForUpgrade.price
@@ -668,26 +684,25 @@
         }
 
         function generateRandomVA() {
-            // Simulasi format iPaymu / BCA
             const prefix = "8800"; 
             const random = Math.floor(Math.random() * 1000000000).toString().padStart(9, '0');
             return `${prefix} ${random.substring(0,4)} ${random.substring(4,8)} ${random.substring(8)}`;
         }
 
         /**
-         * FUNGSI KHUSUS DEMO:
-         * Mensimulasikan callback sukses dari Payment Gateway
-         * Digunakan untuk mengubah status pending -> active
+         * FUNGSI KHUSUS DEMO
          */
         async function simulateSuccessCallback() {
             if(!currentOrderId) return;
 
             const btn = document.getElementById('btn-simulate-payment');
+            // Tambahkan loading di tombol simulasi juga agar tidak kaku
+            const originalText = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = `<div class="modern-spinner" style="width:16px; height:16px; border-width:2px; border-color:white;"></div> Memverifikasi...`;
+            btn.innerHTML = `<div class="btn-spinner" style="width:16px; height:16px; border-color:white; border-left-color:#0f766e"></div> Memverifikasi...`;
 
             try {
-                // 1. Update Payment History jadi 'success'
+                // 1. Update Payment History
                 const { error: errHistory } = await sb
                     .from('ngebel_iot.payment_history')
                     .update({ status: 'success' })
@@ -695,12 +710,10 @@
                 
                 if (errHistory) throw errHistory;
 
-                // 2. Create/Update Subscription menjadi 'active'
-                // (Biasanya ini dikerjakan oleh Webhook, di demo kita lakukan manual disini)
+                // 2. Update Subscription
                 const nextMonth = new Date();
                 nextMonth.setMonth(nextMonth.getMonth() + 1);
 
-                // Cek apakah sudah ada subscription aktif, kalau ada update, kalau belum insert
                 const { data: existingSub } = await sb
                     .from('ngebel_iot.subscriptions')
                     .select('*')
@@ -717,7 +730,7 @@
                     is_recurring: true,
                     auto_lock: true,
                     max_user: selectedPlanForUpgrade.id === 'enterprise' ? 20 : (selectedPlanForUpgrade.id === 'pro' ? 5 : 1),
-                    features: {} // Default object
+                    features: {}
                 };
 
                 if (existingSub) {
@@ -727,16 +740,18 @@
                 }
 
                 showToast("Pembayaran Berhasil! Paket Aktif.", "success");
-                closeModal();
                 
-                // 3. Refresh UI agar user melihat status aktif
-                await initDashboard();
+                // Delay sedikit sebelum close agar user baca notif
+                setTimeout(() => {
+                    closeModal();
+                    initDashboard(); // Refresh UI
+                }, 1000);
 
             } catch (error) {
                 console.error("Gagal simulasi sukses:", error);
                 showToast("Gagal memverifikasi pembayaran", "error");
                 btn.disabled = false;
-                btn.innerHTML = `Simulasi Bayar Berhasil`;
+                btn.innerHTML = originalText;
             }
         }
 
@@ -766,7 +781,7 @@
             if (!plan) return;
 
             selectedPlanForUpgrade = plan;
-            currentOrderId = null; // Reset order ID
+            currentOrderId = null; 
 
             document.getElementById('modal-plan-name').textContent = plan.name;
             document.getElementById('modal-plan-price').textContent = `Rp ${plan.price.toLocaleString('id-ID')}`;
@@ -784,7 +799,6 @@
             btnConfirm.disabled = false;
             btnConfirm.innerHTML = `<span>Bayar Sekarang</span>`;
 
-            // Reset tombol simulasi
             const btnSim = document.getElementById('btn-simulate-payment');
             if(btnSim) {
                 btnSim.disabled = false;
