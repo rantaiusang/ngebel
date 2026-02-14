@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#0f766e">
     <meta name="description" content="Katalog hasil bumi pertanian segar dari Ngebel Smart Agri.">
 
-    <!-- Google Fonts (Sesuai halaman lain) -->
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -16,7 +16,7 @@
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     
-    <!-- Babel untuk JSX -->
+    <!-- Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
     <!-- Supabase Client -->
@@ -27,7 +27,7 @@
 
     <style>
         :root {
-            /* Palette Konsisten dengan desain Ngebel */
+            /* Palette Warna Tetap Sama */
             --primary: #0f766e; --primary-dark: #0d5f58; --primary-light: #14b8a6;
             --accent: #f59e0b; 
             --bg-body: #f8fafc;
@@ -63,11 +63,7 @@
             transform: translateY(40px);
             transition: opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
-        
-        .reveal-on-scroll.is-visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
+        .reveal-on-scroll.is-visible { opacity: 1; transform: translateY(0); }
 
         /* --- Scrollbar Styling --- */
         ::-webkit-scrollbar { width: 8px; }
@@ -165,14 +161,17 @@
 
         .bubble-search:focus + .search-icon { color: var(--accent); }
 
-        /* --- Product Card Style --- */
+        /* --- PRODUCT CARD STYLE (Updated Click Interaction) --- */
         .product-card {
             background: white; border-radius: var(--radius-xl); overflow: hidden;
             box-shadow: var(--shadow-soft); border: 1px solid #f1f5f9;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             display: flex; flex-direction: column;
+            cursor: pointer; /* Indikasi bisa diklik */
+            height: 100%;
         }
         .product-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-hover); }
+        
         .card-img-wrapper { position: relative; width: 100%; aspect-video; overflow: hidden; background: #f1f5f9; }
         .card-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
         .product-card:hover .card-img { transform: scale(1.05); }
@@ -180,60 +179,109 @@
         .card-badge {
             position: absolute; top: 12px; right: 12px;
             padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700;
-            backdrop-filter: blur(4px); box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            backdrop-filter: blur(4px); box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 2;
         }
         .badge-ready { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
         .badge-preorder { background: #ffedd5; color: #9a3412; border: 1px solid #fdba74; }
         
         .card-body { padding: 20px; flex: 1; display: flex; flex-direction: column; }
         .card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; color: var(--text-main); }
-        .card-desc { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .card-desc { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; flex-grow: 0; }
         
         .card-footer { margin-top: auto; padding-top: 16px; border-top: 1px dashed #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
         .price { font-size: 1rem; font-weight: 700; color: var(--primary); }
         
-        .btn-card {
-            padding: 8px 16px; border-radius: 12px; font-size: 0.8rem; font-weight: 600;
-            border: none; cursor: pointer; transition: background 0.2s;
+        .view-detail-text {
+            font-size: 0.8rem; font-weight: 600; color: var(--primary);
+            display: flex; align-items: center; gap: 4px;
         }
-        .btn-card-wa { background: #25D366; color: white; }
-        .btn-card-wa:hover { background: #128C7E; }
-        .btn-card-po { background: var(--accent); color: white; }
-        .btn-card-po:hover { background: #d97706; }
 
-        /* --- Modal Style --- */
+        /* --- MODAL POP-UP DETAIL PRODUK (Style dari Katalog Parfum) --- */
         .modal-overlay {
-            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px);
-            display: flex; align-items: center; justify-content: center; z-index: 2000;
-            opacity: 0; visibility: hidden; transition: all 0.3s ease;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 2000;
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px;
+            opacity: 0; visibility: hidden;
+            transition: all 0.3s ease;
         }
+        
         .modal-overlay.active { opacity: 1; visibility: visible; }
+
         .modal-content {
-            background: white; width: 90%; max-width: 400px; padding: 30px;
-            border-radius: 24px; box-shadow: var(--shadow-hover);
-            transform: translateY(20px); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            position: relative;
+            transform: translateY(20px);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
+        
         .modal-overlay.active .modal-content { transform: translateY(0); }
-        .quantity-input { 
-            width: 60px; text-align: center; border: none; background: transparent; 
-            font-weight: 700; font-size: 1.1rem; color: var(--text-main);
+
+        /* Modal Close Button */
+        .modal-close-btn {
+            position: absolute; top: 16px; right: 16px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none; width: 36px; height: 36px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; z-index: 10;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            color: var(--text-main);
+            transition: transform 0.2s;
         }
+        .modal-close-btn:hover { transform: scale(1.1); background: white; }
+
+        /* Modal Image */
+        .modal-img-wrapper {
+            width: 100%;
+            aspect-ratio: 4/3; 
+            overflow: hidden;
+            background: #f1f5f9;
+        }
+        .modal-img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Modal Body */
+        .modal-body { padding: 24px; overflow-y: auto; }
+        .modal-title { font-size: 1.5rem; font-weight: 700; color: var(--text-main); margin-bottom: 8px; line-height: 1.2; }
+        .modal-meta { 
+            display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;
+        }
+        .modal-stock-info {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 12px; border-radius: 8px;
+            font-size: 0.85rem; font-weight: 600;
+        }
+        .stock-ready { background: #dcfce7; color: #166534; }
+        .stock-po { background: #ffedd5; color: #9a3412; }
+
+        .modal-desc { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 20px; white-space: pre-wrap; }
+        
+        /* Modal Footer */
+        .modal-footer { padding: 16px 24px 24px; border-top: 1px solid #f1f5f9; background: #fafafa; }
+        .btn-full-width { width: 100%; justify-content: center; padding: 14px; font-size: 1rem; }
 
         /* --- GRID RESPONSIVE --- */
         .grid-products { 
             display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
         }
 
-        /* Animasi Loading */
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* --- PRELOADER STYLE (SAMA SEPERTI HALAMAN LAIN) --- */
+        /* --- PRELOADER STYLE --- */
         #preloader {
             position: fixed; inset: 0; background: #ffffff; z-index: 9999; 
             display: flex; justify-content: center; align-items: center; flex-direction: column;
             transition: opacity 0.6s ease-in-out, visibility 0.6s;
         }
-        .loader-content { text-align: center; }
         .brand-logo-loader {
             font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 2rem;
             color: var(--primary); margin-bottom: 20px; letter-spacing: -1px;
@@ -257,7 +305,7 @@
 </head>
 <body class="bg-[#f8fafc] text-[#1e293b] antialiased selection:bg-emerald-100 selection:text-[#0f766e]">
 
-    <!-- PRELOADER (DITEMPATKAN DI LUAR REACT) -->
+    <!-- PRELOADER -->
     <div id="preloader">
         <div class="loader-content">
            <div class="modern-spinner"></div>
@@ -267,7 +315,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+        const { useState, useEffect } = React;
         const { createClient } = supabase;
 
         // --- KONFIGURASI SUPABASE ---
@@ -285,71 +333,111 @@
             return <i data-lucide={name} width={size} height={size} className={className}></i>;
         };
 
-        // --- MODAL PRE-ORDER COMPONENT ---
-        const PreOrderModal = ({ isOpen, onClose, product }) => {
-            const [quantity, setQuantity] = useState(1);
-
+        // --- 1. MODAL DETAIL PRODUK (Sesuai Style Parfum) ---
+        const ProductDetailModal = ({ isOpen, onClose, product, onOrderClick }) => {
             if (!isOpen || !product) return null;
-
-            const handleConfirm = () => {
-                const message = `Halo TaniPro, saya ingin *Pre-Order*:\n\n📦 Produk: ${product.name}\n📅 Estimasi Panen: ${product.harvest_date || 'Hubungi Admin'}\n🔢 Jumlah: ${quantity} ${product.unit}\n\nMohon info ketersediaan dan pembayaran.`;
-                const url = `https://wa.me/${ADMIN_WA}?text=${encodeURIComponent(message)}`;
-                window.open(url, '_blank');
-                onClose();
-            };
+            
+            // Logika Stok
+            const isReady = product.is_available === true && product.stock > 0;
+            const stockText = isReady ? `Tersedia: ${product.stock} ${product.unit || 'unit'}` : `Estimasi Panen: ${product.harvest_date || 'Hubungi Admin'}`;
+            const stockClass = isReady ? 'stock-ready' : 'stock-po';
 
             return (
-                <div className={`modal-overlay ${isOpen ? 'active' : ''}`}>
-                    <div className="modal-content">
-                        <button onClick={onClose} style={{position:'absolute', top:'20px', right:'20px', background:'none', border:'none', cursor:'pointer', color:'#94a3b8'}}>
-                            <Icon name="x" size={24} />
+                <div className={`modal-overlay ${isOpen ? 'active' : ''}`} onClick={onClose}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        
+                        {/* Tombol Tutup */}
+                        <button className="modal-close-btn" onClick={onClose}>
+                            <Icon name="x" size={20} />
                         </button>
-                        <div style={{display:'flex', gap:'16px', marginBottom:'24px'}}>
-                            <img src={product.image_url} alt={product.name} style={{width:'80px', height:'80px', borderRadius:'16px', objectFit:'cover', background:'#f1f5f9'}} />
-                            <div>
-                                <h3 style={{fontSize:'1.25rem', fontWeight:'700', marginBottom:'4px'}}>{product.name}</h3>
-                                <div style={{color:'#d97706', fontSize:'0.85rem', fontWeight:'600', display:'flex', alignItems:'center', gap:'6px'}}>
-                                    <Icon name="clock" size={14} /> Est. Panen: {product.harvest_date || 'TBD'}
+
+                        {/* Gambar Besar */}
+                        <div className="modal-img-wrapper">
+                            {product.image_url ? (
+                                <img src={product.image_url} alt={product.name} className="modal-img" />
+                            ) : (
+                                <div style={{width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', background:'#e2e8f0', color:'#94a3b8'}}>
+                                    🌱
                                 </div>
-                            </div>
+                            )}
                         </div>
-                        <div style={{marginBottom:'24px'}}>
-                            <label style={{display:'block', fontSize:'0.85rem', color:'#64748b', marginBottom:'8px', fontWeight:'600'}}>Jumlah</label>
-                            <div style={{display:'flex', alignItems:'center', background:'#f8fafc', border:'1px solid #e2e8f0', borderRadius:'12px', overflow:'hidden'}}>
-                                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} style={{padding:'12px 16px', background:'white', border:'none', color:'#0f766e', fontWeight:'700', cursor:'pointer'}}>-</button>
-                                <input type="number" value={quantity} onChange={(e) => setQuantity(parseInt(e.target.value))} className="quantity-input" />
-                                <button onClick={() => setQuantity(quantity + 1)} style={{padding:'12px 16px', background:'white', border:'none', color:'#0f766e', fontWeight:'700', cursor:'pointer'}}>+</button>
+
+                        <div className="modal-body">
+                            <h2 className="modal-title">{product.name}</h2>
+                            
+                            <div className="modal-meta">
+                                <div className={`modal-stock-info ${stockClass}`}>
+                                    <Icon name={isReady ? "check-circle" : "clock"} size={16} />
+                                    {stockText}
+                                </div>
+                                {product.category && (
+                                    <div style={{background:'#f1f5f9', color:'#64748b', padding:'6px 12px', borderRadius:'8px', fontSize:'0.85rem', fontWeight:'600'}}>
+                                        {product.category}
+                                    </div>
+                                )}
                             </div>
+
+                            {/* Deskripsi Lengkap */}
+                            <p className="modal-desc">{product.description || "Tidak ada deskripsi detail untuk produk ini."}</p>
                         </div>
-                        <button onClick={handleConfirm} className="btn-primary" style={{width:'100%', justifyContent:'center', background:'#25D366'}}>
-                            <Icon name="message-circle" /> Kirim ke WhatsApp
-                        </button>
+
+                        <div className="modal-footer">
+                            <button 
+                                onClick={() => onOrderClick(product)} 
+                                className="btn-primary btn-full-width"
+                            >
+                                <Icon name="message-circle" /> Pesan via WhatsApp
+                            </button>
+                        </div>
                     </div>
                 </div>
             );
         };
 
+        // --- 2. COMPONENT PRODUCT CARD (GRID) ---
+        const ProductCard = ({ product, onClick }) => {
+            const isReady = product.is_available === true && product.stock > 0;
+
+            return (
+                <div 
+                    className={`product-card reveal-on-scroll`} 
+                    onClick={() => onClick(product)} // Klik kartu memicu buka modal
+                >
+                    <div className="card-img-wrapper">
+                        {product.image_url ? (
+                            <img src={product.image_url} alt={product.name} className="card-img" />
+                        ) : (
+                            <div style={{width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', background:'#e2e8f0', color:'#94a3b8'}}>
+                                🌱
+                            </div>
+                        )}
+                        <div className={`card-badge ${isReady ? 'badge-ready' : 'badge-preorder'}`}>
+                            {isReady ? 'Ready Stock' : 'Pre-Order'}
+                        </div>
+                    </div>
+                    <div className="card-body">
+                        <h3 className="card-title">{product.name}</h3>
+                        <p className="card-desc">
+                            {product.description}
+                        </p>
+                        <div className="card-footer">
+                            <div className="price" style={{fontSize:'0.9rem'}}>
+                                {isReady ? `Stok: ${product.stock}` : 'Pre-Order'}
+                            </div>
+                            <div className="view-detail-text">
+                                Lihat Detail <Icon name="arrow-right" size={14} />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
         function CatalogPage() {
             const [loading, setLoading] = useState(true);
             const [products, setProducts] = useState([]);
-            const [selectedProduct, setSelectedProduct] = useState(null);
-            
-            // --- STATE SEARCH BARU ---
+            const [selectedProduct, setSelectedProduct] = useState(null); // State untuk Modal
             const [searchQuery, setSearchQuery] = useState('');
-
-            // --- HOOK UNTUK SCROLL ANIMATION ---
-            const useOnScreen = (ref, rootMargin = "0px") => {
-                const [isIntersecting, setIntersecting] = useState(false);
-                useEffect(() => {
-                    const observer = new IntersectionObserver(
-                        ([entry]) => { setIntersecting(entry.isIntersecting); },
-                        { rootMargin, threshold: 0.1 }
-                    );
-                    if (ref.current) observer.observe(ref.current);
-                    return () => { if (ref.current) observer.unobserve(ref.current); };
-                }, [ref, rootMargin]);
-                return isIntersecting;
-            };
 
             // --- FETCH PRODUCTS ---
             useEffect(() => {
@@ -370,7 +458,6 @@
                 };
                 fetchProducts();
                 
-                // Realtime
                 const channel = supabaseClient
                     .channel('public:katalogtanipro')
                     .on('postgres_changes', { event: '*', schema: 'public', table: 'katalogtanipro' }, (payload) => {
@@ -382,25 +469,36 @@
                 return () => { supabaseClient.removeChannel(channel); };
             }, []);
 
-            // --- LOGIKA PENCARIAN ---
             const filteredProducts = products.filter(product => {
+                if (!searchQuery) return true;
                 const query = searchQuery.toLowerCase();
                 const matchName = product.name && product.name.toLowerCase().includes(query);
-                const matchHarvest = product.harvest_date && product.harvest_date.toLowerCase().includes(query);
-                const matchCategory = product.category && product.category.toLowerCase().includes(query);
-
-                return matchName || matchHarvest || matchCategory;
+                const matchDesc = product.description && product.description.toLowerCase().includes(query);
+                const matchCat = product.category && product.category.toLowerCase().includes(query);
+                return matchName || matchDesc || matchCat;
             });
 
+            // Handle klik kartu -> Buka Modal
+            const handleCardClick = (product) => {
+                setSelectedProduct(product);
+            };
+
+            // Handle klik tombol "Pesan" di dalam Modal
             const handleOrderClick = (product) => {
-                const isPreOrder = !product.is_available || product.stock === 0;
-                if (isPreOrder) {
-                    setSelectedProduct(product);
+                // Tutup modal
+                setSelectedProduct(null);
+                
+                const isReady = product.is_available === true && product.stock > 0;
+                let message = "";
+
+                if (isReady) {
+                    message = `Halo Admin, saya ingin memesan hasil panen:\n\n📦 *${product.name}*\n🌱 Stok Tersedia: ${product.stock} ${product.unit || 'unit'}\n\nMohon info total pembayaran.`;
                 } else {
-                    const message = `Halo TaniPro, saya ingin memesan ${product.name}.`;
-                    const url = `https://wa.me/${ADMIN_WA}?text=${encodeURIComponent(message)}`;
-                    window.open(url, '_blank');
+                    message = `Halo Admin, saya ingin *Pre-Order* produk:\n\n📦 *${product.name}*\n📅 Estimasi Panen: ${product.harvest_date || 'TBD'}\n\nMohon info ketersediaan dan syarat pemesanan.`;
                 }
+
+                const url = `https://wa.me/${ADMIN_WA}?text=${encodeURIComponent(message)}`;
+                window.open(url, '_blank');
             };
 
             useEffect(() => { lucide.createIcons(); });
@@ -415,33 +513,37 @@
             return (
                 <div style={{minHeight:'100vh', backgroundColor:'var(--bg-body)'}}>
                     
-                    <PreOrderModal isOpen={!!selectedProduct} onClose={() => setSelectedProduct(null)} product={selectedProduct} />
+                    {/* Modal Detail Produk */}
+                    <ProductDetailModal 
+                        isOpen={!!selectedProduct} 
+                        onClose={() => setSelectedProduct(null)} 
+                        product={selectedProduct}
+                        onOrderClick={handleOrderClick}
+                    />
 
-                    {/* --- HEADER --- */}
+                    {/* HEADER */}
                     <header>
                         <div className="nav-content">
                             <div className="back-btn" onClick={() => window.location.href = 'katalog.html'}>
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                                 Kembali
                             </div>
-                            <div className="page-title"></div>
                         </div>
                     </header>
 
-                    {/* --- HERO --- */}
+                    {/* HERO SECTION */}
                     <section className="container reveal-on-scroll" style={{padding:'60px 20px 40px', textAlign:'center'}}>
                         <span style={{display:'inline-block', padding:'6px 16px', borderRadius:'50px', background:'#dcfce7', color:'#166534', fontSize:'0.8rem', fontWeight:'700', marginBottom:'16px'}}>100% Hasil Bumi Lokal</span>
                         <h1 style={{fontSize:'clamp(2rem, 5vw, 3rem)', color:'var(--primary-dark)', marginBottom:'16px'}}>Katalog Hasil Panen</h1>
                         <p style={{color:'var(--text-muted)', maxWidth:'600px', margin:'0 auto'}}>
-                            Pilih produk pertanian terbaik dari petani mitra Ngebel. Segar, organik, dan transparan.
+                            Klik produk untuk melihat detail kualitas, ketersediaan stok, dan estimasi panen.
                         </p>
                         
-                        {/* --- SEARCH BUBBLE UI --- */}
                         <div className="search-wrapper reveal-on-scroll">
                             <input 
                                 type="text" 
                                 className="bubble-search" 
-                                placeholder="Cari buah atau musim panen (mis: Durian, Oktober)..."
+                                placeholder="Cari buah, sayur, atau musim panen..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
@@ -451,60 +553,28 @@
                         </div>
                     </section>
 
-                    {/* --- GRID --- */}
+                    {/* GRID SECTION */}
                     <section className="container">
                         {filteredProducts.length === 0 ? (
                             <div style={{textAlign:'center', padding:'60px 20px', color:'#94a3b8'}}>
-                                {searchQuery ? 'Tidak ditemukan produk yang sesuai dengan pencarian.' : 'Belum ada produk.'}
+                                {searchQuery ? 'Tidak ditemukan produk yang sesuai dengan pencarian.' : 'Belum ada produk katalog.'}
                             </div>
                         ) : (
                             <div className="grid-products">
-                                {filteredProducts.map((product, index) => {
-                                    const isReady = product.is_available === true && product.stock > 0;
-                                    const imageFilter = !isReady ? "grayscale(1) opacity(0.8)" : "";
-                                    
-                                    return (
-                                        <div key={product.id} className={`product-card reveal-on-scroll`} style={{ transitionDelay: `${index * 100}ms` }}>
-                                            <div className="card-img-wrapper">
-                                                <img src={product.image_url} alt={product.name} className={`card-img ${imageFilter}`} />
-                                                <div className={`card-badge ${isReady ? 'badge-ready' : 'badge-preorder'}`}>
-                                                    {isReady ? 'Ready Stock' : 'Pre-Order'}
-                                                </div>
-                                            </div>
-                                            <div className="card-body">
-                                                <h3 className="card-title">{product.name}</h3>
-                                                <p className="card-desc">{product.description}</p>
-                                                
-                                                <div className="card-footer">
-                                                    <div>
-                                                        <div className="price" style={{fontSize:'0.9rem'}}>
-                                                            {isReady ? `Stok: ${product.stock} ${product.unit}` : 'Est. Panen:'}
-                                                        </div>
-                                                        {!isReady && (
-                                                            <div style={{fontSize:'0.75rem', color:'#94a3b8'}}>
-                                                                {product.harvest_date || 'Hubungi Admin'}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    
-                                                    <button 
-                                                        onClick={() => handleOrderClick(product)} 
-                                                        className={`btn-card ${isReady ? 'btn-card-wa' : 'btn-card-po'}`}
-                                                    >
-                                                        {isReady ? 'Pesan' : 'PO'} <Icon name={isReady ? "message-circle" : "shopping-bag"} size={14}/>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )
-                                })}
+                                {filteredProducts.map((product, index) => (
+                                    <ProductCard 
+                                        key={product.id} 
+                                        product={product} 
+                                        onClick={handleCardClick}
+                                    />
+                                ))}
                             </div>
                         )}
                     </section>
 
-                    {/* --- FOOTER --- */}
+                    {/* FOOTER */}
                     <footer className="reveal-on-scroll" style={{marginTop:'80px', padding:'40px 20px', borderTop:'1px solid #e2e8f0', textAlign:'center'}}>
-                        <p style={{color:'#64748b', marginBottom:'16px'}}></p>
+                        <p style={{color:'#64748b', marginBottom:'16px'}}>Butuh bantuan memilih produk terbaik?</p>
                         <a 
                             href={`https://wa.me/${ADMIN_WA}`} 
                             target="_blank"
@@ -523,41 +593,28 @@
         root.render(<CatalogPage />);
     </script>
 
-    <!-- SCRIPT GLOBAL UNTUK MENANGANI KELAS REVEAL & PRELOADER -->
+    <!-- SCRIPT GLOBAL -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // 1. Observer Logic
-            const observerOptions = {
-                root: null,
-                rootMargin: '0px',
-                threshold: 0.1
-            };
-
+            const observerOptions = { root: null, rootMargin: '0px', threshold: 0.1 };
             const observer = new IntersectionObserver((entries, observer) => {
                 entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('is-visible');
-                    }
+                    if (entry.isIntersecting) entry.target.classList.add('is-visible');
                 });
             }, observerOptions);
 
             const observeElements = () => {
-                document.querySelectorAll('.reveal-on-scroll:not(.is-visible)').forEach(el => {
-                    observer.observe(el);
-                });
+                document.querySelectorAll('.reveal-on-scroll:not(.is-visible)').forEach(el => observer.observe(el));
             };
-
             observeElements();
-            
             const mutationObserver = new MutationObserver(observeElements);
             mutationObserver.observe(document.body, { childList: true, subtree: true });
         });
 
-        // 2. Preloader Logic (Global Window Load)
         window.addEventListener('load', () => {
             setTimeout(() => {
                 const preloader = document.getElementById('preloader');
-                if(preloader) {
+                if (preloader) {
                     preloader.style.opacity = '0';
                     preloader.style.visibility = 'hidden';
                     setTimeout(() => preloader.remove(), 600);
