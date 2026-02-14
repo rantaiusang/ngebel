@@ -161,18 +161,26 @@
 
         .bubble-search:focus + .search-icon { color: var(--accent); }
 
-        /* --- PRODUCT CARD STYLE (Updated Click Interaction) --- */
+        /* --- PRODUCT CARD STYLE (Updated for Alignment) --- */
         .product-card {
             background: white; border-radius: var(--radius-xl); overflow: hidden;
             box-shadow: var(--shadow-soft); border: 1px solid #f1f5f9;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             display: flex; flex-direction: column;
-            cursor: pointer; /* Indikasi bisa diklik */
-            height: 100%;
+            cursor: pointer;
+            height: 100%; /* Memastikan kartu mengisi tinggi grid yang sama */
         }
         .product-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-hover); }
         
-        .card-img-wrapper { position: relative; width: 100%; aspect-video; overflow: hidden; background: #f1f5f9; }
+        .card-img-wrapper { 
+            position: relative; 
+            width: 100%; 
+            /* TAMBAHAN: Aspect ratio 4/3 membuat semua gambar memiliki tinggi yang sama persis */
+            aspect-ratio: 4/3; 
+            overflow: hidden; 
+            background: #f1f5f9; 
+            flex-shrink: 0; /* Mencegah gambar mengecil */
+        }
         .card-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
         .product-card:hover .card-img { transform: scale(1.05); }
         
@@ -184,11 +192,25 @@
         .badge-ready { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
         .badge-preorder { background: #ffedd5; color: #9a3412; border: 1px solid #fdba74; }
         
-        .card-body { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+        .card-body { 
+            padding: 20px; 
+            flex: 1; /* Membiarkan body memenuhi sisa ruang */
+            display: flex; 
+            flex-direction: column; 
+        }
         .card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; color: var(--text-main); }
-        .card-desc { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; flex-grow: 0; }
+        .card-desc { 
+            font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; 
+            line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; 
+            -webkit-box-orient: vertical; overflow: hidden; 
+            flex-grow: 0; 
+        }
         
-        .card-footer { margin-top: auto; padding-top: 16px; border-top: 1px dashed #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+        .card-footer { 
+            margin-top: auto; /* TAMBAHAN: Ini mendorong footer ke paling bawah agar sejajar */
+            padding-top: 16px; border-top: 1px dashed #e2e8f0; 
+            display: flex; justify-content: space-between; align-items: center; 
+        }
         .price { font-size: 1rem; font-weight: 700; color: var(--primary); }
         
         .view-detail-text {
@@ -196,7 +218,7 @@
             display: flex; align-items: center; gap: 4px;
         }
 
-        /* --- MODAL POP-UP DETAIL PRODUK (Style dari Katalog Parfum) --- */
+        /* --- MODAL POP-UP DETAIL PRODUK --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.6);
@@ -228,7 +250,6 @@
         
         .modal-overlay.active .modal-content { transform: translateY(0); }
 
-        /* Modal Close Button */
         .modal-close-btn {
             position: absolute; top: 16px; right: 16px;
             background: rgba(255, 255, 255, 0.9);
@@ -242,7 +263,6 @@
         }
         .modal-close-btn:hover { transform: scale(1.1); background: white; }
 
-        /* Modal Image */
         .modal-img-wrapper {
             width: 100%;
             aspect-ratio: 4/3; 
@@ -251,7 +271,6 @@
         }
         .modal-img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* Modal Body */
         .modal-body { padding: 24px; overflow-y: auto; }
         .modal-title { font-size: 1.5rem; font-weight: 700; color: var(--text-main); margin-bottom: 8px; line-height: 1.2; }
         .modal-meta { 
@@ -267,13 +286,16 @@
 
         .modal-desc { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 20px; white-space: pre-wrap; }
         
-        /* Modal Footer */
         .modal-footer { padding: 16px 24px 24px; border-top: 1px solid #f1f5f9; background: #fafafa; }
         .btn-full-width { width: 100%; justify-content: center; padding: 14px; font-size: 1rem; }
 
         /* --- GRID RESPONSIVE --- */
         .grid-products { 
-            display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            display: grid; 
+            gap: 24px; 
+            /* Alur grid otomatis, tetapi tinggi baris akan konsisten karena kartu diatur height: 100% */
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            align-items: stretch; /* Memastikan semua anak (kartu) memiliki tinggi yang sama */
         }
 
         /* --- PRELOADER STYLE --- */
@@ -281,11 +303,6 @@
             position: fixed; inset: 0; background: #ffffff; z-index: 9999; 
             display: flex; justify-content: center; align-items: center; flex-direction: column;
             transition: opacity 0.6s ease-in-out, visibility 0.6s;
-        }
-        .brand-logo-loader {
-            font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 2rem;
-            color: var(--primary); margin-bottom: 20px; letter-spacing: -1px;
-            animation: fadeInUp 0.8s ease-out;
         }
         .modern-spinner {
             width: 50px; height: 50px;
@@ -299,7 +316,6 @@
             border-radius: 50%; animation: spin 0.8s linear infinite reverse;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
     </style>
 </head>
@@ -333,11 +349,10 @@
             return <i data-lucide={name} width={size} height={size} className={className}></i>;
         };
 
-        // --- 1. MODAL DETAIL PRODUK (Sesuai Style Parfum) ---
+        // --- 1. MODAL DETAIL PRODUK ---
         const ProductDetailModal = ({ isOpen, onClose, product, onOrderClick }) => {
             if (!isOpen || !product) return null;
             
-            // Logika Stok
             const isReady = product.is_available === true && product.stock > 0;
             const stockText = isReady ? `Tersedia: ${product.stock} ${product.unit || 'unit'}` : `Estimasi Panen: ${product.harvest_date || 'Hubungi Admin'}`;
             const stockClass = isReady ? 'stock-ready' : 'stock-po';
@@ -345,13 +360,9 @@
             return (
                 <div className={`modal-overlay ${isOpen ? 'active' : ''}`} onClick={onClose}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
-                        
-                        {/* Tombol Tutup */}
                         <button className="modal-close-btn" onClick={onClose}>
                             <Icon name="x" size={20} />
                         </button>
-
-                        {/* Gambar Besar */}
                         <div className="modal-img-wrapper">
                             {product.image_url ? (
                                 <img src={product.image_url} alt={product.name} className="modal-img" />
@@ -361,10 +372,8 @@
                                 </div>
                             )}
                         </div>
-
                         <div className="modal-body">
                             <h2 className="modal-title">{product.name}</h2>
-                            
                             <div className="modal-meta">
                                 <div className={`modal-stock-info ${stockClass}`}>
                                     <Icon name={isReady ? "check-circle" : "clock"} size={16} />
@@ -376,16 +385,10 @@
                                     </div>
                                 )}
                             </div>
-
-                            {/* Deskripsi Lengkap */}
                             <p className="modal-desc">{product.description || "Tidak ada deskripsi detail untuk produk ini."}</p>
                         </div>
-
                         <div className="modal-footer">
-                            <button 
-                                onClick={() => onOrderClick(product)} 
-                                className="btn-primary btn-full-width"
-                            >
+                            <button onClick={() => onOrderClick(product)} className="btn-primary btn-full-width">
                                 <Icon name="message-circle" /> Pesan via WhatsApp
                             </button>
                         </div>
@@ -399,10 +402,7 @@
             const isReady = product.is_available === true && product.stock > 0;
 
             return (
-                <div 
-                    className={`product-card reveal-on-scroll`} 
-                    onClick={() => onClick(product)} // Klik kartu memicu buka modal
-                >
+                <div className="product-card reveal-on-scroll" onClick={() => onClick(product)}>
                     <div className="card-img-wrapper">
                         {product.image_url ? (
                             <img src={product.image_url} alt={product.name} className="card-img" />
@@ -436,10 +436,9 @@
         function CatalogPage() {
             const [loading, setLoading] = useState(true);
             const [products, setProducts] = useState([]);
-            const [selectedProduct, setSelectedProduct] = useState(null); // State untuk Modal
+            const [selectedProduct, setSelectedProduct] = useState(null);
             const [searchQuery, setSearchQuery] = useState('');
 
-            // --- FETCH PRODUCTS ---
             useEffect(() => {
                 const fetchProducts = async () => {
                     try {
@@ -478,16 +477,12 @@
                 return matchName || matchDesc || matchCat;
             });
 
-            // Handle klik kartu -> Buka Modal
             const handleCardClick = (product) => {
                 setSelectedProduct(product);
             };
 
-            // Handle klik tombol "Pesan" di dalam Modal
             const handleOrderClick = (product) => {
-                // Tutup modal
                 setSelectedProduct(null);
-                
                 const isReady = product.is_available === true && product.stock > 0;
                 let message = "";
 
@@ -512,8 +507,6 @@
 
             return (
                 <div style={{minHeight:'100vh', backgroundColor:'var(--bg-body)'}}>
-                    
-                    {/* Modal Detail Produk */}
                     <ProductDetailModal 
                         isOpen={!!selectedProduct} 
                         onClose={() => setSelectedProduct(null)} 
@@ -521,7 +514,6 @@
                         onOrderClick={handleOrderClick}
                     />
 
-                    {/* HEADER */}
                     <header>
                         <div className="nav-content">
                             <div className="back-btn" onClick={() => window.location.href = 'katalog.html'}>
@@ -531,7 +523,6 @@
                         </div>
                     </header>
 
-                    {/* HERO SECTION */}
                     <section className="container reveal-on-scroll" style={{padding:'60px 20px 40px', textAlign:'center'}}>
                         <span style={{display:'inline-block', padding:'6px 16px', borderRadius:'50px', background:'#dcfce7', color:'#166534', fontSize:'0.8rem', fontWeight:'700', marginBottom:'16px'}}>100% Hasil Bumi Lokal</span>
                         <h1 style={{fontSize:'clamp(2rem, 5vw, 3rem)', color:'var(--primary-dark)', marginBottom:'16px'}}>Katalog Hasil Panen</h1>
@@ -553,7 +544,6 @@
                         </div>
                     </section>
 
-                    {/* GRID SECTION */}
                     <section className="container">
                         {filteredProducts.length === 0 ? (
                             <div style={{textAlign:'center', padding:'60px 20px', color:'#94a3b8'}}>
@@ -572,7 +562,6 @@
                         )}
                     </section>
 
-                    {/* FOOTER */}
                     <footer className="reveal-on-scroll" style={{marginTop:'80px', padding:'40px 20px', borderTop:'1px solid #e2e8f0', textAlign:'center'}}>
                         <p style={{color:'#64748b', marginBottom:'16px'}}>Butuh bantuan memilih produk terbaik?</p>
                         <a 
