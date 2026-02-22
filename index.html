@@ -61,11 +61,16 @@
         @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin-slow { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
         /* Efek Like & Pulse */
         @keyframes likeBounce { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
         @keyframes pulse-red { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.5); } 100% { opacity: 1; transform: scale(1); } }
         @keyframes scanMap { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
+        
+        /* Chat Widget Animations */
+        @keyframes chatBubblePop { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes slideInUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
         /* --- 3. COMPONENTS --- */
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 2; }
@@ -190,27 +195,20 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
         .blink-dot { width: 8px; height: 8px; background: #ef4444; border-radius: 50%; animation: pulse-red 1s infinite; }
-        @keyframes pulse-red { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
 
         /* Simulasi Peta Digital dengan CSS */
-        .live-map-overlay {
-            position: absolute; inset: 0; background: rgba(15, 118, 110, 0.1); /* Overlay hijau tipis */
-            z-index: 2;
-        }
+        .live-map-overlay { position: absolute; inset: 0; background: rgba(15, 118, 110, 0.1); z-index: 2; }
         .scan-line {
             position: absolute; left: 0; width: 100%; height: 2px;
             background: var(--accent); box-shadow: 0 0 15px var(--accent);
-            animation: scanMap 3s linear infinite; opacity: 0.7;
-            z-index: 3;
+            animation: scanMap 3s linear infinite; opacity: 0.7; z-index: 3;
         }
-        @keyframes scanMap { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
-
         .map-point {
             position: absolute; width: 12px; height: 12px; background: var(--accent); border: 2px solid white; border-radius: 50%;
             box-shadow: 0 0 15px var(--accent); z-index: 4;
         }
-        .mp1 { top: 30%; left: 25%; animation: pulse-red 2s infinite; } /* Durian */
-        .mp2 { top: 60%; left: 70%; animation: pulse-red 3s infinite 0.5s; } /* Manggis */
+        .mp1 { top: 30%; left: 25%; animation: pulse-red 2s infinite; }
+        .mp2 { top: 60%; left: 70%; animation: pulse-red 3s infinite 0.5s; }
 
         .preview-actions {
             display: flex; justify-content: space-between; align-items: center;
@@ -259,59 +257,296 @@
         .toast.show { transform: translateX(0); }
 
         /* =========================================
-           UPDATE: CLEAN WHITE PRELOADER STYLE
+           UPDATE: LIVE CHAT WIDGET (WEB3 STYLE)
            ========================================= */
-        #preloader {
-            position: fixed; inset: 0; 
-            background: #ffffff; /* Putih Bersih */
-            z-index: 9999; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
+        
+        /* Container Utama Chat */
+        .chat-widget-container {
+            position: fixed;
+            bottom: 100px; 
+            right: 20px;
+            z-index: 9999;
+            display: flex;
             flex-direction: column;
-            transition: opacity 0.6s ease-in-out, visibility 0.6s;
+            align-items: flex-end;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        /* --- TOMBOL FLOATING (FAB) DENGAN LOGO WEB 3 --- */
+        .chat-fab {
+            width: 64px;
+            height: 64px;
+            border-radius: 16px; /* Bentuk lebih kotak tapi tumpul (squircle) ala iOS/Web3 */
+            background: linear-gradient(135deg, var(--primary) 0%, #0d9488 100%);
+            color: white;
+            border: none;
+            box-shadow: 0 10px 30px rgba(15, 118, 110, 0.4), 0 0 0 4px rgba(15, 118, 110, 0.1); /* Double ring glow */
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden; /* Untuk animasi background */
+        }
+
+        /* Efek Glass/Glow pada Hover */
+        .chat-fab:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(15, 118, 110, 0.5), 0 0 0 6px rgba(15, 118, 110, 0.15);
+        }
+
+        /* Efek Ripple Background (Opsional) */
+        .chat-fab::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 60%);
+            opacity: 0;
+            transform: scale(0.5);
+            transition: opacity 0.4s, transform 0.4s;
+        }
+        .chat-fab:hover::before {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* SVG Wrapper untuk Logo */
+        .web3-logo {
+            width: 32px;
+            height: 32px;
+            position: relative;
+            z-index: 2;
         }
         
-        .loader-content {
-            text-align: center;
+        /* Animasi berputar untuk elemen luar logo */
+        .web3-logo-outer {
+            animation: spin-slow 8s linear infinite;
+            transform-origin: center;
+        }
+        .web3-logo-inner {
+            transform-origin: center;
         }
 
-        .brand-logo-loader {
-            font-family: 'Outfit', sans-serif;
-            font-weight: 800;
-            font-size: 2rem;
-            color: var(--primary); /* Warna Brand */
-            margin-bottom: 20px;
-            letter-spacing: -1px;
-            animation: fadeInUp 0.8s ease-out;
-        }
-
-        /* Modern Double Ring Spinner */
-        .modern-spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid rgba(15, 118, 110, 0.1); /* Ring luar tipis transparan */
-            border-left-color: var(--primary); /* Warna Utama */
+        /* Badge Notifikasi */
+        .chat-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            background: #ef4444;
+            border: 3px solid var(--bg-body);
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            font-size: 11px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse-red 2s infinite;
+            z-index: 10;
+        }
+
+        /* Jendela Chat Box */
+        .chat-box {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            width: 340px;
+            height: 480px;
+            border-radius: 24px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.25);
+            margin-bottom: 20px;
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.8);
+            transform-origin: bottom right;
+            animation: chatBubblePop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .chat-box.open {
+            display: flex;
+        }
+
+        /* Header Chat */
+        .chat-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #0d9488 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
             position: relative;
         }
-        
-        /* Ring dalam (Inner Ring) untuk efek kompleks */
-        .modern-spinner::after {
-            content: "";
-            position: absolute;
-            top: 6px; left: 6px; right: 6px; bottom: 6px;
-            border: 3px solid transparent;
-            border-top-color: var(--accent); /* Warna Aksen (Emas/Oranye) */
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite reverse; /* Berputar berlawanan arah */
+
+        .chat-avatar {
+            width: 42px;
+            height: 42px;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(5px);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            border: 1px solid rgba(255,255,255,0.3);
         }
 
-        @media (max-width: 767px) {
-            .bottom-nav { overflow-x: auto; justify-content: flex-start; gap: 6px; padding: 12px 10px; }
-            .bottom-nav::-webkit-scrollbar { display: none; }
-            .nav-item { flex: 0 0 auto !important; min-width: 70px; white-space: nowrap; }
+        .chat-info h4 { margin: 0; font-size: 1.05rem; font-family: 'Outfit'; letter-spacing: -0.5px; }
+        .chat-info span { font-size: 0.75rem; opacity: 0.9; display: block; font-weight: 500; }
+
+        .chat-close {
+            margin-left: auto;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        .chat-close:hover { background: rgba(255,255,255,0.4); }
+
+        /* Area Pesan (Body) */
+        .chat-body {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .chat-message {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            animation: slideInUp 0.3s ease-out;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        }
+
+        .message-bot {
+            background: white;
+            color: var(--text-main);
+            border-bottom-left-radius: 4px;
+            align-self: flex-start;
+            border: 1px solid #f1f5f9;
+        }
+
+        .message-user {
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 4px;
+            align-self: flex-end;
+            border: 1px solid var(--primary-light);
+        }
+
+        /* Input Area (Footer) */
+        .chat-footer {
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #f1f5f9;
+            display: flex;
+            gap: 12px;
+        }
+
+        .chat-input {
+            flex: 1;
+            border: 1px solid #e2e8f0;
+            border-radius: 24px;
+            padding: 12px 18px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.2s;
+            background: #f8fafc;
+        }
+
+        .chat-input:focus {
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
+        }
+
+        .chat-send {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .chat-send:hover { background: var(--primary-light); transform: scale(1.05); }
+        .chat-send:disabled { background: #cbd5e1; cursor: not-allowed; transform: none; }
+
+        /* Responsive Mobile */
+        @media (max-width: 480px) {
+            .chat-widget-container {
+                bottom: 90px;
+                right: 15px;
+            }
+            .chat-box {
+                width: 100%;
+                max-width: 320px;
+                height: 100vh; /* Full screen di mobile kecil */
+                max-height: 600px;
+                right: 0; 
+            }
+            .chat-fab {
+                width: 56px; height: 56px;
+            }
+        }
+        
+        /* Jika Desktop dengan sidebar (lebar > 768px) */
+        @media (min-width: 768px) {
+            .chat-widget-container {
+                bottom: 30px;
+                right: 30px;
+            }
+        }
+
+        /* =========================================
+           END OF CHAT STYLES
+           ========================================= */
+
+        /* PRELOADER STYLES */
+        #preloader {
+            position: fixed; inset: 0; background: #ffffff; z-index: 9999; 
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+            transition: opacity 0.6s ease-in-out, visibility 0.6s;
+        }
+        .loader-content { text-align: center; }
+        .brand-logo-loader {
+            font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 2rem;
+            color: var(--primary); margin-bottom: 20px; letter-spacing: -1px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        .modern-spinner {
+            width: 50px; height: 50px; border: 4px solid rgba(15, 118, 110, 0.1);
+            border-left-color: var(--primary); border-radius: 50%;
+            animation: spin 1s linear infinite; position: relative;
+        }
+        .modern-spinner::after {
+            content: ""; position: absolute; top: 6px; left: 6px; right: 6px; bottom: 6px;
+            border: 3px solid transparent; border-top-color: var(--accent); border-radius: 50%;
+            animation: spin 0.8s linear infinite reverse;
         }
     </style>
 </head>
@@ -320,7 +555,7 @@
     <!-- CLEAN WHITE PRELOADER -->
     <div id="preloader">
         <div class="loader-content">
-            <div class="brand-logo-loader"></div>
+
             <div class="modern-spinner"></div>
         </div>
     </div>
@@ -331,8 +566,6 @@
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.74 5.88-5.74 5.88-5.74-5.88L12 2.69M12 22a9.97 9.97 0 0 1-7.07-2.93l-1.41 1.41A11.97 11.97 0 0 0 12 24a11.97 11.97 0 0 0 8.49-3.52l-1.41-1.41A9.97 9.97 0 0 1 12 22z"/></svg>
             Ngebel
         </div>
-        
-        
     </header>
 
     <main class="container">
@@ -359,23 +592,18 @@
             
             <!-- PREVIEW CONTAINER -->
             <div class="grid-3">
-
-                <!-- CARD 1: PLATFORM KECERDASAN DAERAH -->
+                <!-- CARD 1 -->
                 <div class="preview-card" onclick="handlePreviewClick('Platform Kecerdasan Daerah', false)">
-                    <!-- Gambar: Representasi Dashboard Area Publik -->
-                    
                     <div class="preview-content">
                         <span class="preview-tag tech">Smart Region</span>
                         <h3>Platform Kecerdasan Daerah</h3>
                         <p style="font-size: 0.9rem; margin-bottom: 10px;">
                             Monitor pengunjung, cuaca, dan keamanan wilayah Telaga Ngebel secara real-time untuk pengambilan keputusan data-driven.
                         </p>
-                        
                         <div class="data-metric">
                             <span>🟢 Visitor: 1,248</span>
                             <span>🌡️ Suhu: 28°C</span>
                         </div>
-
                         <div class="preview-actions">
                             <span style="font-size: 0.8rem; color: var(--text-muted);">12 Sensor Aktif</span>
                             <button class="btn-like" onclick="event.stopPropagation(); toggleLike(this)">❤️</button>
@@ -383,41 +611,27 @@
                     </div>
                 </div>
 
-                <!-- CARD 2: IOT MONITORING (REALTIME FARM) -->
+                <!-- CARD 2 -->
                 <div class="preview-card" onclick="handlePreviewClick('IoT Smart Farm', true)">
-                    <!-- Gambar: Kebun/Durian -->
-                    <img 
-                        src="https://dikapquhusbwjccbqcsb.supabase.co/storage/v1/object/public/images/smart-farming-ngebel.webp" 
-                        alt="IoT Smart Farming Ngebel" 
-                        class="preview-image">
-
-                    
+                    <img src="https://dikapquhusbwjccbqcsb.supabase.co/storage/v1/object/public/images/smart-farming-ngebel.webp" alt="IoT" class="preview-image">
                     <div class="live-status-bar" style="background: var(--accent); color: white;">
                         <div class="blink-dot" style="background: white;"></div> LIVE
                     </div>
-
                     <div class="preview-content">
                         <span class="preview-tag tech">Smart Farming</span>
                         <h3>Monitoring Kebun</h3>
                         <p style="font-size: 0.9rem; margin-bottom: 10px;">
                             Kontrol irigasi otomatis dan pantau kesehatan tanaman durian berbasis data sensor kelembaban tanah.
                         </p>
-                        
-                        <!-- Overlay Map Simulasi (Scanning Effect) -->
                         <div style="position: relative; margin-top: 15px; background: #1e293b; height: 100px; border-radius: 8px; overflow: hidden;">
-                            <!-- Background Peta Abstrak -->
                             <div style="width: 100%; height: 100%; opacity: 0.2; background: radial-gradient(circle, #334155 1px, transparent 70%);"></div>
-                            
-                            <!-- Elemen Animasi -->
                             <div class="scan-line"></div>
-                            <div class="map-point mp1" title="Sensor Blok A"></div>
-                            <div class="map-point mp2" title="Sensor Blok B"></div>
-                            
+                            <div class="map-point mp1" title="Sensor A"></div>
+                            <div class="map-point mp2" title="Sensor B"></div>
                             <div style="position: absolute; bottom: 10px; right: 10px; font-size: 0.7rem; color: rgba(255,255,255,0.8); font-family: var(--font-mono);">
                                 Moist: 68% | Temp: 29°C
                             </div>
                         </div>
-
                         <div class="preview-actions">
                             <span style="font-size: 0.8rem; color: #ef4444; font-weight: 600;">🔒 Restricted</span>
                             <button class="btn-like" onclick="event.stopPropagation(); toggleLike(this)">❤️</button>
@@ -425,7 +639,7 @@
                     </div>
                 </div>
 
-                <!-- CARD 3: UMKM MARKETPLACE -->
+                <!-- CARD 3 -->
                 <div class="preview-card" onclick="handlePreviewClick('Marketplace UMKM', false)">
                     <div class="preview-content">
                         <span class="preview-tag">E-Commerce</span>
@@ -439,7 +653,6 @@
                         </div>
                     </div>
                 </div>
-
             </div>
         </section>
 
@@ -468,6 +681,67 @@
         </div>
     </div>
 
+    <!-- ============================================================ -->
+    <!-- LIVE CHAT WIDGET HTML (WEB3 LOGO EDITION) -->
+    <!-- ============================================================ -->
+    <div class="chat-widget-container">
+        <!-- Chat Box Window -->
+        <div class="chat-box" id="chat-box">
+            <div class="chat-header">
+                <div class="chat-avatar">
+                    <!-- Mini Web3 Logo di Header -->
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                </div>
+                <div class="chat-info">
+                    <h4>Ngebel Support</h4>
+                    <span>● Online & Instant</span>
+                </div>
+                <button class="chat-close" onclick="toggleChat()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            
+            <div class="chat-body" id="chat-body">
+                <div class="chat-message message-bot">
+                    Halo! Selamat datang di <b>Ngebel Smart Tourism</b>. Ada yang bisa kami bantu hari ini? 🚀
+                </div>
+            </div>
+            
+            <div class="chat-footer">
+                <input type="text" class="chat-input" id="chat-input" placeholder="Tulis pesan..." onkeypress="handleEnter(event)">
+                <button class="chat-send" id="chat-send-btn" onclick="sendMessage()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Floating Button dengan Logo Web 3 -->
+        <button class="chat-fab" onclick="toggleChat()">
+            <div class="chat-badge" id="chat-badge">1</div>
+            
+            <!-- LOGO WEB 3 (ISOMETRIC CUBE/HEXAGON SVG) -->
+            <div class="web3-logo">
+                <!-- Bagian Luar (Berputar) -->
+                <svg class="web3-logo-outer" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke-opacity="0.6"></path>
+                </svg>
+                <!-- Bagian Dalam (Statis / Solid) -->
+                <svg class="web3-logo-inner" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                    <polygon points="12 6 5 10 12 14 19 10 12 6"></polygon>
+                    <path d="M5 10v9l7 4v-9l-7-4z" opacity="0.7"></path>
+                    <path d="M19 10v9l-7 4v-9l7-4z" opacity="0.9"></path>
+                </svg>
+            </div>
+            
+            <!-- Icon Close (Hidden by default) -->
+            <svg id="chat-icon-close" style="display:none; position: absolute; z-index: 5;" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+    </div>
+    <!-- ============================================================ -->
+    <!-- END OF LIVE CHAT WIDGET HTML -->
+    <!-- ============================================================ -->
+
+
          <script>
         // --- KONFIGURASI SUPABASE ---
         const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
@@ -476,7 +750,7 @@
         const { createClient } = supabase;
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- KONFIGURASI MENU (PERBAIKAN) ---
+        // --- KONFIGURASI MENU ---
         const publicMenu = [
             { id: 'home', icon: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>', label: 'Home' },
             { id: 'explore', icon: '<circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 14.12 9.88 16.24 16.24 9.88"></polygon>', label: 'Explore', link: 'explore.html' },
@@ -490,14 +764,13 @@
         // --- INIT ---
         window.addEventListener('load', async () => {
             renderNav();
-            // Delay sedikit lebih lama agar animasi putaran spinner terlihat jelas
             setTimeout(() => {
                 const preloader = document.getElementById('preloader');
                 if(preloader) {
                     preloader.style.opacity = '0';
                     setTimeout(() => preloader.remove(), 600);
                 }
-            }, 1000); // Waktu tampil 1 detik
+            }, 1000);
         });
 
         // --- NAVIGATION LOGIC ---
@@ -533,12 +806,12 @@
             title.innerText = featureName;
             
             if (isRestricted) {
-                icon.innerText = '📡'; // Icon Sinyal
+                icon.innerText = '📡';
                 text.innerHTML = `Fitur <b>${featureName}</b> menggunakan sensor canggih (IoT).<br>Sistem berjalan 24/7 memantau kondisi real-time.<br><br><small style="color:#ef4444;">*Perlu Login untuk melihat detail data.</small>`;
                 btn.innerText = "Masuk";
                 btn.onclick = goToLogin;
             } else {
-                icon.innerText = '⛓️'; // Icon Blockchain (Perubahan disini)
+                icon.innerText = '⛓️';
                 text.innerHTML = `Akses publik untuk <b>${featureName}</b>. Data direnderkan secara umum, namun untuk kontrol penuh, silakan masuk.`;
                 btn.innerText = "Masuk";
                 btn.onclick = goToLogin;
@@ -584,21 +857,16 @@
             }, 3000);
         }
 
-        // --- FUNGSI LIKE (INTERAKSI VISUAL) ---
         function toggleLike(btn) {
-            // Hanya visual effect, tidak mengarah ke login
             btn.style.transform = "scale(1.2) rotate(-15deg)";
             setTimeout(() => {
                 btn.style.transform = "scale(1) rotate(0deg)";
             }, 200);
-            
-            // Opsional: Ubah icon jadi hati merah
             if(btn.innerText === '❤️') {
-                btn.innerHTML = '❤️'; // Bisa diganti svg heart merah jika ada
+                btn.innerHTML = '❤️';
             }
         }
 
-        // Menambahkan event listener untuk klik di luar modal (Perbaikan logika)
         const modal = document.getElementById('preview-modal');
         if(modal) {
             modal.addEventListener('click', (e) => {
@@ -607,23 +875,98 @@
         }
 
         // ============================================================
-        // BAGIAN TAMBAHAN AI (LOGGER) - SUDAH DIPERBAIKI
+        // LOGIKA LIVE CHAT WIDGET (UPDATED FOR WEB3 LOGO)
+        // ============================================================
+        
+        const chatBox = document.getElementById('chat-box');
+        const chatBody = document.getElementById('chat-body');
+        const chatInput = document.getElementById('chat-input');
+        const chatBadge = document.getElementById('chat-badge');
+        const chatIconClose = document.getElementById('chat-icon-close');
+        const web3Logo = document.querySelector('.web3-logo');
+
+        // Toggle Buka/Tutup Chat
+        function toggleChat() {
+            chatBox.classList.toggle('open');
+            
+            if (chatBox.classList.contains('open')) {
+                // Sembunyikan badge dan logo, munculkan icon close
+                chatBadge.style.display = 'none';
+                if(web3Logo) web3Logo.style.display = 'none';
+                chatIconClose.style.display = 'block';
+                setTimeout(() => chatInput.focus(), 300);
+            } else {
+                // Munculkan kembali logo
+                if(web3Logo) web3Logo.style.display = 'block';
+                chatIconClose.style.display = 'none';
+            }
+        }
+
+        // Handle Enter Key
+        function handleEnter(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
+
+        // Fungsi Kirim Pesan
+        async function sendMessage() {
+            const message = chatInput.value.trim();
+            if (!message) return;
+
+            // 1. Tampilkan pesan user di UI (Optimistic UI)
+            appendMessage('user', message);
+            chatInput.value = '';
+            
+            // Scroll ke bawah
+            chatBody.scrollTop = chatBody.scrollHeight;
+
+            // 2. Kirim ke API Telegram (Backend)
+            try {
+                const response = await fetch('/api/telegram', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message }),
+                });
+
+                if (response.ok) {
+                    console.log('✅ Pesan terkirim ke Telegram');
+                    showToast("Pesan terkirim!", "success");
+                } else {
+                    console.error('❌ Gagal mengirim ke API');
+                    showToast("Gagal mengirim pesan", "info");
+                    appendMessage('bot', 'Maaf, terjadi kesalahan saat mengirim pesan.');
+                }
+            } catch (error) {
+                console.error('Network Error:', error);
+                showToast("Error koneksi", "info");
+                appendMessage('bot', 'Koneksi bermasalah. Silakan coba lagi.');
+            }
+        }
+
+        // Helper: Tambahkan pesan ke layar
+        function appendMessage(sender, text) {
+            const div = document.createElement('div');
+            div.className = `chat-message ${sender === 'user' ? 'message-user' : 'message-bot'}`;
+            div.innerHTML = text; // Menggunakan innerHTML agar support <b>
+            chatBody.appendChild(div);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        // ============================================================
+        // END OF LIVE CHAT LOGIC
         // ============================================================
 
-        // --- 1. FUNGSI PELACAK AI (LOGGER) ---
+
+        // ============================================================
+        // BAGIAN TAMBAHAN AI (LOGGER)
+        // ============================================================
         async function logAIActivity(actionType, targetElement, extraData = {}) {
             try {
-                // Cek apakah user login (dari Supabase Auth)
                 const { data: { user } } = await supabaseClient.auth.getUser();
-                
-                // Ambil ID Sesi (Session ID) untuk tamu yang belum login
                 let sessionId = localStorage.getItem('ngebel_session_id');
                 if (!sessionId) {
                     sessionId = 'sess_' + Math.random().toString(36).substr(2, 9);
                     localStorage.setItem('ngebel_session_id', sessionId);
                 }
-
-                // Siapkan data payload
                 const payload = {
                     user_id: user ? user.id : null, 
                     session_id: sessionId,         
@@ -632,78 +975,47 @@
                     element_target: targetElement, 
                     metadata: extraData            
                 };
-
-                // Kirim ke Supabase (Backend request, tidak memblokir tampilan user)
                 await supabaseClient
                     .from('user_analytics_logs')
                     .insert([payload]);
-
                 console.log('🤖 AI Log:', actionType, targetElement);
-
             } catch (error) {
-                // Jangan tampilkan error ke user agar tidak mengganggu UX
                 console.warn('Gagal mencatat aktivitas AI:', error.message);
             }
         }
 
-        // --- 2. MENGHUBUNGKAN FUNGSI KE ELEMEN WEB ---
-        
-        // Jalankan saat halaman selesai dimuat
         document.addEventListener('DOMContentLoaded', () => {
-            
-            // A. Catat saat halaman dibuka (Page View)
-            logAIActivity('view', 'page_load', { 
-                title: document.title, 
-                referrer: document.referrer 
-            });
-
-            // B. Catat saat Menu Navigasi diklik
+            logAIActivity('view', 'page_load', { title: document.title, referrer: document.referrer });
             const navItems = document.querySelectorAll('.nav-item');
             navItems.forEach(item => {
                 item.addEventListener('click', (e) => {
-                    // Ambil label menu (misal: 'Explore', 'Market')
                     const label = item.querySelector('span') ? item.querySelector('span').innerText : 'Nav Item';
                     logAIActivity('click', 'nav_menu', { menu_name: label });
                 });
             });
-
-            // C. Catat saat tombol utama "Jelajahi Potensi" diklik
             const mainBtn = document.querySelector('.btn-primary');
             if(mainBtn) {
                 mainBtn.addEventListener('click', () => {
                     logAIActivity('click', 'hero_cta_button', { button_text: 'Jelajahi Potensi' });
                 });
             }
-
-            // D. Catat saat user mengklik Kartu Preview (Platform / IoT / Market)
             const previewCards = document.querySelectorAll('.preview-card');
             previewCards.forEach((card, index) => {
                 card.addEventListener('click', () => {
-                    // Ambil judul kartu (h3)
                     const title = card.querySelector('h3') ? card.querySelector('h3').innerText : 'Unknown Card';
                     logAIActivity('click', 'preview_card', { card_title: title, index: index });
                 });
             });
-
-            // E. Catat saat tombol Like diklik
             const likeBtns = document.querySelectorAll('.btn-like');
             likeBtns.forEach((btn, index) => {
                 btn.addEventListener('click', (e) => {
-                    // Cari judul kartu terdekat
                     const card = btn.closest('.preview-card');
                     const title = card ? card.querySelector('h3').innerText : 'Unknown Item';
-                    
-                    logAIActivity('interaction', 'like_button', { 
-                        item_title: title,
-                        interaction_type: 'like'
-                    });
+                    logAIActivity('interaction', 'like_button', { item_title: title, interaction_type: 'like' });
                 });
             });
-
-            // F. Catat saat Modal Dibuka
             const modalOverlay = document.getElementById('preview-modal');
             if(modalOverlay) {
-                // Kita pakai MutationObserver untuk mendeteksi kapan class 'open' muncul
                 const observer = new MutationObserver((mutations) => {
                     mutations.forEach((mutation) => {
                         if (mutation.target.classList.contains('open')) {
@@ -713,6 +1025,12 @@
                     });
                 });
                 observer.observe(modalOverlay, { attributes: true, attributeFilter: ['class'] });
+            }
+            
+            // Log aktivitas Chat Widget
+            const fab = document.querySelector('.chat-fab');
+            if(fab) {
+                fab.addEventListener('click', () => logAIActivity('click', 'chat_widget_open'));
             }
         });
     </script>
