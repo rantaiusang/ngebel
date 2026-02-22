@@ -257,10 +257,10 @@
         .toast.show { transform: translateX(0); }
 
         /* =========================================
-           UPDATE: LIVE CHAT WIDGET (WEB3 STYLE)
+           UPDATE: WHATSAPP WIDGET (WEB3 STYLE BUTTON)
            ========================================= */
         
-        /* Container Utama Chat */
+        /* Container Utama Widget */
         .chat-widget-container {
             position: fixed;
             bottom: 100px; 
@@ -272,31 +272,29 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
-        /* --- TOMBOL FLOATING (FAB) DENGAN LOGO WEB 3 --- */
+        /* --- TOMBOL FLOATING (FAB) WEB3 STYLE --- */
         .chat-fab {
             width: 64px;
             height: 64px;
-            border-radius: 16px; /* Bentuk lebih kotak tapi tumpul (squircle) ala iOS/Web3 */
+            border-radius: 16px; /* Squircle (Kotak Tumpul) ala iOS/Web3 */
             background: linear-gradient(135deg, var(--primary) 0%, #0d9488 100%);
             color: white;
             border: none;
-            box-shadow: 0 10px 30px rgba(15, 118, 110, 0.4), 0 0 0 4px rgba(15, 118, 110, 0.1); /* Double ring glow */
+            box-shadow: 0 10px 30px rgba(15, 118, 110, 0.4), 0 0 0 4px rgba(15, 118, 110, 0.1);
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
-            overflow: hidden; /* Untuk animasi background */
+            overflow: hidden;
         }
 
-        /* Efek Glass/Glow pada Hover */
         .chat-fab:hover {
             transform: translateY(-4px) scale(1.05);
             box-shadow: 0 15px 40px rgba(15, 118, 110, 0.5), 0 0 0 6px rgba(15, 118, 110, 0.15);
         }
 
-        /* Efek Ripple Background (Opsional) */
         .chat-fab::before {
             content: '';
             position: absolute;
@@ -312,7 +310,7 @@
             transform: scale(1);
         }
 
-        /* SVG Wrapper untuk Logo */
+        /* SVG Wrapper untuk Logo Web3 */
         .web3-logo {
             width: 32px;
             height: 32px;
@@ -320,7 +318,6 @@
             z-index: 2;
         }
         
-        /* Animasi berputar untuk elemen luar logo */
         .web3-logo-outer {
             animation: spin-slow 8s linear infinite;
             transform-origin: center;
@@ -348,153 +345,10 @@
             z-index: 10;
         }
 
-        /* Jendela Chat Box */
+        /* Hapus/Hide Chat Box karena kita pakai Direct Link ke WA */
         .chat-box {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            width: 340px;
-            height: 480px;
-            border-radius: 24px;
-            box-shadow: 0 25px 80px rgba(0,0,0,0.25);
-            margin-bottom: 20px;
-            display: none; /* Hidden by default */
-            flex-direction: column;
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.8);
-            transform-origin: bottom right;
-            animation: chatBubblePop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: none !important; 
         }
-
-        .chat-box.open {
-            display: flex;
-        }
-
-        /* Header Chat */
-        .chat-header {
-            background: linear-gradient(135deg, var(--primary) 0%, #0d9488 100%);
-            color: white;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            position: relative;
-        }
-
-        .chat-avatar {
-            width: 42px;
-            height: 42px;
-            background: rgba(255,255,255,0.2);
-            backdrop-filter: blur(5px);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 1.2rem;
-            border: 1px solid rgba(255,255,255,0.3);
-        }
-
-        .chat-info h4 { margin: 0; font-size: 1.05rem; font-family: 'Outfit'; letter-spacing: -0.5px; }
-        .chat-info span { font-size: 0.75rem; opacity: 0.9; display: block; font-weight: 500; }
-
-        .chat-close {
-            margin-left: auto;
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            width: 32px;
-            height: 32px;
-            border-radius: 10px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
-        }
-        .chat-close:hover { background: rgba(255,255,255,0.4); }
-
-        /* Area Pesan (Body) */
-        .chat-body {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            background: #f8fafc;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .chat-message {
-            max-width: 85%;
-            padding: 12px 16px;
-            border-radius: 18px;
-            font-size: 0.95rem;
-            line-height: 1.5;
-            animation: slideInUp 0.3s ease-out;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-        }
-
-        .message-bot {
-            background: white;
-            color: var(--text-main);
-            border-bottom-left-radius: 4px;
-            align-self: flex-start;
-            border: 1px solid #f1f5f9;
-        }
-
-        .message-user {
-            background: var(--primary);
-            color: white;
-            border-bottom-right-radius: 4px;
-            align-self: flex-end;
-            border: 1px solid var(--primary-light);
-        }
-
-        /* Input Area (Footer) */
-        .chat-footer {
-            padding: 15px;
-            background: white;
-            border-top: 1px solid #f1f5f9;
-            display: flex;
-            gap: 12px;
-        }
-
-        .chat-input {
-            flex: 1;
-            border: 1px solid #e2e8f0;
-            border-radius: 24px;
-            padding: 12px 18px;
-            font-family: inherit;
-            font-size: 0.95rem;
-            outline: none;
-            transition: all 0.2s;
-            background: #f8fafc;
-        }
-
-        .chat-input:focus {
-            border-color: var(--primary);
-            background: white;
-            box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
-        }
-
-        .chat-send {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: var(--primary);
-            color: white;
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-            flex-shrink: 0;
-        }
-        
-        .chat-send:hover { background: var(--primary-light); transform: scale(1.05); }
-        .chat-send:disabled { background: #cbd5e1; cursor: not-allowed; transform: none; }
 
         /* Responsive Mobile */
         @media (max-width: 480px) {
@@ -502,19 +356,11 @@
                 bottom: 90px;
                 right: 15px;
             }
-            .chat-box {
-                width: 100%;
-                max-width: 320px;
-                height: 100vh; /* Full screen di mobile kecil */
-                max-height: 600px;
-                right: 0; 
-            }
             .chat-fab {
                 width: 56px; height: 56px;
             }
         }
         
-        /* Jika Desktop dengan sidebar (lebar > 768px) */
         @media (min-width: 768px) {
             .chat-widget-container {
                 bottom: 30px;
@@ -523,7 +369,7 @@
         }
 
         /* =========================================
-           END OF CHAT STYLES
+           END OF WIDGET STYLES
            ========================================= */
 
         /* PRELOADER STYLES */
@@ -555,7 +401,6 @@
     <!-- CLEAN WHITE PRELOADER -->
     <div id="preloader">
         <div class="loader-content">
-
             <div class="modern-spinner"></div>
         </div>
     </div>
@@ -682,41 +527,11 @@
     </div>
 
     <!-- ============================================================ -->
-    <!-- LIVE CHAT WIDGET HTML (WEB3 LOGO EDITION) -->
+    <!-- LIVE CHAT WIDGET (DIRECT WHATSAPP WEB3 BUTTON) -->
     <!-- ============================================================ -->
     <div class="chat-widget-container">
-        <!-- Chat Box Window -->
-        <div class="chat-box" id="chat-box">
-            <div class="chat-header">
-                <div class="chat-avatar">
-                    <!-- Mini Web3 Logo di Header -->
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-                </div>
-                <div class="chat-info">
-                    <h4>Ngebel Support</h4>
-                    <span>● Online & Instant</span>
-                </div>
-                <button class="chat-close" onclick="toggleChat()">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
-            </div>
-            
-            <div class="chat-body" id="chat-body">
-                <div class="chat-message message-bot">
-                    Halo! Selamat datang di <b>Ngebel Smart Tourism</b>. Ada yang bisa kami bantu hari ini? 🚀
-                </div>
-            </div>
-            
-            <div class="chat-footer">
-                <input type="text" class="chat-input" id="chat-input" placeholder="Tulis pesan..." onkeypress="handleEnter(event)">
-                <button class="chat-send" id="chat-send-btn" onclick="sendMessage()">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-                </button>
-            </div>
-        </div>
-
-        <!-- Floating Button dengan Logo Web 3 -->
-        <button class="chat-fab" onclick="toggleChat()">
+        <!-- Tombol FAB langsung ke WhatsApp -->
+        <button class="chat-fab" onclick="openWhatsApp()">
             <div class="chat-badge" id="chat-badge">1</div>
             
             <!-- LOGO WEB 3 (ISOMETRIC CUBE/HEXAGON SVG) -->
@@ -732,13 +547,10 @@
                     <path d="M19 10v9l-7 4v-9l7-4z" opacity="0.9"></path>
                 </svg>
             </div>
-            
-            <!-- Icon Close (Hidden by default) -->
-            <svg id="chat-icon-close" style="display:none; position: absolute; z-index: 5;" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
     </div>
     <!-- ============================================================ -->
-    <!-- END OF LIVE CHAT WIDGET HTML -->
+    <!-- END OF WIDGET -->
     <!-- ============================================================ -->
 
 
@@ -749,6 +561,10 @@
         
         const { createClient } = supabase;
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // --- KONFIGURASI WHATSAPP DIRECT ---
+        const WA_ADMIN_NUMBER = "628133039866"; // Ganti dengan nomor WA Admin
+        const WA_DEFAULT_MESSAGE = "Halo Admin Ngebel, saya ingin bertanya seputar Smart Tourism...";
 
         // --- KONFIGURASI MENU ---
         const publicMenu = [
@@ -875,84 +691,24 @@
         }
 
         // ============================================================
-        // LOGIKA LIVE CHAT WIDGET (UPDATED FOR WEB3 LOGO)
+        // LOGIKA WHATSAPP DIRECT
         // ============================================================
         
-        const chatBox = document.getElementById('chat-box');
-        const chatBody = document.getElementById('chat-body');
-        const chatInput = document.getElementById('chat-input');
-        const chatBadge = document.getElementById('chat-badge');
-        const chatIconClose = document.getElementById('chat-icon-close');
-        const web3Logo = document.querySelector('.web3-logo');
-
-        // Toggle Buka/Tutup Chat
-        function toggleChat() {
-            chatBox.classList.toggle('open');
+        function openWhatsApp() {
+            // Encode pesan default
+            const encodedMessage = encodeURIComponent(WA_DEFAULT_MESSAGE);
+            // Buat URL WhatsApp
+            const waUrl = `https://wa.me/${WA_ADMIN_NUMBER}?text=${encodedMessage}`;
             
-            if (chatBox.classList.contains('open')) {
-                // Sembunyikan badge dan logo, munculkan icon close
-                chatBadge.style.display = 'none';
-                if(web3Logo) web3Logo.style.display = 'none';
-                chatIconClose.style.display = 'block';
-                setTimeout(() => chatInput.focus(), 300);
-            } else {
-                // Munculkan kembali logo
-                if(web3Logo) web3Logo.style.display = 'block';
-                chatIconClose.style.display = 'none';
-            }
-        }
-
-        // Handle Enter Key
-        function handleEnter(e) {
-            if (e.key === 'Enter') sendMessage();
-        }
-
-        // Fungsi Kirim Pesan
-        async function sendMessage() {
-            const message = chatInput.value.trim();
-            if (!message) return;
-
-            // 1. Tampilkan pesan user di UI (Optimistic UI)
-            appendMessage('user', message);
-            chatInput.value = '';
+            // Buka di tab baru
+            window.open(waUrl, '_blank');
             
-            // Scroll ke bawah
-            chatBody.scrollTop = chatBody.scrollHeight;
-
-            // 2. Kirim ke API Telegram (Backend)
-            try {
-                const response = await fetch('/api/telegram', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: message }),
-                });
-
-                if (response.ok) {
-                    console.log('✅ Pesan terkirim ke Telegram');
-                    showToast("Pesan terkirim!", "success");
-                } else {
-                    console.error('❌ Gagal mengirim ke API');
-                    showToast("Gagal mengirim pesan", "info");
-                    appendMessage('bot', 'Maaf, terjadi kesalahan saat mengirim pesan.');
-                }
-            } catch (error) {
-                console.error('Network Error:', error);
-                showToast("Error koneksi", "info");
-                appendMessage('bot', 'Koneksi bermasalah. Silakan coba lagi.');
-            }
-        }
-
-        // Helper: Tambahkan pesan ke layar
-        function appendMessage(sender, text) {
-            const div = document.createElement('div');
-            div.className = `chat-message ${sender === 'user' ? 'message-user' : 'message-bot'}`;
-            div.innerHTML = text; // Menggunakan innerHTML agar support <b>
-            chatBody.appendChild(div);
-            chatBody.scrollTop = chatBody.scrollHeight;
+            // Log Activity
+            logAIActivity('click', 'whatsapp_widget_direct', { target: WA_ADMIN_NUMBER });
         }
 
         // ============================================================
-        // END OF LIVE CHAT LOGIC
+        // END OF WHATSAPP LOGIC
         // ============================================================
 
 
@@ -1025,12 +781,6 @@
                     });
                 });
                 observer.observe(modalOverlay, { attributes: true, attributeFilter: ['class'] });
-            }
-            
-            // Log aktivitas Chat Widget
-            const fab = document.querySelector('.chat-fab');
-            if(fab) {
-                fab.addEventListener('click', () => logAIActivity('click', 'chat_widget_open'));
             }
         });
     </script>
