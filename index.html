@@ -741,7 +741,6 @@
     <!-- END OF LIVE CHAT WIDGET HTML -->
     <!-- ============================================================ -->
 
-
          <script>
         // --- KONFIGURASI SUPABASE ---
         const SUPABASE_URL = 'https://dikapquhusbwjccbqcsb.supabase.co'; 
@@ -749,6 +748,39 @@
         
         const { createClient } = supabase;
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // --- SESSION ID MANAGEMENT (BARU) ---
+        // Buat ID unik untuk browser ini agar pesan balasan tepat sasaran
+        let sessionId = localStorage.getItem('chat_session_id');
+        if (!sessionId) {
+            sessionId = 'sess_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('chat_session_id', sessionId);
+        }
+
+        // --- 1. REALTIME SUBSCRIPTION (BARU - WAJIB UNTUK DUA ARAH) ---
+        // Fungsi ini mendengarkan perubahan di database Supabase
+        function subscribeToChat() {
+            const channel = supabaseClient
+                .channel('public:chats')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chats' }, (payload) => {
+                    const newMessage = payload.new;
+                    
+                    // Filter: Hanya tampilkan jika pesan milik session browser ini
+                    if (newMessage.session_id === sessionId) {
+                        if (newMessage.sender === 'admin') {
+                            appendMessage('bot', newMessage.message);
+                            showToast("Pesan balasan masuk!", "success");
+                            // Opsional: Bunyikan notifikasi
+                        }
+                        // Jika sender 'user' (misal dari tab lain), bisa ditampilkan juga jika mau sinkronisasi
+                    }
+                })
+                .subscribe();
+            console.log('🔌 Realtime Chat Aktif.');
+        }
+
+        // Jalankan subscription saat halaman dimuat
+        subscribeToChat();
 
         // --- KONFIGURASI MENU ---
         const publicMenu = [
@@ -875,7 +907,7 @@
         }
 
         // ============================================================
-        // LOGIKA LIVE CHAT WIDGET (UPDATED FOR WEB3 LOGO)
+        // LOGIKA LIVE CHAT WIDGET
         // ============================================================
         
         const chatBox = document.getElementById('chat-box');
@@ -890,13 +922,11 @@
             chatBox.classList.toggle('open');
             
             if (chatBox.classList.contains('open')) {
-                // Sembunyikan badge dan logo, munculkan icon close
                 chatBadge.style.display = 'none';
                 if(web3Logo) web3Logo.style.display = 'none';
                 chatIconClose.style.display = 'block';
                 setTimeout(() => chatInput.focus(), 300);
             } else {
-                // Munculkan kembali logo
                 if(web3Logo) web3Logo.style.display = 'block';
                 chatIconClose.style.display = 'none';
             }
@@ -907,7 +937,9 @@
             if (e.key === 'Enter') sendMessage();
         }
 
-        // Fungsi Kirim Pesan
+        // ============================================================
+        // FUNGSI KIRIM PESAN (UPDATED: KIRIM SESSION_ID)
+        // ============================================================
         async function sendMessage() {
             const message = chatInput.value.trim();
             if (!message) return;
@@ -915,38 +947,47 @@
             // 1. Tampilkan pesan user di UI (Optimistic UI)
             appendMessage('user', message);
             chatInput.value = '';
-            
-            // Scroll ke bawah
             chatBody.scrollTop = chatBody.scrollHeight;
 
-            // 2. Kirim ke API Telegram (Backend)
+            // Tampilkan pesan loading
+            const loadingId = 'loading-' + Date.now();
+            appendMessage('bot', '<span style="font-style:italic; color:#94a3b8;">Mengirim...</span>', loadingId);
+
             try {
+                // 2. Kirim ke API (Bawa session_id)
                 const response = await fetch('/api/telegram', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: message }),
+                    body: JSON.stringify({ 
+                        message: message,
+                        session_id: sessionId // PENTING: Kirim ID unik browser ini
+                    }),
                 });
 
+                // Hapus pesan loading
+                const loadingMsg = document.getElementById(loadingId);
+                if(loadingMsg) loadingMsg.remove();
+
                 if (response.ok) {
-                    console.log('✅ Pesan terkirim ke Telegram');
-                    showToast("Pesan terkirim!", "success");
+                    console.log('✅ Pesan terkirim');
+                    showToast("Terkirim!", "success");
                 } else {
-                    console.error('❌ Gagal mengirim ke API');
-                    showToast("Gagal mengirim pesan", "info");
-                    appendMessage('bot', 'Maaf, terjadi kesalahan saat mengirim pesan.');
+                    console.error('❌ Gagal');
+                    showToast("Gagal mengirim", "info");
+                    appendMessage('bot', 'Gagal mengirim pesan.');
                 }
             } catch (error) {
-                console.error('Network Error:', error);
+                const loadingMsg = document.getElementById(loadingId);
+                if(loadingMsg) loadingMsg.remove();
+                console.error(error);
                 showToast("Error koneksi", "info");
-                appendMessage('bot', 'Koneksi bermasalah. Silakan coba lagi.');
             }
         }
 
-        // Helper: Tambahkan pesan ke layar
         function appendMessage(sender, text) {
             const div = document.createElement('div');
             div.className = `chat-message ${sender === 'user' ? 'message-user' : 'message-bot'}`;
-            div.innerHTML = text; // Menggunakan innerHTML agar support <b>
+            div.innerHTML = text; 
             chatBody.appendChild(div);
             chatBody.scrollTop = chatBody.scrollHeight;
         }
@@ -962,14 +1003,15 @@
         async function logAIActivity(actionType, targetElement, extraData = {}) {
             try {
                 const { data: { user } } = await supabaseClient.auth.getUser();
-                let sessionId = localStorage.getItem('ngebel_session_id');
-                if (!sessionId) {
-                    sessionId = 'sess_' + Math.random().toString(36).substr(2, 9);
-                    localStorage.setItem('ngebel_session_id', sessionId);
+                // Pisahkan session ID logger agar tidak bentrok dengan chat session
+                let logSessionId = localStorage.getItem('ngebel_session_id');
+                if (!logSessionId) {
+                    logSessionId = 'sess_' + Math.random().toString(36).substr(2, 9);
+                    localStorage.setItem('ngebel_session_id', logSessionId);
                 }
                 const payload = {
                     user_id: user ? user.id : null, 
-                    session_id: sessionId,         
+                    session_id: logSessionId,         
                     page_url: window.location.pathname, 
                     action_type: actionType,       
                     element_target: targetElement, 
@@ -1027,13 +1069,13 @@
                 observer.observe(modalOverlay, { attributes: true, attributeFilter: ['class'] });
             }
             
-            // Log aktivitas Chat Widget
             const fab = document.querySelector('.chat-fab');
             if(fab) {
                 fab.addEventListener('click', () => logAIActivity('click', 'chat_widget_open'));
             }
         });
     </script>
+         
     
 </body>
 </html>
