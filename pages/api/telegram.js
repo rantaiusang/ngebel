@@ -1,130 +1,54 @@
-// /pages/api/telegram.js
+// telegram.js (atau api.js)
 import { createClient } from '@supabase/supabase-js';
 
 // ==========================================
-// KONFIGURASI SUPABASE (ADMIN ACCESS)
+// KONFIGURASI SUPABASE
 // ==========================================
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY; 
 
 if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('❌ Missing SUPABASE_SERVICE_ROLE_KEY in environment variables');
+  console.error('❌ Missing SUPABASE_SERVICE_ROLE_KEY');
 }
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 // ==========================================
-// 1. HANDLE WEBHOOK (Menerima Balasan Admin)
+// HANDLER UTAMA (SATU PINTU UNTUK SEMUA)
 // ==========================================
-// PERBAIKAN: Gunakan POST bukan GET, karena Telegram mengirim Webhook via POST
-export async function POST(req, res) {
-  
-  // Cek apakah ini request dari Telegram (Biasanya Telegram mengirim JSON)
-  // Tapi untuk amannya, kita tangani semua POST di sini.
-  
-  try {
-    // PERBAIKAN: Bungkus req.json() dalam try-catch terpisah
-    // Request dari Telegram kadang body-nya kosong atau bukan JSON valid saat pertama kali connect
-    let body;
-    try {
-      body = await req.json();
-    } catch (e) {
-      console.log('Request body kosong atau bukan JSON, mungkin ping dari Telegram.');
-      return res.status(200).json({ ok: true });
-    }
-
-    // Logika Webhook: Jika ada pesan masuk
-    if (body.message && body.message.text) {
-      const text = body.message.text;
-      const chatId = body.message.chat.id;
-
-      console.log(`📩 Menerima pesan dari Telegram (Chat ID: ${chatId}): ${text}`);
-
-      // --- LOGIKA ROUTING PESAN ---
-      // Asumsi: Admin membalas pesan User terakhir (Single Thread)
-      
-      // 1. Cari pesan User terakhir di database
-      const { data: lastUserMsg, error } = await supabase
-        .from('chats')
-        .select('session_id')
-        .eq('sender', 'user')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (error || !lastUserMsg) {
-        console.error('❌ Gagal mencari session user terakhir:', error?.message);
-        return res.status(200).json({ ok: true }); 
-      }
-
-      const targetSessionId = lastUserMsg.session_id;
-      console.log(`🎯 Mengarahkan balasan ke session: ${targetSessionId}`);
-
-      // 2. Simpan balasan Admin ke Database
-      const { error: insertError } = await supabase.from('chats').insert([
-        {
-          sender: 'admin',
-          message: text,
-          session_id: targetSessionId
-        }
-      ]);
-
-      if (insertError) {
-        console.error('❌ Gagal menyimpan balasan ke DB:', insertError.message);
-      } else {
-        console.log('✅ Balasan Admin berhasil disimpan ke DB.');
-      }
-    }
-
-    // 3. Respon Sukses ke Telegram (Wajib 200 OK agar tidak spam retry)
-    return res.status(200).json({ ok: true });
-
-  } catch (error) {
-    console.error('💥 Error handling Webhook:', error);
-    return res.status(200).json({ ok: true });
-  }
-}
-
-// ==========================================
-// 2. HANDLE KIRIM PESAN (Dari Website)
-// ==========================================
-// Karena POST sudah dipakai untuk Webhook, kita pisahkan logikanya di dalam satu function
-// ATAU kita buat endpoint baru.
-// 
-// CARA TERMUDAH: Kita deteksi lewat isi body (Heuristics).
-// Jika body punya field 'message', itu dari WEBSITE. Jika punya struktur Telegram, itu dari WEBHOOK.
-
 export default async function handler(req, res) {
-  // Hanya izinkan POST
+  // 1. Cek Method: Hanya izinkan POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
   try {
-    const body = await req.json();
+    // 2. Ambil Body Request
+    let body;
+    try {
+      body = await req.json();
+    } catch (e) {
+      // Jika body kosong (misal: ping dari Telegram)
+      return res.status(200).json({ ok: true });
+    }
 
-    // LOGIKA 1: Ini request dari WEBSITE (User kirim pesan)
-    // Ciri: Ada key 'message' sederhana
-    if (body.message && !body.message?.chat_id) { 
-      
-      console.log('📤 Request dari Website: Kirim pesan ke Telegram');
-      
+    // 3. LOGIKA PEMISAHAN: INI DARI MANA?
+    
+    // --- KASUS A: DARI WEBSITE (User mengirim pesan) ---
+    // Ciri-ciri: Body memiliki key "message" yang isinya string sederhana, TIDAK memiliki "chat_id"
+    if (body.message && typeof body.message === 'string' && !body.message?.chat_id) {
+      console.log('📤 [Dari Website] Mengirim pesan ke Telegram...');
+
       const messageText = body.message;
-
-      if (!messageText || messageText.trim() === '') {
-        return res.status(400).json({ error: 'Pesan tidak boleh kosong' });
-      }
-
       const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
       const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
       if (!TOKEN || !CHAT_ID) {
-        return res.status(500).json({ error: 'Missing Token or Chat ID' });
+        return res.status(500).json({ error: 'Missing Token/ChatID di Env Var' });
       }
 
-      // Kirim ke Telegram
-      const telegramUrl = `https://api.telegram.org/bot${TOKEN}/sendMessage`;
-      const response = await fetch(telegramUrl, {
+      // Kirim ke Telegram API
+      const telegramResponse = await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -135,24 +59,24 @@ export default async function handler(req, res) {
         }),
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        console.error('Telegram Error:', data);
-        return res.status(400).json({ error: 'Gagal kirim ke Telegram', details: data });
+      if (!telegramResponse.ok) {
+        const errorData = await telegramResponse.json();
+        console.error('❌ Gagal kirim ke Telegram:', errorData);
+        return res.status(400).json({ error: 'Gagal kirim ke Telegram', details: errorData });
       }
 
-      return res.status(200).json({ success: true });
+      console.log('✅ Sukses kirim ke Telegram');
+      return res.status(200).json({ success: true, message: 'Pesan terkirim' });
     }
 
-    // LOGIKA 2: Ini request dari TELEGRAM (Webhook)
-    // Ciri: Struktur body.message ada chat_id, from, etc.
-    else if (body.message && body.message.text) {
-      console.log('📩 Request dari Telegram: Simpan balasan ke DB');
-      
+    // --- KASUS B: DARI TELEGRAM (Admin membalas pesan / Webhook) ---
+    // Ciri-ciri: Body memiliki struktur Telegram (message.chat.id, message.from, dll)
+    else if (body.message && body.message.chat_id) {
+      console.log('📩 [Dari Telegram] Menerima Webhook...');
+
       const text = body.message.text;
-      
-      // Cari user terakhir
+
+      // 1. Cari pesan User terakhir di DB (untuk tahu mau dibalas ke siapa)
       const { data: lastUserMsg, error } = await supabase
         .from('chats')
         .select('session_id')
@@ -161,28 +85,37 @@ export default async function handler(req, res) {
         .limit(1)
         .single();
 
-      if (lastUserMsg) {
-        await supabase.from('chats').insert([
+      if (error || !lastUserMsg) {
+        console.error('⚠️ Tidak ada sesi user aktif untuk dibalas.');
+      } else {
+        // 2. Simpan balasan Admin ke DB
+        const { error: insertError } = await supabase.from('chats').insert([
           {
             sender: 'admin',
             message: text,
             session_id: lastUserMsg.session_id
           }
         ]);
-        console.log('✅ Balasan disimpan.');
+
+        if (insertError) {
+          console.error('❌ Gagal simpan balasan ke DB:', insertError);
+        } else {
+          console.log('✅ Balasan admin disimpan untuk session:', lastUserMsg.session_id);
+        }
       }
 
+      // Wajib balas 200 OK ke Telegram
       return res.status(200).json({ ok: true });
     }
 
-    // Jika format tidak dikenali
+    // --- KASUS C: Format Tidak Dikenali ---
     else {
-      console.log('⚠️ Format request tidak dikenali');
+      console.log('⚠️ Request format tidak dikenali:', body);
       return res.status(200).json({ ok: true });
     }
 
   } catch (error) {
-    console.error('💥 Internal Error:', error);
+    console.error('💥 Internal Server Error:', error);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 }
