@@ -1,15 +1,11 @@
-// telegram.js (atau api.js)
+// pages/api/telegram.js
 import { createClient } from '@supabase/supabase-js';
 
 // ==========================================
-// KONFIGURASI SUPABASE
+// KONFIGURASI SUPABASE (ADMIN ACCESS)
 // ==========================================
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY; 
-
-if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('❌ Missing SUPABASE_SERVICE_ROLE_KEY');
-}
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
@@ -17,26 +13,20 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 // HANDLER UTAMA (SATU PINTU UNTUK SEMUA)
 // ==========================================
 export default async function handler(req, res) {
-  // 1. Cek Method: Hanya izinkan POST
+  // Hanya izinkan POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
   try {
-    // 2. Ambil Body Request
-    let body;
-    try {
-      body = await req.json();
-    } catch (e) {
-      // Jika body kosong (misal: ping dari Telegram)
-      return res.status(200).json({ ok: true });
-    }
+    const body = await req.json();
 
     // 3. LOGIKA PEMISAHAN: INI DARI MANA?
     
     // --- KASUS A: DARI WEBSITE (User mengirim pesan) ---
-    // Ciri-ciri: Body memiliki key "message" yang isinya string sederhana, TIDAK memiliki "chat_id"
+    // Ciri: Body punya key "message" string, TIDAK punya "chat_id"
     if (body.message && typeof body.message === 'string' && !body.message?.chat_id) {
+      
       console.log('📤 [Dari Website] Mengirim pesan ke Telegram...');
 
       const messageText = body.message;
@@ -44,11 +34,10 @@ export default async function handler(req, res) {
       const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
       if (!TOKEN || !CHAT_ID) {
-        return res.status(500).json({ error: 'Missing Token/ChatID di Env Var' });
+        return res.status(500).json({ error: 'Missing Token/ChatID' });
       }
 
-      // Kirim ke Telegram API
-      const telegramResponse = await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+      const response = await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -59,25 +48,25 @@ export default async function handler(req, res) {
         }),
       });
 
-      if (!telegramResponse.ok) {
-        const errorData = await telegramResponse.json();
-        console.error('❌ Gagal kirim ke Telegram:', errorData);
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Telegram Error:', errorData);
         return res.status(400).json({ error: 'Gagal kirim ke Telegram', details: errorData });
       }
 
       console.log('✅ Sukses kirim ke Telegram');
-      return res.status(200).json({ success: true, message: 'Pesan terkirim' });
+      return res.status(200).json({ success: true });
     }
 
-    // --- KASUS B: DARI TELEGRAM (Admin membalas pesan / Webhook) ---
-    // Ciri-ciri: Body memiliki struktur Telegram (message.chat.id, message.from, dll)
+    // --- KASUS B: DARI TELEGRAM (Admin membalas / Webhook) ---
+    // Ciri: Struktur Telegram (message.chat.id, message.from, dll)
     else if (body.message && body.message.chat_id) {
       console.log('📩 [Dari Telegram] Menerima Webhook...');
 
       const text = body.message.text;
 
-      // 1. Cari pesan User terakhir di DB (untuk tahu mau dibalas ke siapa)
-      const { data: lastUserMsg, error } = await supabase
+      // Cari user terakhir
+      const { data: lastUserMsg } = await supabase
         .from('chats')
         .select('session_id')
         .eq('sender', 'user')
@@ -85,37 +74,27 @@ export default async function handler(req, res) {
         .limit(1)
         .single();
 
-      if (error || !lastUserMsg) {
-        console.error('⚠️ Tidak ada sesi user aktif untuk dibalas.');
-      } else {
-        // 2. Simpan balasan Admin ke DB
-        const { error: insertError } = await supabase.from('chats').insert([
+      if (lastUserMsg) {
+        await supabase.from('chats').insert([
           {
             sender: 'admin',
             message: text,
             session_id: lastUserMsg.session_id
           }
         ]);
-
-        if (insertError) {
-          console.error('❌ Gagal simpan balasan ke DB:', insertError);
-        } else {
-          console.log('✅ Balasan admin disimpan untuk session:', lastUserMsg.session_id);
-        }
+        console.log('✅ Balasan disimpan.');
       }
 
-      // Wajib balas 200 OK ke Telegram
       return res.status(200).json({ ok: true });
     }
 
-    // --- KASUS C: Format Tidak Dikenali ---
+    // Format tidak dikenali
     else {
-      console.log('⚠️ Request format tidak dikenali:', body);
       return res.status(200).json({ ok: true });
     }
 
   } catch (error) {
-    console.error('💥 Internal Server Error:', error);
+    console.error('💥 Internal Error:', error);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
 }
