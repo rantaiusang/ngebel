@@ -1,24 +1,23 @@
-import fetch from "node-fetch";
-
-const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+// /api/telegram.js
+import fetch from 'node-fetch';
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
+  if (req.method === 'POST') {
+    const { message } = req.body;
+    const TOKEN = process.env.TELEGRAM_BOT_TOKEN; // dari Vercel Env Variable
+    const CHAT_ID = process.env.TELEGRAM_CHAT_ID; // ID chat Telegram tujuan
 
-  const update = req.body;
-  console.log("Update received:", update);
-
-  if (update.message) {
-    const chatId = update.message.chat.id;
-    const text = update.message.text;
-
-    // Kirim balasan ke user
-    await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: chatId, text: `Kamu bilang: ${text}` }),
-    });
+    try {
+      await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: CHAT_ID, text: message }),
+      });
+      res.status(200).json({ ok: true });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  } else {
+    res.status(405).json({ error: 'Method not allowed' });
   }
-
-  res.status(200).json({ ok: true });
 }
