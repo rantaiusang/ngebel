@@ -1,101 +1,135 @@
-// /api/telegram.js
-// API Handler untuk mengirim pesan dari Website ke Telegram
+// /pages/api/telegram.js
+import { createClient } from '@supabase/supabase-js';
 
-export default async function handler(req, res) {
-  // 1. Cek Metode Request: Hanya izinkan POST
+// ==========================================
+// KONFIGURASI SUPABASE (ADMIN ACCESS)
+// ==========================================
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+// PENTING: Gunakan Service Role Key agar API punya akses tulis penuh ke DB tanpa login user
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY; 
+
+if (!supabaseUrl || !supabaseServiceKey) {
+  console.error('❌ Missing SUPABASE_SERVICE_ROLE_KEY in environment variables');
+}
+
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+// ==========================================
+// 1. HANDLE WEBHOOK (Menerima Balasan Admin)
+// ==========================================
+// Fungsi ini dipanggil otomatis oleh Telegram ketika Anda membalas pesan di Bot
+export async function GET(req, res) {
+  // Verifikasi Secret Token (Opsional: Keamanan tambahan)
+  // const secret = req.query.secret;
+  // if (secret !== process.env.TELEGRAM_WEBHOOK_SECRET) {
+  //   return res.status(403).json({ error: 'Forbidden' });
+  // }
+
+  try {
+    const body = await req.json(); // Body dari Telegram
+
+    // Cek apakah ada pesan teks
+    if (body.message && body.message.text) {
+      const text = body.message.text;
+      const chatId = body.message.chat.id;
+
+      // --- LOGIKA ROUTING PESAN ---
+      // Sistem ini mengasumsikan Admin membalas pesan User terakhir yang masuk.
+      // (Single Thread Mode)
+      
+      console.log(`📩 Menerima pesan dari Telegram (Chat ID: ${chatId}): ${text}`);
+
+      // 1. Cari pesan User terakhir di database
+      const { data: lastUserMsg, error } = await supabase
+        .from('chats')
+        .select('session_id')
+        .eq('sender', 'user')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error || !lastUserMsg) {
+        console.error('❌ Gagal mencari session user terakhir:', error?.message);
+        return res.status(200).json({ ok: true }); // Tetap balas OK ke Telegram
+      }
+
+      const targetSessionId = lastUserMsg.session_id;
+      console.log(`🎯 Mengarahkan balasan ke session: ${targetSessionId}`);
+
+      // 2. Simpan balasan Admin ke Database
+      const { error: insertError } = await supabase.from('chats').insert([
+        {
+          sender: 'admin',
+          message: text,
+          session_id: targetSessionId
+        }
+      ]);
+
+      if (insertError) {
+        console.error('❌ Gagal menyimpan balasan ke DB:', insertError.message);
+      } else {
+        console.log('✅ Balasan Admin berhasil disimpan ke DB.');
+      }
+    }
+
+    // 3. Respon Sukses ke Telegram (Wajib agar tidak retry)
+    return res.status(200).json({ ok: true });
+
+  } catch (error) {
+    console.error('💥 Error handling Webhook:', error);
+    // Tetap return 200 agar Telegram tidak spam request error ke kita
+    return res.status(200).json({ ok: true });
+  }
+}
+
+// ==========================================
+// 2. HANDLE KIRIM PESAN (Dari Website)
+// ==========================================
+// Fungsi ini dipanggil oleh Frontend (index.html) saat User klik Kirim
+export async function POST(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ 
-      success: false,
-      error: 'Method Not Allowed. Gunakan POST.' 
-    });
+    return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
   try {
-    // 2. Ambil data dari request body
     const { message } = req.body;
 
-    // Validasi input agar tidak kosong
-    if (!message || typeof message !== 'string' || message.trim() === '') {
-      return res.status(400).json({ 
-        success: false,
-        error: 'Bad Request: Isi pesan tidak boleh kosong.' 
-      });
+    if (!message || message.trim() === '') {
+      return res.status(400).json({ error: 'Pesan tidak boleh kosong' });
     }
 
-    // 3. Ambil Konfigurasi dari Environment Variables
-    // Pastikan Anda sudah mengisi ini di Dashboard Vercel (Settings > Env Variables)
     const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
     const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
-    // Cek apakah Token dan Chat ID ada
-    if (!TOKEN) {
-      console.error('❌ CRITICAL: TELEGRAM_BOT_TOKEN tidak ditemukan di Env Variables.');
-      return res.status(500).json({ 
-        success: false, 
-        error: 'Server Error: Konfigurasi Bot Token hilang.' 
-      });
+    if (!TOKEN || !CHAT_ID) {
+      return res.status(500).json({ error: 'Missing Token or Chat ID' });
     }
 
-    if (!CHAT_ID) {
-      console.error('❌ CRITICAL: TELEGRAM_CHAT_ID tidak ditemukan di Env Variables.');
-      return res.status(500).json({ 
-        success: false, 
-        error: 'Server Error: Konfigurasi Chat ID hilang.' 
-      });
-    }
-
-    // 4. Siapkan URL API Telegram
+    // 1. Kirim ke Telegram
     const telegramUrl = `https://api.telegram.org/bot${TOKEN}/sendMessage`;
-
-    // Log untuk debugging (bisa dilihat di Vercel Logs)
-    console.log(`📤 Mencoba mengirim pesan ke Chat ID: ${CHAT_ID}`);
-    console.log(`📝 Isi Pesan: ${message}`);
-
-    // 5. Lakukan Request ke Telegram (Menggunakan Native Fetch Node.js)
+    
     const response = await fetch(telegramUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         chat_id: CHAT_ID,
         text: message,
-        parse_mode: 'HTML', // Opsional: Mengaktifkan format teks HTML jika diperlukan
-        disable_web_page_preview: true // Opsional: Matikan preview link
+        parse_mode: 'HTML',
+        disable_web_page_preview: true
       }),
     });
 
-    // 6. Analisa Response dari Telegram
-    const responseData = await response.json();
+    const data = await response.json();
 
     if (!response.ok) {
-      // Jika Telegram merespon Error (contoh: Token salah, Chat ID diblokir)
-      console.error('❌ Gagal mengirim ke Telegram API:', responseData);
-      
-      return res.status(400).json({ 
-        success: false,
-        error: 'Gagal mengirim pesan ke Telegram.',
-        details: responseData.description || 'Unknown Telegram API Error'
-      });
+      console.error('Telegram Error:', data);
+      return res.status(400).json({ error: 'Gagal kirim ke Telegram', details: data });
     }
 
-    // 7. Sukses!
-    console.log('✅ Pesan berhasil dikirim ke Telegram:', responseData);
-    
-    return res.status(200).json({ 
-      success: true,
-      message: 'Pesan berhasil diteruskan ke Admin.',
-      data: responseData.result
-    });
+    return res.status(200).json({ success: true });
 
   } catch (error) {
-    // 8. Menangani Error tak terduga (Network error, dsb)
-    console.error('💥 Internal Server Error pada /api/telegram:', error);
-    
-    return res.status(500).json({ 
-      success: false,
-      error: 'Internal Server Error',
-      message: error.message 
-    });
+    console.error('Error send message:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 }
