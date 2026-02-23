@@ -111,23 +111,40 @@
         }
         .user-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
 
-        /* --- 5. BOTTOM NAVIGATION --- */
+        /* --- 5. BOTTOM NAVIGATION (FIXED FOR MOBILE SCROLL) --- */
         .bottom-nav {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
             width: 92%; max-width: 450px; height: auto; min-height: var(--nav-height);
             background: rgba(255,255,255,0.9); backdrop-filter: blur(20px);
             border-radius: 40px;
-            display: flex; justify-content: space-around; align-items: center;
+            display: flex; 
+            /* Tambahkan ini agar bisa digeser (scroll) di mobile */
+            overflow-x: auto; 
+            /* Sembunyikan scrollbar agar tetap rapi */
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE/Edge */
+            justify-content: flex-start; /* Penting agar item tidak mengecil saat ada banyak menu */
+            align-items: center;
             box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-            z-index: 1000; padding: 10px;
-            border: 1px solid rgba(255,255,255,0.6); flex-wrap: nowrap;
+            z-index: 1000; padding: 10px 20px; /* Padding horizontal dikit lebih lebar */
+            border: 1px solid rgba(255,255,255,0.6); 
+            /* Pastikan item tidak turun ke bawah */
+            white-space: nowrap; 
+            /* Scroll smooth */
+            scroll-behavior: smooth;
         }
+        
+        /* Sembunyikan scrollbar Chrome/Safari */
+        .bottom-nav::-webkit-scrollbar { display: none; }
+
         .nav-item {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             color: #94a3b8; font-size: 0.7rem; font-weight: 600;
-            padding: 8px; border-radius: 20px; transition: all 0.3s;
-            min-width: 60px; position: relative; cursor: pointer;
-            flex: 1 1 auto;
+            padding: 8px 12px; /* Tambahkan padding horizontal untuk jarak antar menu */
+            border-radius: 20px; transition: all 0.3s;
+            min-width: 65px; /* Lebar minimum tiap item agar tidak gepeng */
+            position: relative; cursor: pointer;
+            flex: 0 0 auto; /* Mencegah item mengecil (shrink) */
         }
         .nav-item svg { width: 22px; height: 22px; stroke-width: 2; stroke: currentColor; fill: none; margin-bottom: 4px; transition: all 0.3s; }
         
@@ -142,6 +159,7 @@
                 flex-direction: column; justify-content: flex-start; gap: 5px; padding-top: 100px;
                 border-radius: 0; box-shadow: 10px 0 30px rgba(0,0,0,0.05); border-right: 1px solid #eee;
                 align-items: stretch;
+                overflow-x: hidden; /* Desktop tidak perlu scroll horizontal */
             }
             .nav-item { width: 100%; flex-direction: row; height: 50px; padding: 0 20px; justify-content: flex-start; gap: 15px; font-size: 1rem; flex: none; }
             .nav-item svg { margin-bottom: 0; }
@@ -276,7 +294,7 @@
         .chat-fab {
             width: 64px;
             height: 64px;
-            border-radius: 16px; /* Squircle (Kotak Tumpul) ala iOS/Web3 */
+            border-radius: 16px; /* Squircle (Kotak Tumpul) ala iOS/Web3) */
             background: linear-gradient(135deg, var(--primary) 0%, #0d9488 100%);
             color: white;
             border: none;
@@ -603,6 +621,11 @@
                 a.onclick = () => handleNavClick(item);
                 navContainer.appendChild(a);
             });
+            // Tambahkan spasi dummy di akhir agar item terakhir bisa digeser ke tengah
+            const spacer = document.createElement('div');
+            spacer.style.minWidth = "20px";
+            spacer.style.flexShrink = "0";
+            navContainer.appendChild(spacer);
         }
 
         function handleNavClick(item) {
